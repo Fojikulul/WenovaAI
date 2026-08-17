@@ -1,0 +1,786 @@
+[
+  {
+    "id": "present-simple",
+    "title": "Present Simple",
+    "rule": "Use the present simple for habits, routines, and facts. I/you/we/they → base verb (they work). He/she/it → verb + -s/-es (she works, he watches). Questions and negatives → do/does + base verb (does she work, she doesn't work). After does or doesn't, the verb has no -s.",
+    "example": "My sister works at a hospital. She doesn't drive, so she takes the bus every morning.",
+    "mistake": {
+      "wrong": "He go to the library every Saturday.",
+      "right": "He goes to the library every Saturday."
+    },
+    "practice": [
+      {
+        "question": "Water ___ at 100 degrees Celsius.",
+        "options": [
+          "boil",
+          "boils",
+          "boiling"
+        ],
+        "answer": "boils",
+        "explanation": "This is a scientific fact, so use the present simple. 'Water' is singular, so the verb needs -s."
+      },
+      {
+        "question": "My manager ___ coffee in the morning.",
+        "options": [
+          "doesn't drinks",
+          "don't drink",
+          "doesn't drink"
+        ],
+        "answer": "doesn't drink",
+        "explanation": "With he/she/it, the negative is 'doesn't' + base verb. The -s is already on 'does', so the main verb stays 'drink'."
+      },
+      {
+        "question": "___ your brother live near the university?",
+        "options": [
+          "Do",
+          "Is",
+          "Does"
+        ],
+        "answer": "Does",
+        "explanation": "'Your brother' is he, so the question uses 'Does' + the base verb 'live'. 'Is' doesn't work because 'live' isn't an -ing form."
+      },
+      {
+        "question": "She ___ English every evening after work.",
+        "options": [
+          "studys",
+          "study",
+          "studies"
+        ],
+        "answer": "studies",
+        "explanation": "For verbs ending in a consonant + y, change y to i and add -es: study → studies."
+      },
+      {
+        "question": "My dad ___ dinner for our family every Sunday.",
+        "options": [
+          "cook",
+          "cooks",
+          "is cook"
+        ],
+        "answer": "cooks",
+        "explanation": "Use the present simple for routines, and add -s when the subject is one person."
+      },
+      {
+        "question": "Our teacher ___ us homework on Fridays.",
+        "options": [
+          "don't give",
+          "doesn't gives",
+          "doesn't give"
+        ],
+        "answer": "doesn't give",
+        "explanation": "Use doesn't with one person and keep the main verb in its base form."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "My sister play soccer after school.",
+          "My sister plays soccer after school.",
+          "My sister is play soccer after school."
+        ],
+        "answer": "My sister plays soccer after school.",
+        "explanation": "Use plays because the subject is one person and the sentence describes a routine."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Do your friends likes pizza?",
+          "Does your friends like pizza?",
+          "Do your friends like pizza?"
+        ],
+        "answer": "Do your friends like pizza?",
+        "explanation": "Use do with a plural subject and keep the main verb in its base form."
+      },
+      {
+        "question": "Which word is wrong? 'My brother don't watch TV every evening.'",
+        "options": [
+          "don't",
+          "watch",
+          "evening"
+        ],
+        "answer": "don't",
+        "explanation": "Use doesn't with he, she, or it in a present simple negative sentence."
+      },
+      {
+        "question": "Which word is wrong? 'She don't eat meat.'",
+        "options": [
+          "don't",
+          "eat",
+          "meat"
+        ],
+        "answer": "don't",
+        "explanation": "Use doesn't instead of don't with she in a present simple negative sentence."
+      }
+    ]
+  },
+  {
+    "id": "present-continuous",
+    "title": "Present Continuous",
+    "rule": "Use am/is/are + verb-ing for actions happening now or around now (she is reading, I'm working from home this week). Don't forget am/is/are. State verbs like know, want, like, and need stay in the present simple (I know, not I am knowing).",
+    "example": "I'm writing to you because our team is working on a new project this month.",
+    "mistake": {
+      "wrong": "She working on her essay right now.",
+      "right": "She is working on her essay right now."
+    },
+    "practice": [
+      {
+        "question": "Please be quiet. The baby ___.",
+        "options": [
+          "sleeps",
+          "is sleeping",
+          "sleeping"
+        ],
+        "answer": "is sleeping",
+        "explanation": "The action is happening right now, so use is + -ing. 'Sleeping' by itself is missing the 'be' verb."
+      },
+      {
+        "question": "I ___ what you mean.",
+        "options": [
+          "understand",
+          "am understanding",
+          "understanding"
+        ],
+        "answer": "understand",
+        "explanation": "'Understand' is a state verb, so use the present simple even when you mean right now."
+      },
+      {
+        "question": "This week, Maria ___ from home because her office is closed.",
+        "options": [
+          "work",
+          "are working",
+          "is working"
+        ],
+        "answer": "is working",
+        "explanation": "'This week' and 'because her office is closed' show a temporary situation, so use the present continuous."
+      },
+      {
+        "question": "What ___ you doing right now?",
+        "options": [
+          "is",
+          "do",
+          "are"
+        ],
+        "answer": "are",
+        "explanation": "Present continuous questions put am/is/are before the subject. 'You' always takes 'are'."
+      },
+      {
+        "question": "The students ___ for the bus right now.",
+        "options": [
+          "wait",
+          "are waiting",
+          "is waiting"
+        ],
+        "answer": "are waiting",
+        "explanation": "Use are plus a verb ending in -ing for an action happening right now."
+      },
+      {
+        "question": "I ___ my homework at the moment.",
+        "options": [
+          "am doing",
+          "do",
+          "doing"
+        ],
+        "answer": "am doing",
+        "explanation": "Use am plus a verb ending in -ing for an action happening at the moment."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "He is playing basketball now.",
+          "He playing basketball now.",
+          "He are playing basketball now."
+        ],
+        "answer": "He is playing basketball now.",
+        "explanation": "Use is plus a verb ending in -ing with he for an action happening now."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "We are stay with our cousins this week.",
+          "We staying with our cousins this week.",
+          "We are staying with our cousins this week."
+        ],
+        "answer": "We are staying with our cousins this week.",
+        "explanation": "Use are staying for a temporary situation happening around now."
+      },
+      {
+        "question": "Which word is wrong? 'They is eating lunch in the cafeteria.'",
+        "options": [
+          "is",
+          "eating",
+          "lunch"
+        ],
+        "answer": "is",
+        "explanation": "Use are instead of is with the subject they."
+      },
+      {
+        "question": "I ___ the answer right now.",
+        "options": [
+          "know",
+          "am knowing",
+          "knowing"
+        ],
+        "answer": "knowing",
+        "explanation": "'Know' is a state verb, so use the present simple, even for right now."
+      }
+    ]
+  },
+  {
+    "id": "past-simple",
+    "title": "Past Simple",
+    "rule": "Use the past simple for finished actions at a finished time (yesterday, last year, in 2019). Example: I lived in Texas in 2019 (I don't live there now). Regular verbs add -ed (walk → walked); irregular verbs change (go → went, buy → bought). Questions and negatives → did/didn't + base verb (did you go, I didn't go). If it started in the past and is still true now, use the present perfect instead (I have lived here since 2020).",
+    "example": "Last summer I visited my cousins in Toronto. We didn't stay long, but we saw a lot of the city.",
+    "mistake": {
+      "wrong": "I didn't went to class yesterday.",
+      "right": "I didn't go to class yesterday."
+    },
+    "practice": [
+      {
+        "question": "We ___ the report to the client two days ago.",
+        "options": [
+          "send",
+          "sended",
+          "sent"
+        ],
+        "answer": "sent",
+        "explanation": "'Two days ago' is a finished time, so use the past simple. 'Send' is irregular: send → sent."
+      },
+      {
+        "question": "___ you finish the assignment last night?",
+        "options": [
+          "Do",
+          "Did",
+          "Were"
+        ],
+        "answer": "Did",
+        "explanation": "'Last night' is finished time. Past simple questions use 'Did' + the base verb: Did you finish...?"
+      },
+      {
+        "question": "She ___ her phone at the restaurant yesterday.",
+        "options": [
+          "lost",
+          "losed",
+          "loses"
+        ],
+        "answer": "lost",
+        "explanation": "'Lose' is irregular: lose → lost. 'Losed' is not a word."
+      },
+      {
+        "question": "They ___ the movie because it was too long.",
+        "options": [
+          "not enjoyed",
+          "didn't enjoyed",
+          "didn't enjoy"
+        ],
+        "answer": "didn't enjoy",
+        "explanation": "After 'didn't', always use the base verb. The past tense is already shown by 'did'."
+      },
+      {
+        "question": "We ___ our grandparents last weekend.",
+        "options": [
+          "visit",
+          "visited",
+          "have visited"
+        ],
+        "answer": "visited",
+        "explanation": "Use the past simple because last weekend is a finished time in the past."
+      },
+      {
+        "question": "My friend ___ a new backpack yesterday.",
+        "options": [
+          "buyed",
+          "buys",
+          "bought"
+        ],
+        "answer": "bought",
+        "explanation": "Buy is an irregular verb, and its past simple form is bought."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She didn't went to practice yesterday.",
+          "She didn't go to practice yesterday.",
+          "She doesn't went to practice yesterday."
+        ],
+        "answer": "She didn't go to practice yesterday.",
+        "explanation": "After didn't, use the base form of the verb."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Did you see the game last night?",
+          "Did you saw the game last night?",
+          "Do you saw the game last night?"
+        ],
+        "answer": "Did you see the game last night?",
+        "explanation": "Use did plus the base form of the verb in past simple questions."
+      },
+      {
+        "question": "Which word is wrong? 'We goed to the beach on Saturday.'",
+        "options": [
+          "goed",
+          "beach",
+          "Saturday"
+        ],
+        "answer": "goed",
+        "explanation": "The past simple form of go is went, not goed."
+      },
+      {
+        "question": "Which word is wrong? 'He didn't finished his lunch.'",
+        "options": [
+          "finished",
+          "his",
+          "lunch"
+        ],
+        "answer": "finished",
+        "explanation": "After didn't, use the base form finish instead of finished."
+      }
+    ]
+  },
+  {
+    "id": "past-continuous",
+    "title": "Past Continuous",
+    "rule": "Use was/were + verb-ing for an action in progress at a moment in the past (at 8 p.m., I was reading). The short action that interrupts it uses the past simple (I was reading when the phone rang). Use while + a full sentence and during + a noun (while I was eating, during dinner).",
+    "example": "I was cooking dinner when my phone rang.",
+    "mistake": {
+      "wrong": "While I walked home, it was starting to rain.",
+      "right": "While I was walking home, it started to rain."
+    },
+    "practice": [
+      {
+        "question": "At 8 p.m. last night, we ___ for our exam.",
+        "options": [
+          "were studying",
+          "was studying",
+          "are studying"
+        ],
+        "answer": "were studying",
+        "explanation": "At a specific moment in the past, the action was in progress, so use the past continuous. 'We' takes 'were', not 'was'."
+      },
+      {
+        "question": "She ___ a shower when the power suddenly went out, so she finished in the dark.",
+        "options": [
+          "took",
+          "takes",
+          "was taking"
+        ],
+        "answer": "was taking",
+        "explanation": "The shower was already in progress when the power went out (the short, interrupting action). Use the past continuous for the longer action."
+      },
+      {
+        "question": "While the teacher was explaining the rule, the lights suddenly ___ out.",
+        "options": [
+          "went",
+          "were going",
+          "go"
+        ],
+        "answer": "went",
+        "explanation": "The lights going out is a short, sudden action that interrupts the longer one, so use the past simple."
+      },
+      {
+        "question": "___ I was waiting for the bus, I met an old friend.",
+        "options": [
+          "While",
+          "Until",
+          "During"
+        ],
+        "answer": "While",
+        "explanation": "'While' is followed by a subject + verb (I was waiting). 'During' needs a noun instead: during my wait, during the trip."
+      },
+      {
+        "question": "At 7 p.m. yesterday, my parents ___ dinner.",
+        "options": [
+          "were cooking",
+          "was cooking",
+          "are cooking"
+        ],
+        "answer": "were cooking",
+        "explanation": "Use the past continuous for an action that was in progress at a specific past time."
+      },
+      {
+        "question": "The phone ___ while I was eating dinner.",
+        "options": [
+          "rang",
+          "was rang",
+          "ring"
+        ],
+        "answer": "rang",
+        "explanation": "Use the past simple for a short action that happens during a longer past action."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "The kids was playing outside when it rained.",
+          "The kids were playing outside when it rained.",
+          "The kids are playing outside when it rained."
+        ],
+        "answer": "The kids were playing outside when it rained.",
+        "explanation": "Use were playing for the ongoing past action with the plural subject kids."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I was doing my homework when my friend called.",
+          "I did my homework when my friend was calling.",
+          "I were doing my homework when my friend called."
+        ],
+        "answer": "I was doing my homework when my friend called.",
+        "explanation": "Use was doing for the longer action and called for the shorter past action."
+      },
+      {
+        "question": "Which word is wrong? 'She were studying when I arrived.'",
+        "options": [
+          "were",
+          "studying",
+          "arrived"
+        ],
+        "answer": "were",
+        "explanation": "Use was instead of were with the subject she."
+      },
+      {
+        "question": "Which word is wrong? 'While we were eat dinner, the phone rang.'",
+        "options": [
+          "were",
+          "eat",
+          "rang"
+        ],
+        "answer": "eat",
+        "explanation": "Use eating after were to form the past continuous."
+      }
+    ]
+  },
+  {
+    "id": "present-perfect",
+    "title": "Present Perfect",
+    "rule": "Use have/has + past participle to connect the past to now. Use it for experiences (have you ever been to Paris), for situations that are still true (I have lived here for two years), and for recent actions (she has just left, I haven't eaten yet). Use for + a length of time and since + a starting point (for two years, since 2021). Don't use it with a finished time like yesterday or last week; use the past simple for those.",
+    "example": "I have lived in Chicago since 2021, and I've already made some good friends here.",
+    "mistake": {
+      "wrong": "I have seen that movie last week.",
+      "right": "I saw that movie last week."
+    },
+    "practice": [
+      {
+        "question": "Has she ever ___ a novel in English?",
+        "options": [
+          "wrote",
+          "write",
+          "written"
+        ],
+        "answer": "written",
+        "explanation": "After have/has, use the past participle. Write → wrote (past simple) → written (past participle)."
+      },
+      {
+        "question": "I have studied English ___ six years.",
+        "options": [
+          "during",
+          "for",
+          "since"
+        ],
+        "answer": "for",
+        "explanation": "'Six years' is a length of time, so use 'for'. Use 'since' with a starting point: since 2019, since I was a child."
+      },
+      {
+        "question": "We ___ each other since we were children.",
+        "options": [
+          "knew",
+          "know",
+          "have known"
+        ],
+        "answer": "have known",
+        "explanation": "'Since' + a starting point means the situation began in the past and continues now. English uses the present perfect here, not the present simple."
+      },
+      {
+        "question": "They ___ to Mexico in 2019.",
+        "options": [
+          "have been",
+          "have gone",
+          "went"
+        ],
+        "answer": "went",
+        "explanation": "'In 2019' is a finished time in the past, so use the past simple. The present perfect can't be used with a specific finished time."
+      },
+      {
+        "question": "My sister has ___ her room already.",
+        "options": [
+          "clean",
+          "cleaned",
+          "cleaning"
+        ],
+        "answer": "cleaned",
+        "explanation": "Use the past participle after has to form the present perfect."
+      },
+      {
+        "question": "We have lived in this town ___ 2021.",
+        "options": [
+          "for",
+          "since",
+          "during"
+        ],
+        "answer": "since",
+        "explanation": "Use since with the starting point of a situation that continues now."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I have never eaten sushi.",
+          "I has never eaten sushi.",
+          "I have never ate sushi."
+        ],
+        "answer": "I have never eaten sushi.",
+        "explanation": "Use have with I and the past participle eaten."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She has just finished her homework.",
+          "She have just finished her homework.",
+          "She has just finish her homework."
+        ],
+        "answer": "She has just finished her homework.",
+        "explanation": "Use has with she and the past participle finished."
+      },
+      {
+        "question": "Which word is wrong? 'They have saw that movie before.'",
+        "options": [
+          "saw",
+          "that",
+          "before"
+        ],
+        "answer": "saw",
+        "explanation": "Use the past participle seen after have."
+      },
+      {
+        "question": "I ___ my aunt yesterday.",
+        "options": [
+          "have visited",
+          "visited",
+          "has visited"
+        ],
+        "answer": "visited",
+        "explanation": "'Yesterday' is a finished time, so use the past simple, not the present perfect."
+      }
+    ]
+  },
+  {
+    "id": "past-perfect",
+    "title": "Past Perfect",
+    "rule": "Use had + past participle for the action that happened first, before another past action (when I arrived, the movie had started). If you tell events in the order they happened, the past simple is enough (I ate, then I left).",
+    "example": "When I arrived at the station, the train had already left.",
+    "mistake": {
+      "wrong": "Yesterday I had gone to the store and bought milk.",
+      "right": "Yesterday I went to the store and bought milk."
+    },
+    "practice": [
+      {
+        "question": "By the time the meeting started, everyone ___ the report.",
+        "options": [
+          "had read",
+          "reads",
+          "has read"
+        ],
+        "answer": "had read",
+        "explanation": "'By the time' + a past event signals something that was finished even earlier, so use the past perfect."
+      },
+      {
+        "question": "She was nervous because she ___ on a plane before.",
+        "options": [
+          "never flies",
+          "has never flown",
+          "had never flown"
+        ],
+        "answer": "had never flown",
+        "explanation": "Her experience (never flying) came before the moment she was nervous, which is already in the past. Use had + past participle."
+      },
+      {
+        "question": "I ___ my keys, so I couldn't get into my apartment.",
+        "options": [
+          "have lost",
+          "had lost",
+          "lose"
+        ],
+        "answer": "had lost",
+        "explanation": "Losing the keys happened first, before not being able to get in. The earlier past action uses the past perfect."
+      },
+      {
+        "question": "Last night I ___ dinner and then watched TV.",
+        "options": [
+          "have cooked",
+          "cooked",
+          "had cooked"
+        ],
+        "answer": "cooked",
+        "explanation": "The events are told in the order they happened ('and then'), so the past simple is correct. The past perfect is only needed when you go back to an earlier event."
+      },
+      {
+        "question": "When we arrived at the theater, the movie ___ already started.",
+        "options": [
+          "had",
+          "has",
+          "have"
+        ],
+        "answer": "had",
+        "explanation": "Use had before started to show that the movie started before we arrived."
+      },
+      {
+        "question": "By the time the teacher came in, we ___ our books.",
+        "options": [
+          "opened",
+          "had opened",
+          "have opened"
+        ],
+        "answer": "had opened",
+        "explanation": "Use the past perfect for an action completed before the teacher came in."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She had left before the rain began.",
+          "She has left before the rain began.",
+          "She had leave before the rain began."
+        ],
+        "answer": "She had left before the rain began.",
+        "explanation": "Use had plus the past participle left for the earlier past action."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I had never tried sushi before my trip to Japan.",
+          "I had never try sushi before my trip to Japan.",
+          "I have never tried sushi before my trip to Japan."
+        ],
+        "answer": "I had never tried sushi before my trip to Japan.",
+        "explanation": "Use had tried for an experience before a specific past event."
+      },
+      {
+        "question": "Which word is wrong? 'He had ate breakfast before school.'",
+        "options": [
+          "ate",
+          "breakfast",
+          "school"
+        ],
+        "answer": "ate",
+        "explanation": "Use the past participle eaten after had."
+      },
+      {
+        "question": "Which word is wrong? 'By the time we got there, the store had close.'",
+        "options": [
+          "got",
+          "store",
+          "close"
+        ],
+        "answer": "close",
+        "explanation": "After 'had', use the past participle: had closed."
+      }
+    ]
+  },
+  {
+    "id": "future",
+    "title": "Talking About the Future",
+    "rule": "Use will + base verb for predictions, promises, and quick decisions (I'll help you). Use be going to + base verb for plans and for what you can see coming (look at those clouds: it's going to rain). Use the present continuous for fixed plans (we're meeting at 5). After when, if, before, after, and as soon as, use the present simple, not will (when I get home).",
+    "example": "I'm going to apply for the job next week. I'll call you as soon as I hear back.",
+    "mistake": {
+      "wrong": "I will call you when I will arrive.",
+      "right": "I will call you when I arrive."
+    },
+    "practice": [
+      {
+        "question": "I'll send you the file as soon as I ___ it.",
+        "options": [
+          "finish",
+          "will finish",
+          "finished"
+        ],
+        "answer": "finish",
+        "explanation": "After 'as soon as' (and when, if, before, after), use the present simple to talk about the future."
+      },
+      {
+        "question": "Look at those dark clouds. It ___ rain.",
+        "options": [
+          "is going to",
+          "will to",
+          "going to"
+        ],
+        "answer": "is going to",
+        "explanation": "The prediction is based on evidence you can see now, so use 'be going to'. Don't forget 'is', and never put 'to' after 'will'."
+      },
+      {
+        "question": "It's cold in here. I ___ close the window.",
+        "options": [
+          "am",
+          "will",
+          "going to"
+        ],
+        "answer": "will",
+        "explanation": "This is a decision made at the moment of speaking, so use 'will' + base verb. 'Going to' would need 'am' before it."
+      },
+      {
+        "question": "We ___ our new apartment next Saturday. The movers are booked for 9 a.m.",
+        "options": [
+          "moving into",
+          "are moving into",
+          "are move into"
+        ],
+        "answer": "are moving into",
+        "explanation": "A fixed arrangement (the movers are booked) uses the present continuous: are + -ing."
+      },
+      {
+        "question": "I think our team ___ the championship this year.",
+        "options": [
+          "will win",
+          "win",
+          "will winning"
+        ],
+        "answer": "will win",
+        "explanation": "Use will plus the base verb to make a prediction about the future."
+      },
+      {
+        "question": "We bought all the ingredients, and we ___ a cake tonight.",
+        "options": [
+          "are going to bake",
+          "will to bake",
+          "going bake"
+        ],
+        "answer": "are going to bake",
+        "explanation": "Use be going to plus the base verb for a plan made before speaking."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I will help you carry those bags.",
+          "I will to help you carry those bags.",
+          "I helping you carry those bags tomorrow."
+        ],
+        "answer": "I will help you carry those bags.",
+        "explanation": "Use will plus the base verb for a promise or decision made at the moment of speaking."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "If it will rain tomorrow, we will stay home.",
+          "If it rains tomorrow, we will stay home.",
+          "If it raining tomorrow, we will stay home."
+        ],
+        "answer": "If it rains tomorrow, we will stay home.",
+        "explanation": "Use the present simple after if when talking about a possible future event."
+      },
+      {
+        "question": "Which word is wrong? 'She will goes to the party tomorrow.'",
+        "options": [
+          "goes",
+          "party",
+          "tomorrow"
+        ],
+        "answer": "goes",
+        "explanation": "Use the base verb go after will."
+      },
+      {
+        "question": "Which word is wrong? 'We are going to watched a movie tonight.'",
+        "options": [
+          "are",
+          "watched",
+          "tonight"
+        ],
+        "answer": "watched",
+        "explanation": "Use the base verb watch after going to."
+      }
+    ]
+  }
+]
