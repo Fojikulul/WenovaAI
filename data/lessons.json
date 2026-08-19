@@ -782,5 +782,565 @@
         "explanation": "Use the base verb watch after going to."
       }
     ]
+  },
+  {
+    "id": "articles",
+    "title": "Articles: A, An, The",
+    "rule": "Use a/an for one thing you mention for the first time (I saw a dog). Choose by sound, not by letter: a before a consonant sound, an before a vowel sound (a university, an hour). Use the when the reader knows which one (the dog I saw, the moon). Use no article with plural or uncountable nouns in general (dogs are friendly, music is fun).",
+    "example": "I bought a laptop last week. The laptop is fast, but computers are expensive these days.",
+    "mistake": {
+      "wrong": "My brother is engineer.",
+      "right": "My brother is an engineer."
+    },
+    "practice": [
+      {
+        "question": "She is ___.",
+        "options": [
+          "a honest person",
+          "an honest person",
+          "honest person"
+        ],
+        "answer": "an honest person",
+        "explanation": "The h in 'honest' is silent, so the word starts with a vowel sound. Use 'an' before vowel sounds."
+      },
+      {
+        "question": "___ is important in every country.",
+        "options": [
+          "A education",
+          "Education",
+          "The education"
+        ],
+        "answer": "Education",
+        "explanation": "'Education' is uncountable and used in a general sense here, so it takes no article."
+      },
+      {
+        "question": "I saw a dog and a cat in the park. ___ dog was chasing the cat.",
+        "options": [
+          "A",
+          "An",
+          "The"
+        ],
+        "answer": "The",
+        "explanation": "The dog was already mentioned, so the reader knows which one. Use 'the' for the second mention."
+      },
+      {
+        "question": "He wants to be ___ one day.",
+        "options": [
+          "a university professor",
+          "an university professor",
+          "university professor"
+        ],
+        "answer": "a university professor",
+        "explanation": "'University' starts with a 'yoo' sound, which is a consonant sound, so use 'a'. The sound decides, not the letter."
+      },
+      {
+        "question": "My uncle is ___ at a local hospital.",
+        "options": [
+          "a doctor",
+          "an doctor",
+          "doctor"
+        ],
+        "answer": "a doctor",
+        "explanation": "Jobs need a/an, and 'doctor' starts with a consonant sound, so use 'a'."
+      },
+      {
+        "question": "Our classroom has only one door. Please close ___ door.",
+        "options": [
+          "a",
+          "an",
+          "the"
+        ],
+        "answer": "the",
+        "explanation": "There is only one door, so we both know which one: use 'the'."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She ate a apple after lunch.",
+          "She ate an apple after lunch.",
+          "She ate an apples after lunch."
+        ],
+        "answer": "She ate an apple after lunch.",
+        "explanation": "Use an before a singular countable noun that begins with a vowel sound."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Dogs make good pets in general.",
+          "A dogs make good pets in general.",
+          "An dogs make good pets in general."
+        ],
+        "answer": "Dogs make good pets in general.",
+        "explanation": "Use no article with plural nouns when speaking about them in general."
+      },
+      {
+        "question": "Which word is wrong? 'He wants to eat an banana.'",
+        "options": [
+          "wants",
+          "eat",
+          "an"
+        ],
+        "answer": "an",
+        "explanation": "Use a before banana because it begins with a consonant sound."
+      },
+      {
+        "question": "Which word is wrong? 'The happiness is important for everyone.'",
+        "options": [
+          "The",
+          "important",
+          "everyone"
+        ],
+        "answer": "The",
+        "explanation": "Use happiness without an article when speaking about the idea in general."
+      }
+    ]
+  },
+  {
+    "id": "prepositions-in-on-at",
+    "title": "Prepositions: In, On, At",
+    "rule": "Time: in for months, years, and parts of the day (in May, in 2024, in the morning); on for days and dates (on Monday, on July 4th); at for clock times (at 3 p.m., at night). Place: in for inside spaces, cities, and countries (in the room, in Mexico); on for surfaces and streets (on the table, on Main Street); at for exact points and addresses (at the door, at 25 Oak Street).",
+    "example": "The workshop is on Friday at 10 a.m. in Room 204.",
+    "mistake": {
+      "wrong": "I was born on 1998.",
+      "right": "I was born in 1998."
+    },
+    "practice": [
+      {
+        "question": "My birthday is ___ March 12th.",
+        "options": [
+          "on",
+          "at",
+          "in"
+        ],
+        "answer": "on",
+        "explanation": "Use 'on' with a specific date. You'd say 'in March' for the month alone, but 'on March 12th' for the date."
+      },
+      {
+        "question": "The store closes ___ 9 p.m.",
+        "options": [
+          "in",
+          "on",
+          "at"
+        ],
+        "answer": "at",
+        "explanation": "Use 'at' with clock times."
+      },
+      {
+        "question": "She lives ___ Main Street.",
+        "options": [
+          "at",
+          "on",
+          "in"
+        ],
+        "answer": "on",
+        "explanation": "In American English, use 'on' with street names. With a full address, use 'at': at 12 Main Street."
+      },
+      {
+        "question": "I usually read ___ night before bed.",
+        "options": [
+          "at",
+          "in",
+          "on"
+        ],
+        "answer": "at",
+        "explanation": "'At night' is a fixed expression. Compare: in the morning, in the afternoon, in the evening, but at night."
+      },
+      {
+        "question": "Our soccer game starts ___ Saturday.",
+        "options": [
+          "in",
+          "on",
+          "at"
+        ],
+        "answer": "on",
+        "explanation": "Use on with days of the week."
+      },
+      {
+        "question": "My cousins live ___ Canada.",
+        "options": [
+          "at",
+          "on",
+          "in"
+        ],
+        "answer": "in",
+        "explanation": "Use in with the names of countries."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "We have lunch at noon.",
+          "We have lunch on noon.",
+          "We have lunch in noon."
+        ],
+        "answer": "We have lunch at noon.",
+        "explanation": "Use at with noon because it refers to a specific time."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "The picture is in the wall.",
+          "The picture is on the wall.",
+          "The picture is at the wall."
+        ],
+        "answer": "The picture is on the wall.",
+        "explanation": "Use on when something is attached to or resting on a surface."
+      },
+      {
+        "question": "Which word is wrong? 'My family travels at summer.'",
+        "options": [
+          "family",
+          "travels",
+          "at"
+        ],
+        "answer": "at",
+        "explanation": "Use in with seasons, so the correct phrase is in summer."
+      },
+      {
+        "question": "Which word is wrong? 'The party starts in 6 p.m.'",
+        "options": [
+          "party",
+          "starts",
+          "in"
+        ],
+        "answer": "in",
+        "explanation": "Use at before a clock time, such as at 6 p.m."
+      }
+    ]
+  },
+  {
+    "id": "subject-verb-agreement",
+    "title": "Subject-Verb Agreement",
+    "rule": "The verb must match its subject: one → singular verb, more than one → plural verb (the student writes, the students write). Find the real subject, even if other words come between (the books on the shelf are old). Everyone, each, every, and nobody are singular. Two subjects joined by and usually take a plural verb. Use there is with one thing and there are with more.",
+    "example": "The list of new words is on the board, and each student has a copy.",
+    "mistake": {
+      "wrong": "One of my friends live in Seattle.",
+      "right": "One of my friends lives in Seattle."
+    },
+    "practice": [
+      {
+        "question": "The quality of these products ___ very high.",
+        "options": [
+          "are",
+          "is",
+          "be"
+        ],
+        "answer": "is",
+        "explanation": "The real subject is 'quality' (singular), not 'products'. Ignore the words in between and match the verb to 'quality'."
+      },
+      {
+        "question": "Everyone in my family ___ coffee.",
+        "options": [
+          "drink",
+          "drinks",
+          "are drinking"
+        ],
+        "answer": "drinks",
+        "explanation": "'Everyone' is grammatically singular, even though it refers to many people, so the verb takes -s."
+      },
+      {
+        "question": "There ___ many reasons to learn a second language.",
+        "options": [
+          "is",
+          "are",
+          "has"
+        ],
+        "answer": "are",
+        "explanation": "The noun after 'there' is 'reasons' (plural), so use 'there are'."
+      },
+      {
+        "question": "My brother and my sister ___ in Texas.",
+        "options": [
+          "is living",
+          "lives",
+          "live"
+        ],
+        "answer": "live",
+        "explanation": "Two subjects joined by 'and' make a plural subject, so the verb has no -s."
+      },
+      {
+        "question": "Each student ___ a notebook for class.",
+        "options": [
+          "need",
+          "needs",
+          "are needing"
+        ],
+        "answer": "needs",
+        "explanation": "Each is singular, so it takes the singular verb needs."
+      },
+      {
+        "question": "The dogs in my neighbor's yard ___ loudly every night.",
+        "options": [
+          "barks",
+          "bark",
+          "is barking"
+        ],
+        "answer": "bark",
+        "explanation": "The subject dogs is plural, so use the base form bark."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "My friends and I enjoys playing tennis.",
+          "My friends and I enjoy playing tennis.",
+          "My friends and I enjoys play tennis."
+        ],
+        "answer": "My friends and I enjoy playing tennis.",
+        "explanation": "Two subjects joined by and form a plural subject, so use enjoy."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Nobody know the answer.",
+          "Nobody knows the answer.",
+          "Nobody are knowing the answer."
+        ],
+        "answer": "Nobody knows the answer.",
+        "explanation": "Nobody is singular, so the verb takes -s in the present simple."
+      },
+      {
+        "question": "Which word is wrong? 'The players on our team runs every morning.'",
+        "options": [
+          "team",
+          "runs",
+          "morning"
+        ],
+        "answer": "runs",
+        "explanation": "The subject players is plural, so use run instead of runs."
+      },
+      {
+        "question": "Which word is wrong? 'There is three sandwiches on the table.'",
+        "options": [
+          "is",
+          "sandwiches",
+          "table"
+        ],
+        "answer": "is",
+        "explanation": "Use are because the noun sandwiches is plural."
+      }
+    ]
+  },
+  {
+    "id": "plurals",
+    "title": "Plural Nouns",
+    "rule": "Most nouns add -s (book → books). After s, ss, sh, ch, x, and z, add -es (box → boxes, watch → watches). Consonant + y → -ies (city → cities), but vowel + y just adds -s (day → days). Some plurals are irregular (child → children, person → people, man → men). Information, advice, furniture, equipment, and homework have no plural.",
+    "example": "The children asked for more information about the two new libraries.",
+    "mistake": {
+      "wrong": "Can you give me some advices?",
+      "right": "Can you give me some advice?"
+    },
+    "practice": [
+      {
+        "question": "There are three ___ in our neighborhood.",
+        "options": [
+          "churches",
+          "church",
+          "churchs"
+        ],
+        "answer": "churches",
+        "explanation": "Nouns ending in -ch add -es in the plural: church → churches."
+      },
+      {
+        "question": "The teacher gave us a lot of ___ tonight.",
+        "options": [
+          "homeworks",
+          "homework",
+          "homeworkes"
+        ],
+        "answer": "homework",
+        "explanation": "'Homework' is uncountable, so it never takes -s. To count it, say 'two assignments' or 'two pieces of homework'."
+      },
+      {
+        "question": "Both of my ___ go to the same school.",
+        "options": [
+          "children",
+          "childs",
+          "childrens"
+        ],
+        "answer": "children",
+        "explanation": "'Child' has an irregular plural: children. It already means more than one, so never add -s."
+      },
+      {
+        "question": "We visited several ___ in Europe last summer.",
+        "options": [
+          "countrys",
+          "countryes",
+          "countries"
+        ],
+        "answer": "countries",
+        "explanation": "'Country' ends in a consonant + y, so change y to i and add -es: countries."
+      },
+      {
+        "question": "There are five ___ in the classroom.",
+        "options": [
+          "boxs",
+          "boxes",
+          "box"
+        ],
+        "answer": "boxes",
+        "explanation": "Nouns ending in x usually add -es to form the plural."
+      },
+      {
+        "question": "My teacher gave us some useful ___.",
+        "options": [
+          "advices",
+          "advice",
+          "an advice"
+        ],
+        "answer": "advice",
+        "explanation": "Advice is uncountable in English and does not take a plural -s."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "The babies are sleeping upstairs.",
+          "The babys are sleeping upstairs.",
+          "The babyes are sleeping upstairs."
+        ],
+        "answer": "The babies are sleeping upstairs.",
+        "explanation": "For a consonant followed by y, change y to i and add -es."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Two men are waiting outside.",
+          "Two mans are waiting outside.",
+          "Two mens are waiting outside."
+        ],
+        "answer": "Two men are waiting outside.",
+        "explanation": "Man has the irregular plural form men."
+      },
+      {
+        "question": "Which word is wrong? 'We bought three furnitures for our apartment.'",
+        "options": [
+          "bought",
+          "three",
+          "furnitures"
+        ],
+        "answer": "furnitures",
+        "explanation": "Furniture is uncountable, so use furniture without -s."
+      },
+      {
+        "question": "Which word is wrong? 'The childs played in the park.'",
+        "options": [
+          "childs",
+          "played",
+          "park"
+        ],
+        "answer": "childs",
+        "explanation": "The irregular plural of child is children."
+      }
+    ]
+  },
+  {
+    "id": "question-word-order",
+    "title": "Question Word Order",
+    "rule": "In questions, use question word + helping verb + subject + main verb (where do you live, what are you doing). If there's no helping verb, add do, does, or did (where did she go). In indirect questions after 'Can you tell me' or 'Do you know', use normal order with no do/does/did (can you tell me where he lives).",
+    "example": "Where do you work? Can you tell me where the office is?",
+    "mistake": {
+      "wrong": "Why you didn't call me?",
+      "right": "Why didn't you call me?"
+    },
+    "practice": [
+      {
+        "question": "What time ___ the class start?",
+        "options": [
+          "is",
+          "do",
+          "does"
+        ],
+        "answer": "does",
+        "explanation": "There's no helping verb in 'the class starts', so add one. 'The class' is singular, so use 'does' + the base verb 'start'."
+      },
+      {
+        "question": "Choose the correct question.",
+        "options": [
+          "Where did you buy that jacket?",
+          "Where did you bought that jacket?",
+          "Where you bought that jacket?"
+        ],
+        "answer": "Where did you buy that jacket?",
+        "explanation": "Past questions need 'did' before the subject, and after 'did' the verb goes back to its base form: buy, not bought."
+      },
+      {
+        "question": "Do you know where ___?",
+        "options": [
+          "is the bank",
+          "does the bank is",
+          "the bank is"
+        ],
+        "answer": "the bank is",
+        "explanation": "This is an indirect question, so after 'where' use statement order: subject + verb (the bank is)."
+      },
+      {
+        "question": "How long ___ been living here?",
+        "options": [
+          "have you",
+          "you have",
+          "are you"
+        ],
+        "answer": "have you",
+        "explanation": "The helping verb 'have' goes before the subject in a question: How long have you been...?"
+      },
+      {
+        "question": "Where ___ your parents work?",
+        "options": [
+          "does",
+          "do",
+          "are"
+        ],
+        "answer": "do",
+        "explanation": "Use do before the plural subject your parents in a present simple question."
+      },
+      {
+        "question": "Can you tell me where ___?",
+        "options": [
+          "is the library",
+          "the library is",
+          "does the library is"
+        ],
+        "answer": "the library is",
+        "explanation": "An indirect question uses normal statement word order after where."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Why she is crying?",
+          "Why is she crying?",
+          "Why crying is she?"
+        ],
+        "answer": "Why is she crying?",
+        "explanation": "Put the helping verb is before the subject in a direct question."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Do you know when the bus arrives?",
+          "Do you know when does the bus arrive?",
+          "Do you know when arrives the bus?"
+        ],
+        "answer": "Do you know when the bus arrives?",
+        "explanation": "An indirect question uses statement word order after when."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Where did you put my keys?",
+          "Where you did put my keys?",
+          "Where put you my keys?"
+        ],
+        "answer": "Where did you put my keys?",
+        "explanation": "In a past simple question, put did before the subject and use the base verb."
+      },
+      {
+        "question": "Which word is wrong? 'Can you tell me where does he live?'",
+        "options": [
+          "tell",
+          "where",
+          "does"
+        ],
+        "answer": "does",
+        "explanation": "Indirect questions use statement word order, so say where he lives without does."
+      }
+    ]
   }
 ]
