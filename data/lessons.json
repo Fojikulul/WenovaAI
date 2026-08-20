@@ -2,7 +2,7 @@
   {
     "id": "present-simple",
     "title": "Present Simple",
-    "rule": "Use the present simple for habits, routines, and facts. I/you/we/they → base verb (they work). He/she/it → verb + -s/-es (she works, he watches). Questions and negatives → do/does + base verb (does she work, she doesn't work). After does or doesn't, the verb has no -s.",
+    "rule": "Use the present simple for __habits, routines, and facts__. I/you/we/they → **base verb** (they work). He/she/it → **verb + -s/-es** (she works, he watches). Questions and negatives → **do/does + base verb** (does she work, she doesn't work). __After does or doesn't, the verb has no -s.__",
     "example": "My sister works at a hospital. She doesn't drive, so she takes the bus every morning.",
     "mistake": {
       "wrong": "He go to the library every Saturday.",
@@ -108,13 +108,113 @@
         ],
         "answer": "don't",
         "explanation": "Use doesn't instead of don't with she in a present simple negative sentence."
+      },
+      {
+        "question": "The sun ___ in the east.",
+        "options": [
+          "rise",
+          "rises",
+          "rising"
+        ],
+        "answer": "rises",
+        "explanation": "It's a fact that is always true, and 'the sun' is one thing, so add -s."
+      },
+      {
+        "question": "My little brother ___ his teeth twice a day.",
+        "options": [
+          "brush",
+          "brushs",
+          "brushes"
+        ],
+        "answer": "brushes",
+        "explanation": "After 'sh', add -es: brush → brushes."
+      },
+      {
+        "question": "___ they usually take the bus to school?",
+        "options": [
+          "Does",
+          "Do",
+          "Are"
+        ],
+        "answer": "Do",
+        "explanation": "'They' is plural, so the question starts with 'do'."
+      },
+      {
+        "question": "He ___ like spicy food.",
+        "options": [
+          "doesn't",
+          "don't",
+          "isn't"
+        ],
+        "answer": "doesn't",
+        "explanation": "With he, she, or it, the negative is 'doesn't' + the base verb."
+      },
+      {
+        "question": "My grandmother ___ to the market every Saturday.",
+        "options": [
+          "go",
+          "goes",
+          "going"
+        ],
+        "answer": "goes",
+        "explanation": "It's a routine and 'my grandmother' is one person, so go becomes goes."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Where does she work?",
+          "Where does she works?",
+          "Where she works?"
+        ],
+        "answer": "Where does she work?",
+        "explanation": "In questions, 'does' takes the -s, so the main verb stays in its base form."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "The store opens at 8 a.m. every day.",
+          "The store open at 8 a.m. every day.",
+          "The store opening at 8 a.m. every day."
+        ],
+        "answer": "The store opens at 8 a.m. every day.",
+        "explanation": "'The store' is one thing, so the verb needs -s."
+      },
+      {
+        "question": "Which word is wrong? 'My cat sleep on my bed every night.'",
+        "options": [
+          "sleep",
+          "bed",
+          "night"
+        ],
+        "answer": "sleep",
+        "explanation": "'My cat' is one animal, so the verb needs -s: sleeps."
+      },
+      {
+        "question": "Which word is wrong? 'Does your sister speaks French?'",
+        "options": [
+          "Does",
+          "speaks",
+          "French"
+        ],
+        "answer": "speaks",
+        "explanation": "After 'does', use the base verb: speak."
+      },
+      {
+        "question": "Which word is wrong? 'Tom watchs the news after dinner.'",
+        "options": [
+          "Tom",
+          "watchs",
+          "news"
+        ],
+        "answer": "watchs",
+        "explanation": "After 'ch', add -es: watch → watches."
       }
     ]
   },
   {
     "id": "present-continuous",
     "title": "Present Continuous",
-    "rule": "Use am/is/are + verb-ing for actions happening now or around now (she is reading, I'm working from home this week). Don't forget am/is/are. State verbs like know, want, like, and need stay in the present simple (I know, not I am knowing).",
+    "rule": "Use **am/is/are + verb-ing** for actions happening __now or around now__ (she is reading, I'm working from home this week). __Don't forget am/is/are.__ State verbs like know, want, like, and need __stay in the present simple__ (I know, not I am knowing).",
     "example": "I'm writing to you because our team is working on a new project this month.",
     "mistake": {
       "wrong": "She working on her essay right now.",
@@ -220,13 +320,113 @@
         ],
         "answer": "knowing",
         "explanation": "'Know' is a state verb, so use the present simple, even for right now."
+      },
+      {
+        "question": "Look! It ___ outside.",
+        "options": [
+          "snows",
+          "is snowing",
+          "snowing"
+        ],
+        "answer": "is snowing",
+        "explanation": "'Look!' shows it's happening right now, so use is + verb-ing."
+      },
+      {
+        "question": "My parents ___ a new house this month.",
+        "options": [
+          "are building",
+          "build",
+          "is building"
+        ],
+        "answer": "are building",
+        "explanation": "It's happening around now, and 'my parents' is plural, so use are + verb-ing."
+      },
+      {
+        "question": "She ___ a lot of money right now.",
+        "options": [
+          "needs",
+          "is needing",
+          "needing"
+        ],
+        "answer": "needs",
+        "explanation": "'Need' is a state verb, so it stays in the present simple, even for right now."
+      },
+      {
+        "question": "Why ___ you laughing?",
+        "options": [
+          "is",
+          "are",
+          "do"
+        ],
+        "answer": "are",
+        "explanation": "'You' takes 'are' in the present continuous."
+      },
+      {
+        "question": "I can't talk now. I ___ dinner.",
+        "options": [
+          "am cooking",
+          "cook",
+          "cooking"
+        ],
+        "answer": "am cooking",
+        "explanation": "The action is happening right now, so use am + verb-ing with 'I'."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She is writing an email now.",
+          "She writing an email now.",
+          "She is write an email now."
+        ],
+        "answer": "She is writing an email now.",
+        "explanation": "The present continuous needs both parts: is + writing."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I want a glass of water.",
+          "I am wanting a glass of water.",
+          "I wanting a glass of water."
+        ],
+        "answer": "I want a glass of water.",
+        "explanation": "'Want' is a state verb, so use the present simple."
+      },
+      {
+        "question": "Which word is wrong? 'Listen, the birds is singing outside.'",
+        "options": [
+          "is",
+          "singing",
+          "outside"
+        ],
+        "answer": "is",
+        "explanation": "'The birds' is plural, so use 'are': the birds are singing."
+      },
+      {
+        "question": "Which word is wrong? 'We are play video games right now.'",
+        "options": [
+          "We",
+          "play",
+          "games"
+        ],
+        "answer": "play",
+        "explanation": "After 'are', the verb needs -ing: we are playing."
+      },
+      {
+        "question": "My brother ___ in ghosts.",
+        "options": [
+          "believes",
+          "is believing",
+          "believing"
+        ],
+        "answer": "believing",
+        "explanation": "'Believe' is a state verb, so use the present simple: he believes."
       }
     ]
   },
   {
     "id": "past-simple",
     "title": "Past Simple",
-    "rule": "Use the past simple for finished actions at a finished time (yesterday, last year, in 2019). Example: I lived in Texas in 2019 (I don't live there now). Regular verbs add -ed (walk → walked); irregular verbs change (go → went, buy → bought). Questions and negatives → did/didn't + base verb (did you go, I didn't go). If it started in the past and is still true now, use the present perfect instead (I have lived here since 2020).",
+    "rule": "Use the past simple for __finished actions at a finished time__ (yesterday, last year, in 2019). Example: I lived in Texas in 2019 (I don't live there now). Regular verbs add **-ed** (walk → walked); irregular verbs change (go → went, buy → bought). Questions and negatives → **did/didn't + base verb** (did you go, I didn't go). __If it started in the past and is still true now, use the present perfect instead__ (I have lived here since 2020).",
     "example": "Last summer I visited my cousins in Toronto. We didn't stay long, but we saw a lot of the city.",
     "mistake": {
       "wrong": "I didn't went to class yesterday.",
@@ -332,13 +532,113 @@
         ],
         "answer": "finished",
         "explanation": "After didn't, use the base form finish instead of finished."
+      },
+      {
+        "question": "I ___ my homework before dinner last night.",
+        "options": [
+          "finish",
+          "finished",
+          "finishing"
+        ],
+        "answer": "finished",
+        "explanation": "'Last night' is a finished time, so use the past simple."
+      },
+      {
+        "question": "She ___ a letter to her grandma last week.",
+        "options": [
+          "wrote",
+          "writed",
+          "writes"
+        ],
+        "answer": "wrote",
+        "explanation": "'Write' is irregular: write → wrote."
+      },
+      {
+        "question": "We ___ to the party because we were sick.",
+        "options": [
+          "didn't go",
+          "didn't went",
+          "not went"
+        ],
+        "answer": "didn't go",
+        "explanation": "After 'didn't', use the base verb: go."
+      },
+      {
+        "question": "Where ___ you go on vacation last summer?",
+        "options": [
+          "did",
+          "do",
+          "were"
+        ],
+        "answer": "did",
+        "explanation": "Past simple questions use 'did' + the base verb."
+      },
+      {
+        "question": "My friends ___ pizza for lunch yesterday.",
+        "options": [
+          "eat",
+          "ate",
+          "eated"
+        ],
+        "answer": "ate",
+        "explanation": "'Eat' is irregular: eat → ate."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I met my best friend in 2018.",
+          "I meet my best friend in 2018.",
+          "I meeted my best friend in 2018."
+        ],
+        "answer": "I met my best friend in 2018.",
+        "explanation": "'In 2018' is a finished time, and 'meet' is irregular: meet → met."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Did she call you yesterday?",
+          "Did she called you yesterday?",
+          "Does she called you yesterday?"
+        ],
+        "answer": "Did she call you yesterday?",
+        "explanation": "After 'did', the verb stays in its base form: call."
+      },
+      {
+        "question": "Which word is wrong? 'Last year we buyed a new car.'",
+        "options": [
+          "year",
+          "buyed",
+          "car"
+        ],
+        "answer": "buyed",
+        "explanation": "'Buy' is irregular: buy → bought."
+      },
+      {
+        "question": "Which word is wrong? 'They watch a great movie yesterday.'",
+        "options": [
+          "They",
+          "watch",
+          "great"
+        ],
+        "answer": "watch",
+        "explanation": "'Yesterday' is a finished time, so use the past simple: watched."
+      },
+      {
+        "question": "Which word is wrong? 'I didn't saw her at school last week.'",
+        "options": [
+          "saw",
+          "her",
+          "school"
+        ],
+        "answer": "saw",
+        "explanation": "After 'didn't', use the base verb: see."
       }
     ]
   },
   {
     "id": "past-continuous",
     "title": "Past Continuous",
-    "rule": "Use was/were + verb-ing for an action in progress at a moment in the past (at 8 p.m., I was reading). The short action that interrupts it uses the past simple (I was reading when the phone rang). Use while + a full sentence and during + a noun (while I was eating, during dinner).",
+    "rule": "Use **was/were + verb-ing** for an action __in progress__ at a moment in the past (at 8 p.m., I was reading). The short action that interrupts it uses the __past simple__ (I was reading when the phone rang). Use **while + a full sentence** and **during + a noun** (while I was eating, during dinner).",
     "example": "I was cooking dinner when my phone rang.",
     "mistake": {
       "wrong": "While I walked home, it was starting to rain.",
@@ -444,13 +744,113 @@
         ],
         "answer": "eat",
         "explanation": "Use eating after were to form the past continuous."
+      },
+      {
+        "question": "At midnight yesterday, I ___ a book in bed.",
+        "options": [
+          "was reading",
+          "were reading",
+          "am reading"
+        ],
+        "answer": "was reading",
+        "explanation": "The action was in progress at that moment in the past, and 'I' takes 'was'."
+      },
+      {
+        "question": "They ___ soccer when it started to rain.",
+        "options": [
+          "were playing",
+          "was playing",
+          "are playing"
+        ],
+        "answer": "were playing",
+        "explanation": "The game was in progress when the rain started, and 'they' takes 'were'."
+      },
+      {
+        "question": "I was walking home when I ___ a strange noise.",
+        "options": [
+          "heard",
+          "was hearing",
+          "hear"
+        ],
+        "answer": "heard",
+        "explanation": "The short action that interrupts uses the past simple: heard."
+      },
+      {
+        "question": "We met our new neighbor ___ the holidays.",
+        "options": [
+          "while",
+          "during",
+          "when"
+        ],
+        "answer": "during",
+        "explanation": "'During' is followed by a noun: the holidays."
+      },
+      {
+        "question": "What ___ you doing at 9 p.m. last night?",
+        "options": [
+          "were",
+          "was",
+          "did"
+        ],
+        "answer": "were",
+        "explanation": "'You' takes 'were' in the past continuous."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "He was sleeping when the alarm rang.",
+          "He was sleeping when the alarm was ring.",
+          "He sleeping when the alarm rang."
+        ],
+        "answer": "He was sleeping when the alarm rang.",
+        "explanation": "The long action is 'was sleeping'; the short action that interrupts is 'rang'."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "While I was cooking, my brother set the table.",
+          "While I cooking, my brother set the table.",
+          "During I was cooking, my brother set the table."
+        ],
+        "answer": "While I was cooking, my brother set the table.",
+        "explanation": "'While' is followed by a full clause with a subject and verb: I was cooking."
+      },
+      {
+        "question": "Which word is wrong? 'They was watching TV when I called.'",
+        "options": [
+          "was",
+          "watching",
+          "called"
+        ],
+        "answer": "was",
+        "explanation": "'They' takes 'were': they were watching."
+      },
+      {
+        "question": "Which word is wrong? 'It was rain when we left the house.'",
+        "options": [
+          "was",
+          "rain",
+          "left"
+        ],
+        "answer": "rain",
+        "explanation": "The past continuous needs verb-ing: it was raining."
+      },
+      {
+        "question": "Which word is wrong? 'During we were driving, the car broke down.'",
+        "options": [
+          "During",
+          "driving",
+          "broke"
+        ],
+        "answer": "During",
+        "explanation": "Use 'while' before a full clause: while we were driving."
       }
     ]
   },
   {
     "id": "present-perfect",
     "title": "Present Perfect",
-    "rule": "Use have/has + past participle to connect the past to now. Use it for experiences (have you ever been to Paris), for situations that are still true (I have lived here for two years), and for recent actions (she has just left, I haven't eaten yet). Use for + a length of time and since + a starting point (for two years, since 2021). Don't use it with a finished time like yesterday or last week; use the past simple for those.",
+    "rule": "Use **have/has + past participle** to connect the past to __now__. Use it for experiences (have you ever been to Paris), for situations that are still true (I have lived here for two years), and for recent actions (she has just left, I haven't eaten yet). Use **for + a length of time** and **since + a starting point** (for two years, since 2021). __Don't use it with a finished time__ like yesterday or last week; use the past simple for those.",
     "example": "I have lived in Chicago since 2021, and I've already made some good friends here.",
     "mistake": {
       "wrong": "I have seen that movie last week.",
@@ -556,13 +956,113 @@
         ],
         "answer": "visited",
         "explanation": "'Yesterday' is a finished time, so use the past simple, not the present perfect."
+      },
+      {
+        "question": "I have ___ this movie three times.",
+        "options": [
+          "see",
+          "saw",
+          "seen"
+        ],
+        "answer": "seen",
+        "explanation": "The present perfect uses the past participle: see → seen."
+      },
+      {
+        "question": "She ___ in Chicago since 2015.",
+        "options": [
+          "has lived",
+          "lived",
+          "have lived"
+        ],
+        "answer": "has lived",
+        "explanation": "'Since 2015' means it started in the past and continues now, and 'she' takes 'has'."
+      },
+      {
+        "question": "Have you ___ been to New York?",
+        "options": [
+          "ever",
+          "yet",
+          "since"
+        ],
+        "answer": "ever",
+        "explanation": "Use 'ever' to ask about life experiences."
+      },
+      {
+        "question": "We haven't finished our project ___.",
+        "options": [
+          "already",
+          "yet",
+          "since"
+        ],
+        "answer": "yet",
+        "explanation": "Use 'yet' at the end of negatives and questions."
+      },
+      {
+        "question": "He ___ his leg last month.",
+        "options": [
+          "has broken",
+          "broke",
+          "have broken"
+        ],
+        "answer": "broke",
+        "explanation": "'Last month' is a finished time, so use the past simple."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "They have known each other for ten years.",
+          "They have known each other since ten years.",
+          "They know each other for ten years."
+        ],
+        "answer": "They have known each other for ten years.",
+        "explanation": "Use 'for' with a length of time, and the present perfect for something that continues now."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Have you finished your homework yet?",
+          "Have you finish your homework yet?",
+          "Has you finished your homework yet?"
+        ],
+        "answer": "Have you finished your homework yet?",
+        "explanation": "'You' takes 'have', followed by the past participle: finished."
+      },
+      {
+        "question": "Which word is wrong? 'She has went to the store.'",
+        "options": [
+          "went",
+          "the",
+          "store"
+        ],
+        "answer": "went",
+        "explanation": "After 'has', use the past participle: gone."
+      },
+      {
+        "question": "Which word is wrong? 'We have lived here since five years.'",
+        "options": [
+          "lived",
+          "here",
+          "since"
+        ],
+        "answer": "since",
+        "explanation": "'Five years' is a length of time, so use 'for'."
+      },
+      {
+        "question": "Which word is wrong? 'He have already eaten lunch.'",
+        "options": [
+          "have",
+          "already",
+          "eaten"
+        ],
+        "answer": "have",
+        "explanation": "'He' takes 'has': he has already eaten."
       }
     ]
   },
   {
     "id": "past-perfect",
     "title": "Past Perfect",
-    "rule": "Use had + past participle for the action that happened first, before another past action (when I arrived, the movie had started). If you tell events in the order they happened, the past simple is enough (I ate, then I left).",
+    "rule": "Use **had + past participle** for the action that happened __first__, before another past action (when I arrived, the movie had started). If you tell events in the order they happened, the __past simple__ is enough (I ate, then I left).",
     "example": "When I arrived at the station, the train had already left.",
     "mistake": {
       "wrong": "Yesterday I had gone to the store and bought milk.",
@@ -668,13 +1168,113 @@
         ],
         "answer": "close",
         "explanation": "After 'had', use the past participle: had closed."
+      },
+      {
+        "question": "When I got to the station, the train had already ___.",
+        "options": [
+          "left",
+          "leave",
+          "leaving"
+        ],
+        "answer": "left",
+        "explanation": "The past perfect is had + past participle: had left."
+      },
+      {
+        "question": "She couldn't pay because she ___ her wallet at home.",
+        "options": [
+          "had left",
+          "has left",
+          "leaves"
+        ],
+        "answer": "had left",
+        "explanation": "Leaving the wallet happened before she couldn't pay, so use had + past participle."
+      },
+      {
+        "question": "Before the test, I ___ all the chapters twice.",
+        "options": [
+          "had read",
+          "have read",
+          "reading"
+        ],
+        "answer": "had read",
+        "explanation": "The reading happened before the test, which is also in the past."
+      },
+      {
+        "question": "We ___ dinner when our friends arrived, so we offered them dessert.",
+        "options": [
+          "had finished",
+          "have finished",
+          "finish"
+        ],
+        "answer": "had finished",
+        "explanation": "Dinner was finished before they arrived, so use had finished."
+      },
+      {
+        "question": "He didn't recognize me because he ___ me for years.",
+        "options": [
+          "hadn't seen",
+          "doesn't see",
+          "hasn't seen"
+        ],
+        "answer": "hadn't seen",
+        "explanation": "The years without seeing me came before that moment in the past, so use hadn't + past participle."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "By noon, she had cleaned the whole house.",
+          "By noon, she has cleaned the whole house.",
+          "By noon, she had clean the whole house."
+        ],
+        "answer": "By noon, she had cleaned the whole house.",
+        "explanation": "'By noon' shows it was done before a time in the past: had cleaned."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "First I washed the dishes, and then I dried them.",
+          "First I washed the dishes, and then I had dry them.",
+          "First I have washed the dishes, and then I dried them."
+        ],
+        "answer": "First I washed the dishes, and then I dried them.",
+        "explanation": "When you tell events in the order they happened, the past simple is enough."
+      },
+      {
+        "question": "Which word is wrong? 'The movie had already start when we sat down.'",
+        "options": [
+          "had",
+          "start",
+          "sat"
+        ],
+        "answer": "start",
+        "explanation": "After 'had', use the past participle: started."
+      },
+      {
+        "question": "Which word is wrong? 'I had never saw snow before I moved to Canada.'",
+        "options": [
+          "never",
+          "saw",
+          "moved"
+        ],
+        "answer": "saw",
+        "explanation": "After 'had', use the past participle: seen."
+      },
+      {
+        "question": "Which word is wrong? 'By the time we arrived, the guests has left.'",
+        "options": [
+          "arrived",
+          "guests",
+          "has"
+        ],
+        "answer": "has",
+        "explanation": "They left before another past action, so use 'had': the guests had left."
       }
     ]
   },
   {
     "id": "future",
     "title": "Talking About the Future",
-    "rule": "Use will + base verb for predictions, promises, and quick decisions (I'll help you). Use be going to + base verb for plans and for what you can see coming (look at those clouds: it's going to rain). Use the present continuous for fixed plans (we're meeting at 5). After when, if, before, after, and as soon as, use the present simple, not will (when I get home).",
+    "rule": "Use **will + base verb** for predictions, promises, and quick decisions (I'll help you). Use **be going to + base verb** for plans and for what you can see coming (look at those clouds: it's going to rain). Use the __present continuous__ for fixed plans (we're meeting at 5). After when, if, before, after, and as soon as, __use the present simple, not will__ (when I get home).",
     "example": "I'm going to apply for the job next week. I'll call you as soon as I hear back.",
     "mistake": {
       "wrong": "I will call you when I will arrive.",
@@ -780,13 +1380,113 @@
         ],
         "answer": "watched",
         "explanation": "Use the base verb watch after going to."
+      },
+      {
+        "question": "I promise I ___ you with your homework.",
+        "options": [
+          "will help",
+          "help",
+          "am helping"
+        ],
+        "answer": "will help",
+        "explanation": "Use 'will' for promises."
+      },
+      {
+        "question": "My sister ___ a baby in June. She's very excited.",
+        "options": [
+          "is going to have",
+          "will having",
+          "has"
+        ],
+        "answer": "is going to have",
+        "explanation": "It's a plan we already know about, so use be going to + base verb."
+      },
+      {
+        "question": "Wait for me. I ___ ready in five minutes.",
+        "options": [
+          "will be",
+          "am",
+          "will being"
+        ],
+        "answer": "will be",
+        "explanation": "Use will + base verb for a promise about the future: will be."
+      },
+      {
+        "question": "We ___ dinner with our grandparents tonight. It's all arranged.",
+        "options": [
+          "are having",
+          "have",
+          "will to have"
+        ],
+        "answer": "are having",
+        "explanation": "For fixed arrangements, use the present continuous."
+      },
+      {
+        "question": "Call me when you ___ home.",
+        "options": [
+          "get",
+          "will get",
+          "are going to get"
+        ],
+        "answer": "get",
+        "explanation": "After 'when', use the present simple, not 'will'."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She is going to study medicine next year.",
+          "She going to study medicine next year.",
+          "She is going to studies medicine next year."
+        ],
+        "answer": "She is going to study medicine next year.",
+        "explanation": "Be going to needs 'is' and the base verb: is going to study."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I'll text you after I arrive.",
+          "I'll text you after I will arrive.",
+          "I'll text you after I arriving."
+        ],
+        "answer": "I'll text you after I arrive.",
+        "explanation": "After 'after', use the present simple: after I arrive."
+      },
+      {
+        "question": "Which word is wrong? 'He is going to buys a new phone.'",
+        "options": [
+          "is",
+          "going",
+          "buys"
+        ],
+        "answer": "buys",
+        "explanation": "After 'going to', use the base verb: buy."
+      },
+      {
+        "question": "Which word is wrong? 'Before you will leave, close the windows.'",
+        "options": [
+          "Before",
+          "will",
+          "close"
+        ],
+        "answer": "will",
+        "explanation": "After 'before', use the present simple: before you leave."
+      },
+      {
+        "question": "Which word is wrong? 'I think it will snowing tomorrow.'",
+        "options": [
+          "think",
+          "snowing",
+          "tomorrow"
+        ],
+        "answer": "snowing",
+        "explanation": "After 'will', use the base verb: it will snow."
       }
     ]
   },
   {
     "id": "articles",
     "title": "Articles: A, An, The",
-    "rule": "Use a/an for one thing you mention for the first time (I saw a dog). Choose by sound, not by letter: a before a consonant sound, an before a vowel sound (a university, an hour). Use the when the reader knows which one (the dog I saw, the moon). Use no article with plural or uncountable nouns in general (dogs are friendly, music is fun).",
+    "rule": "Use **a/an** for one thing you mention for the first time (I saw a dog). Choose __by sound, not by letter__: a before a consonant sound, an before a vowel sound (a university, an hour). Use **the** when the reader knows which one (the dog I saw, the moon). Use __no article__ with plural or uncountable nouns in general (dogs are friendly, music is fun).",
     "example": "I bought a laptop last week. The laptop is fast, but computers are expensive these days.",
     "mistake": {
       "wrong": "My brother is engineer.",
@@ -892,13 +1592,113 @@
         ],
         "answer": "The",
         "explanation": "Use happiness without an article when speaking about the idea in general."
+      },
+      {
+        "question": "My friend gave me ___ for my birthday.",
+        "options": [
+          "a umbrella",
+          "an umbrella",
+          "umbrella"
+        ],
+        "answer": "an umbrella",
+        "explanation": "It's one umbrella we haven't talked about before, and 'umbrella' starts with a vowel sound: an umbrella."
+      },
+      {
+        "question": "Which is ___ biggest city in your country?",
+        "options": [
+          "a",
+          "an",
+          "the"
+        ],
+        "answer": "the",
+        "explanation": "There is only one biggest city, so use 'the' with words like biggest, best, and first."
+      },
+      {
+        "question": "___ moon looks bright tonight.",
+        "options": [
+          "A",
+          "The",
+          "An"
+        ],
+        "answer": "The",
+        "explanation": "There is only one moon, so use 'the'."
+      },
+      {
+        "question": "It takes ___ hour to get to the city.",
+        "options": [
+          "a",
+          "an",
+          "the"
+        ],
+        "answer": "an",
+        "explanation": "The 'h' in 'hour' is silent, so it starts with a vowel sound: an hour."
+      },
+      {
+        "question": "I love ___, especially jazz.",
+        "options": [
+          "the music",
+          "a music",
+          "music"
+        ],
+        "answer": "music",
+        "explanation": "Use no article with uncountable nouns when you speak in general."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "He is an engineer at a big company.",
+          "He is engineer at a big company.",
+          "He is a engineer at a big company."
+        ],
+        "answer": "He is an engineer at a big company.",
+        "explanation": "Jobs need a/an, and 'engineer' starts with a vowel sound."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Can you pass me the salt, please?",
+          "Can you pass me a salt, please?",
+          "Can you pass me an salt, please?"
+        ],
+        "answer": "Can you pass me the salt, please?",
+        "explanation": "We both know which salt (the one on the table), so use 'the'."
+      },
+      {
+        "question": "Which word is wrong? 'I waited for a hour at the airport.'",
+        "options": [
+          "waited",
+          "a",
+          "airport"
+        ],
+        "answer": "a",
+        "explanation": "'Hour' starts with a vowel sound, so use 'an'."
+      },
+      {
+        "question": "Which word is wrong? 'My brother is studying to be a artist.'",
+        "options": [
+          "brother",
+          "studying",
+          "a"
+        ],
+        "answer": "a",
+        "explanation": "'Artist' starts with a vowel sound, so use 'an'."
+      },
+      {
+        "question": "Which word is wrong? 'An university is a place to learn.'",
+        "options": [
+          "An",
+          "place",
+          "learn"
+        ],
+        "answer": "An",
+        "explanation": "'University' starts with a 'you' sound, which is a consonant sound, so use 'a'."
       }
     ]
   },
   {
     "id": "prepositions-in-on-at",
     "title": "Prepositions: In, On, At",
-    "rule": "Time: in for months, years, and parts of the day (in May, in 2024, in the morning); on for days and dates (on Monday, on July 4th); at for clock times (at 3 p.m., at night). Place: in for inside spaces, cities, and countries (in the room, in Mexico); on for surfaces and streets (on the table, on Main Street); at for exact points and addresses (at the door, at 25 Oak Street).",
+    "rule": "Time: **in** for months, years, and parts of the day (in May, in 2024, in the morning); **on** for days and dates (on Monday, on July 4th); **at** for clock times (at 3 p.m., at night). Place: **in** for inside spaces, cities, and countries (in the room, in Mexico); **on** for surfaces and streets (on the table, on Main Street); **at** for exact points and addresses (at the door, at 25 Oak Street).",
     "example": "The workshop is on Friday at 10 a.m. in Room 204.",
     "mistake": {
       "wrong": "I was born on 1998.",
@@ -1004,13 +1804,113 @@
         ],
         "answer": "in",
         "explanation": "Use at before a clock time, such as at 6 p.m."
+      },
+      {
+        "question": "School starts ___ September.",
+        "options": [
+          "in",
+          "on",
+          "at"
+        ],
+        "answer": "in",
+        "explanation": "Use 'in' for months."
+      },
+      {
+        "question": "Let's meet ___ the bus stop.",
+        "options": [
+          "at",
+          "in",
+          "on"
+        ],
+        "answer": "at",
+        "explanation": "Use 'at' for a specific point."
+      },
+      {
+        "question": "The book is ___ the table.",
+        "options": [
+          "on",
+          "in",
+          "at"
+        ],
+        "answer": "on",
+        "explanation": "A table is a surface, so use 'on'."
+      },
+      {
+        "question": "I was born ___ 2010.",
+        "options": [
+          "in",
+          "on",
+          "at"
+        ],
+        "answer": "in",
+        "explanation": "Use 'in' for years."
+      },
+      {
+        "question": "The concert is ___ Friday.",
+        "options": [
+          "on",
+          "in",
+          "at"
+        ],
+        "answer": "on",
+        "explanation": "Use 'on' for days."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "I'll call you in the evening.",
+          "I'll call you on the evening.",
+          "I'll call you at the evening."
+        ],
+        "answer": "I'll call you in the evening.",
+        "explanation": "Use 'in' for parts of the day: in the evening."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "She lives at 12 Park Road.",
+          "She lives on 12 Park Road.",
+          "She lives in 12 Park Road."
+        ],
+        "answer": "She lives at 12 Park Road.",
+        "explanation": "Use 'at' for a full address with a house number."
+      },
+      {
+        "question": "Which word is wrong? 'We have English class in Tuesday.'",
+        "options": [
+          "have",
+          "class",
+          "in"
+        ],
+        "answer": "in",
+        "explanation": "Use 'on' for days: on Tuesday."
+      },
+      {
+        "question": "Which word is wrong? 'My grandparents live at Brazil.'",
+        "options": [
+          "grandparents",
+          "live",
+          "at"
+        ],
+        "answer": "at",
+        "explanation": "Use 'in' for countries: in Brazil."
+      },
+      {
+        "question": "Which word is wrong? 'The movie starts on 7:30.'",
+        "options": [
+          "movie",
+          "starts",
+          "on"
+        ],
+        "answer": "on",
+        "explanation": "Use 'at' for clock times: at 7:30."
       }
     ]
   },
   {
     "id": "subject-verb-agreement",
     "title": "Subject-Verb Agreement",
-    "rule": "The verb must match its subject: one → singular verb, more than one → plural verb (the student writes, the students write). Find the real subject, even if other words come between (the books on the shelf are old). Everyone, each, every, and nobody are singular. Two subjects joined by and usually take a plural verb. Use there is with one thing and there are with more.",
+    "rule": "The verb must __match its subject__: one → singular verb, more than one → plural verb (the student writes, the students write). __Find the real subject__, even if other words come between (the books on the shelf are old). **Everyone**, **each**, **every**, and **nobody** are __singular__. Two subjects joined by **and** usually take a plural verb. Use **there is** with one thing and **there are** with more.",
     "example": "The list of new words is on the board, and each student has a copy.",
     "mistake": {
       "wrong": "One of my friends live in Seattle.",
@@ -1116,13 +2016,113 @@
         ],
         "answer": "is",
         "explanation": "Use are because the noun sandwiches is plural."
+      },
+      {
+        "question": "My best friend ___ in a band.",
+        "options": [
+          "play",
+          "plays",
+          "are playing"
+        ],
+        "answer": "plays",
+        "explanation": "'My best friend' is one person, so the verb takes -s."
+      },
+      {
+        "question": "The books on the shelf ___ old.",
+        "options": [
+          "is",
+          "are",
+          "was being"
+        ],
+        "answer": "are",
+        "explanation": "The real subject is 'the books' (plural), not 'the shelf'."
+      },
+      {
+        "question": "Every child ___ a gift at the party.",
+        "options": [
+          "get",
+          "gets",
+          "are getting"
+        ],
+        "answer": "gets",
+        "explanation": "'Every' + noun is singular, so use 'gets'."
+      },
+      {
+        "question": "There ___ a cat under the car.",
+        "options": [
+          "is",
+          "are",
+          "were"
+        ],
+        "answer": "is",
+        "explanation": "'A cat' is singular, so use 'there is'."
+      },
+      {
+        "question": "Tom and his dad ___ fishing every summer.",
+        "options": [
+          "go",
+          "goes",
+          "is going"
+        ],
+        "answer": "go",
+        "explanation": "Two subjects joined by 'and' are plural."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Each of the students has a laptop.",
+          "Each of the students have a laptop.",
+          "Each of the students are having a laptop."
+        ],
+        "answer": "Each of the students has a laptop.",
+        "explanation": "'Each' is singular, so use 'has'."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "The keys to the classroom are on the desk.",
+          "The keys to the classroom is on the desk.",
+          "The keys to the classroom be on the desk."
+        ],
+        "answer": "The keys to the classroom are on the desk.",
+        "explanation": "The subject is 'the keys' (plural), not 'the classroom'."
+      },
+      {
+        "question": "Which word is wrong? 'Everybody love summer vacation.'",
+        "options": [
+          "love",
+          "summer",
+          "vacation"
+        ],
+        "answer": "love",
+        "explanation": "'Everybody' is singular, so use 'loves'."
+      },
+      {
+        "question": "Which word is wrong? 'There are a new student in our class.'",
+        "options": [
+          "are",
+          "student",
+          "class"
+        ],
+        "answer": "are",
+        "explanation": "'A new student' is singular, so use 'there is'."
+      },
+      {
+        "question": "Which word is wrong? 'My mom and dad works at a hospital.'",
+        "options": [
+          "works",
+          "at",
+          "hospital"
+        ],
+        "answer": "works",
+        "explanation": "Two subjects joined by 'and' are plural, so use 'work'."
       }
     ]
   },
   {
     "id": "plurals",
     "title": "Plural Nouns",
-    "rule": "Most nouns add -s (book → books). After s, ss, sh, ch, x, and z, add -es (box → boxes, watch → watches). Consonant + y → -ies (city → cities), but vowel + y just adds -s (day → days). Some plurals are irregular (child → children, person → people, man → men). Information, advice, furniture, equipment, and homework have no plural.",
+    "rule": "Most nouns add **-s** (book → books). After s, ss, sh, ch, x, and z, add **-es** (box → boxes, watch → watches). Consonant + y → **-ies** (city → cities), but vowel + y just adds -s (day → days). Some plurals are __irregular__ (child → children, person → people, man → men). __Information, advice, furniture, equipment, and homework have no plural.__",
     "example": "The children asked for more information about the two new libraries.",
     "mistake": {
       "wrong": "Can you give me some advices?",
@@ -1228,13 +2228,113 @@
         ],
         "answer": "childs",
         "explanation": "The irregular plural of child is children."
+      },
+      {
+        "question": "There are two ___ on the shelf.",
+        "options": [
+          "dishes",
+          "dishs",
+          "dish"
+        ],
+        "answer": "dishes",
+        "explanation": "After 'sh', add -es: dish → dishes."
+      },
+      {
+        "question": "We saw many ___ at the zoo.",
+        "options": [
+          "monkies",
+          "monkeys",
+          "monkey"
+        ],
+        "answer": "monkeys",
+        "explanation": "A vowel + y just adds -s: monkey → monkeys."
+      },
+      {
+        "question": "The ___ in this town are very friendly.",
+        "options": [
+          "people",
+          "person",
+          "peoples"
+        ],
+        "answer": "people",
+        "explanation": "'Person' has an irregular plural: people."
+      },
+      {
+        "question": "Our teacher gave us a lot of ___ about the test.",
+        "options": [
+          "informations",
+          "information",
+          "an information"
+        ],
+        "answer": "information",
+        "explanation": "'Information' is uncountable, so it has no plural form."
+      },
+      {
+        "question": "We rented two ___ for the school trip.",
+        "options": [
+          "buses",
+          "bus",
+          "buss"
+        ],
+        "answer": "buses",
+        "explanation": "After 's', add -es: bus → buses."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "Many cities have parks.",
+          "Many citys have parks.",
+          "Many cityes have parks."
+        ],
+        "answer": "Many cities have parks.",
+        "explanation": "A consonant + y changes to -ies: city → cities."
+      },
+      {
+        "question": "Choose the correct sentence.",
+        "options": [
+          "The women are talking in the hall.",
+          "The womans are talking in the hall.",
+          "The womens are talking in the hall."
+        ],
+        "answer": "The women are talking in the hall.",
+        "explanation": "'Woman' has an irregular plural: women."
+      },
+      {
+        "question": "Which word is wrong? 'I have three classs on Monday.'",
+        "options": [
+          "have",
+          "classs",
+          "Monday"
+        ],
+        "answer": "classs",
+        "explanation": "After 'ss', add -es: class → classes."
+      },
+      {
+        "question": "Which word is wrong? 'Our school bought new equipments for the gym.'",
+        "options": [
+          "school",
+          "equipments",
+          "gym"
+        ],
+        "answer": "equipments",
+        "explanation": "'Equipment' is uncountable, so it has no plural form."
+      },
+      {
+        "question": "Which word is wrong? 'We saw two foxs in the forest.'",
+        "options": [
+          "saw",
+          "foxs",
+          "forest"
+        ],
+        "answer": "foxs",
+        "explanation": "After 'x', add -es: fox → foxes."
       }
     ]
   },
   {
     "id": "question-word-order",
     "title": "Question Word Order",
-    "rule": "In questions, use question word + helping verb + subject + main verb (where do you live, what are you doing). If there's no helping verb, add do, does, or did (where did she go). In indirect questions after 'Can you tell me' or 'Do you know', use normal order with no do/does/did (can you tell me where he lives).",
+    "rule": "In questions, use **question word + helping verb + subject + main verb** (where do you live, what are you doing). If there's no helping verb, add **do**, **does**, or **did** (where did she go). In indirect questions after 'Can you tell me' or 'Do you know', __use normal order with no do/does/did__ (can you tell me where he lives).",
     "example": "Where do you work? Can you tell me where the office is?",
     "mistake": {
       "wrong": "Why you didn't call me?",
@@ -1340,6 +2440,106 @@
         ],
         "answer": "does",
         "explanation": "Indirect questions use statement word order, so say where he lives without does."
+      },
+      {
+        "question": "Where ___ she live?",
+        "options": [
+          "do",
+          "does",
+          "is"
+        ],
+        "answer": "does",
+        "explanation": "With 'she', use 'does' before the subject."
+      },
+      {
+        "question": "What ___ you doing yesterday at 5 p.m.?",
+        "options": [
+          "were",
+          "did",
+          "was"
+        ],
+        "answer": "were",
+        "explanation": "Past continuous questions use were + subject + verb-ing."
+      },
+      {
+        "question": "Why ___ late this morning?",
+        "options": [
+          "were you",
+          "you were",
+          "did you were"
+        ],
+        "answer": "were you",
+        "explanation": "Put the helping verb before the subject: were you."
+      },
+      {
+        "question": "Do you know what time ___?",
+        "options": [
+          "it is",
+          "is it",
+          "does it is"
+        ],
+        "answer": "it is",
+        "explanation": "In indirect questions, use normal statement order: it is."
+      },
+      {
+        "question": "How many brothers ___ have?",
+        "options": [
+          "do you",
+          "you do",
+          "does you"
+        ],
+        "answer": "do you",
+        "explanation": "There's no helping verb, so add 'do' before the subject."
+      },
+      {
+        "question": "Choose the correct question.",
+        "options": [
+          "What did she say?",
+          "What she said?",
+          "What did she said?"
+        ],
+        "answer": "What did she say?",
+        "explanation": "Use did + subject + base verb: did she say."
+      },
+      {
+        "question": "Choose the correct question.",
+        "options": [
+          "Where can I buy a ticket?",
+          "Where I can buy a ticket?",
+          "Where can buy I a ticket?"
+        ],
+        "answer": "Where can I buy a ticket?",
+        "explanation": "Put the helping verb 'can' before the subject 'I'."
+      },
+      {
+        "question": "Which word is wrong? 'What time do the movie start?'",
+        "options": [
+          "time",
+          "do",
+          "start"
+        ],
+        "answer": "do",
+        "explanation": "'The movie' is singular, so use 'does'."
+      },
+      {
+        "question": "Which word is wrong? 'Did you went to the game?'",
+        "options": [
+          "went",
+          "the",
+          "game"
+        ],
+        "answer": "went",
+        "explanation": "After 'did', use the base verb: go."
+      },
+      {
+        "question": "Which word is wrong? 'How old is your parents?'",
+        "options": [
+          "old",
+          "is",
+          "your"
+        ],
+        "answer": "is",
+        "explanation": "'Your parents' is plural, so use 'are'."
       }
     ]
   }
