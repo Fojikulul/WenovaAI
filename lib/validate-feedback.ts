@@ -1,6 +1,9 @@
+import { isLessonId, type LessonId } from "./lesson-ids";
+
 export type Mistake = {
   original: string;
   fix: string;
+  rule: LessonId | "other";
   why: string;
 };
 
@@ -22,11 +25,18 @@ export function validateFeedback(data: unknown): Feedback | null {
   for (const item of mistakes.slice(0, MAX_MISTAKES)) {
     if (typeof item !== "object" || item === null) return null;
 
-    const { original, fix, why } = item as Record<string, unknown>;
-    if (typeof original !== "string" || typeof fix !== "string" || typeof why !== "string") {
+    const { original, fix, rule, why } = item as Record<string, unknown>;
+    if (
+      typeof original !== "string" ||
+      typeof fix !== "string" ||
+      typeof rule !== "string" ||
+      typeof why !== "string"
+    ) {
       return null;
     }
-    cleaned.push({ original, fix, why });
+
+    // An unknown rule shouldn't break the page, so it becomes "other".
+    cleaned.push({ original, fix, rule: isLessonId(rule) ? rule : "other", why });
   }
 
   return { mistakes: cleaned, summary };

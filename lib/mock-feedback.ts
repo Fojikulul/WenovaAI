@@ -16,21 +16,25 @@ export const MOCK_FEEDBACK: Feedback = {
     {
       original: "didn't knew",
       fix: "didn't know",
+      rule: "past-simple",
       why: "After 'didn't', use the base verb: 'didn't know', not 'didn't knew'.",
     },
     {
       original: "my family move",
       fix: "my family moved",
+      rule: "past-simple",
       why: "'Last year' is finished, so use the past form of the verb: 'moved'.",
     },
     {
       original: "a advice",
       fix: "advice",
+      rule: "articles",
       why: "'Advice' is a noun you can't count, so don't put 'a' before it. You can also say 'some advice'.",
     },
     {
       original: "interested on",
       fix: "interested in",
+      rule: "other",
       why: "We always say 'interested in' something.",
     },
   ],
