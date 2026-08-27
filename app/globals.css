@@ -2,25 +2,105 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #f8fafc;
+  --text: #1e293b;
+  --heading: #183666;
+  --muted: #475569;
+  --divider: #e2e8f0;
+  --border: #7d8799;
+  --ring: #1f4eb0;
+
+  --primary: #1f4eb0;
+  --primary-hover: #183f8f;
+  --on-primary: #ffffff;
+  --secondary: #007b37;
+  --secondary-hover: #005c29;
+  --on-secondary: #ffffff;
+  --tag-bg: #e6f6ec;
+  --tag-text: #006b30;
+  --logo-green: #0bb062; /* decoration only: too light for text or borders */
+
+  --mistake-bg: #fef3f2;
+  --mistake-line: #d92d20;
+  --mistake-text: #b42318;
+  --correct-bg: #edf8f1;
+  --correct-text: #007b37;
+  --correct-border: #007b37;
+  --hint-bg: #fffaeb;
+  --hint-text: #b54708;
+  --hint-border: #dc6803;
+
+  color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-heading: var(--heading);
+  --color-muted: var(--muted);
+  --color-divider: var(--divider);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-on-secondary: var(--on-secondary);
+  --color-tag-bg: var(--tag-bg);
+  --color-tag-text: var(--tag-text);
+  --color-logo-green: var(--logo-green);
+
+  --color-mistake-bg: var(--mistake-bg);
+  --color-mistake-line: var(--mistake-line);
+  --color-mistake-text: var(--mistake-text);
+  --color-correct-bg: var(--correct-bg);
+  --color-correct-text: var(--correct-text);
+  --color-correct-border: var(--correct-border);
+  --color-hint-bg: var(--hint-bg);
+  --color-hint-text: var(--hint-text);
+  --color-hint-border: var(--hint-border);
+
+  --font-sans: var(--font-atkinson), system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      font-size: 1.125rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    color: var(--heading);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
