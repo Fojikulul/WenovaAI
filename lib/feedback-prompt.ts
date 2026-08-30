@@ -11,6 +11,11 @@ const TONE = `## Tone and language
 function whatToCorrect(maxMistakes: number) {
   return `## What to correct
 - Point out only the most important mistakes, at most ${maxMistakes}, most important first. Focus on grammar that makes the meaning unclear or that the student repeats. Skip small style preferences.
+- Only flag clear errors. If a phrase is acceptable English, even if it could be said differently, don't mark it.
+- If a sentence is already correct, don't offer a different way to say it as a "fix".
+- Don't flag acceptable alternative phrasing. If your "why" would say the original is fine, "no change needed", or "both are fine", it is not a mistake: leave it out. Example: "playing the guitar" and "playing guitar" are both correct.
+- Judge each phrase in its whole sentence. Example: "I want to build the bridges that help people in my country." is correct. "that help people in my country" says which bridges, so "the bridges" is right, and changing it to "bridges" would be wrong. This doesn't mean "the" is always right before a plural noun; check what the sentence means.
+- If there are fewer real mistakes, list only those. Never invent a mistake to fill the list.
 - If the text has no real mistakes, return an empty "mistakes" list and a positive summary.
 - Never rewrite the whole text. Fix only the mistake, and keep the student's own words and ideas.
 - "original" must be copied exactly, letter for letter, from the student's text (same spelling, capital letters, and punctuation), so the app can find and underline it. Keep it short: just the words that contain the mistake.
@@ -33,17 +38,23 @@ function practiceFocus(lessonId?: string) {
   if (!lesson) return "";
   return `## This practice
 The student just studied the lesson "${lesson.title}" (${lesson.id}). Its rule: ${lesson.rule}
-List mistakes with this rule first, then other big mistakes.`;
+If the student made real mistakes with this rule, list them first, then other big mistakes.
+- Don't look harder for mistakes with this rule than for any other kind of mistake.
+- A sentence that uses this rule correctly stays unmarked. Practicing a rule doesn't mean the student got it wrong.`;
 }
 
 const ESSAY_GRADE = `## Grade
-Give the essay a score from 1 to 5 in each area:
-- grammar: 5 = almost no mistakes. 3 = some mistakes, but the meaning is clear. 1 = mistakes make it hard to understand.
-- vocabulary: 5 = words are varied and fit well. 3 = simple words that mostly fit. 1 = many wrong words.
-- organization: 5 = clear beginning, middle, and end. 3 = the order is mostly clear. 1 = hard to follow.
-- clarity: 5 = easy to understand on the first read. 3 = some sentences need a second read. 1 = often hard to tell what the student means.
-The scores are a practice estimate for a student learning English, not an official grade. Be fair and encouraging.
-If the text is not in English, set "grade" to null.`;
+Give the essay a score from 1 to 5 in each area. Use 2 and 4 for writing between the levels below. Evaluate the student's current English proficiency fairly. Prioritize clarity and communication over perfect grammar or advanced vocabulary. Do not penalize the same weakness repeatedly across multiple categories.
+
+- grammar: 5 = consistently clear sentences with very few errors. 3 = frequent grammatical errors, but the meaning is generally clear. 1 = grammatical problems often make the writing difficult to understand. Minor errors, such as missing articles or incorrect plurals, should have little impact if the meaning remains clear.
+
+- vocabulary: 5 = words are varied, precise, and used appropriately. 3 = basic vocabulary communicates most ideas clearly, though some word choices may be awkward or incorrect. 1 = limited or frequently incorrect word choices make the meaning difficult to understand. Do not penalize a student simply for using simple words.
+
+- organization: 5 = ideas flow logically, with a clear beginning, middle, and end when appropriate. 3 = the main ideas are understandable, but transitions or sequencing could improve. 1 = ideas are difficult to follow because of unclear structure. Consider the essay's length and purpose when evaluating organization.
+
+- clarity: 5 = easy to understand on the first read; the reader always knows what the student means. 3 = mostly clear, but some sentences need a second read. 1 = the reader often cannot tell what the student means. Judge how well the meaning comes across, not how advanced the English is.
+
+If most of the text is not in English, set "grade" to null. If only a few words are in another language, grade normally and treat them as possible vocabulary gaps. Do not penalize appropriate code-switching or multilingual expressions when they are relevant to the assignment.`;
 
 function output(mode: FeedbackMode) {
   const grade =
