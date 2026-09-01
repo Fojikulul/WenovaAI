@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/google";
 import Link from "next/link";
+import HeaderNav from "@/components/HeaderNav";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             >
               Wenova
             </Link>
+            <HeaderNav />
           </div>
         </header>
         <main className="flex-1">{children}</main>
