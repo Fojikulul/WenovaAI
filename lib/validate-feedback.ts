@@ -72,3 +72,20 @@ export function validateFeedback(data: unknown, mode: FeedbackMode): Feedback | 
   if (cleanGrade === undefined) return null;
   return { mistakes: cleaned, summary, grade: cleanGrade };
 }
+
+// Safety net for the highlighting: keep a mistake only if its "original" appears exactly once
+// and doesn't overlap one kept before it.
+export function keepFindableMistakes(mistakes: Mistake[], text: string): Mistake[] {
+  const kept: { start: number; end: number }[] = [];
+
+  return mistakes.filter(({ original }) => {
+    const start = text.indexOf(original);
+    if (original === "" || start === -1) return false;
+    if (text.indexOf(original, start + 1) !== -1) return false;
+
+    const end = start + original.length;
+    if (kept.some((m) => start < m.end && m.start < end)) return false;
+    kept.push({ start, end });
+    return true;
+  });
+}
