@@ -37,13 +37,7 @@ export const MOCK_FEEDBACK: Record<FeedbackMode, Feedback> = {
       "You told a clear, fun story about your weekend, so now practice the past forms of irregular verbs like go, swim, and find.",
   },
 
-  // Sample text:
-  // Last year, my family move to a new country, and everything felt
-  // unfamiliar. On the first day of school, I was nervous because I didn't
-  // knew anyone. My teacher gave me a advice and helped me feel more
-  // comfortable. After school, I talked with a classmate who was interested
-  // on the same hobbies as me. Now, I feel more confident speaking English,
-  // and I enjoy learning something new every day.
+  // Sample text: the "Try an example" essay in app/check/example-essay.ts.
   essay: {
     mistakes: [
       {
