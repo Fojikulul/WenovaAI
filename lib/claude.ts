@@ -2,7 +2,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildFeedbackPrompt } from "./feedback-prompt";
 import { LESSON_IDS } from "./lesson-ids";
 import type { FeedbackMode } from "./limits";
-import { GRADE_AREAS, validateFeedback, type Feedback } from "./validate-feedback";
+import {
+  GRADE_AREAS,
+  keepFindableMistakes,
+  validateFeedback,
+  type Feedback,
+} from "./validate-feedback";
 
 const MODEL = "claude-sonnet-5-5";
 
@@ -83,9 +88,13 @@ export async function getClaudeFeedback(
   );
   if (!textBlock) return null;
 
+  let feedback: Feedback | null;
   try {
-    return validateFeedback(JSON.parse(textBlock.text), mode);
+    feedback = validateFeedback(JSON.parse(textBlock.text), mode);
   } catch {
     return null;
   }
+  if (!feedback) return null;
+
+  return { ...feedback, mistakes: keepFindableMistakes(feedback.mistakes, text) };
 }
