@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { LessonCard } from "./lesson";
+import { getQuizLengths } from "./quiz-lengths";
 
 // Icon paths from Lucide (lucide.dev), ISC license.
 function Icon({ children, size = 20, className = "" }: { children: ReactNode; size?: number; className?: string }) {
@@ -170,7 +171,7 @@ export default function LessonsBrowser({
                   <h3 className="mt-4 text-lg leading-snug font-semibold md:text-xl">{card.title}</h3>
                   <p className="mt-1 line-clamp-2 text-muted">{card.summary}</p>
                   <p className="mt-auto pt-3 text-base font-bold text-muted">
-                    Lesson {card.number} · {plural(card.questions, "question")}
+                    Lesson {card.number} · {plural(getQuizLengths(card.questions).max, "question")}
                   </p>
                 </Link>
               </li>

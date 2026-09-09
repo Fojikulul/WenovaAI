@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { PracticeQuestion } from "@/app/lessons/lesson";
+import { getQuizLengths } from "@/app/lessons/quiz-lengths";
+import { pickFresh, pickQuestions, questionKey, readSeen, saveSeen } from "@/lib/quiz-pick";
 
 const CORRECT_MESSAGES = ["You got it!", "Nice!", "Great job!", "Perfect!"];
 const WRONG_MESSAGES = ["Not quite!", "Almost!", "Good try!", "Keep going!"];
@@ -111,29 +113,38 @@ const outlineButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-6 py-3 font-bold text-primary transition-colors hover:bg-surface";
 
 export default function Quiz({
-  questions,
+  questions: bank,
+  lessonId,
   next: nextLesson,
 }: {
   questions: PracticeQuestion[];
+  lessonId?: string;
   next: { href: string; label: string };
 }) {
+  const lengths = getQuizLengths(bank.length);
+  const [count, setCount] = useState(lengths.start);
+  const [questions, setQuestions] = useState<PracticeQuestion[] | null>(null);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
+  // Starts as the lesson's first question as written: shuffling while drawing would make the server and browser differ.
+  const [preview, setPreview] = useState<PracticeQuestion | undefined>(bank[0]);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
   const moveFocus = useRef(false);
+  const seen = useRef<Set<string> | null>(null);
 
   const picked: string | null = answers[index] ?? null;
   const answered = picked !== null;
 
   useEffect(() => {
     if (moveFocus.current) {
-      headingRef.current?.focus();
+      (headingRef.current ?? sliderRef.current)?.focus();
       moveFocus.current = false;
     }
-  }, [index, finished]);
+  }, [index, finished, questions]);
 
   useEffect(() => {
     if (!answered) return;
@@ -141,15 +152,116 @@ export default function Quiz({
     nextRef.current?.scrollIntoView({ block: "nearest" });
   }, [answered]);
 
-  if (questions.length === 0) {
+  if (bank.length === 0 || !preview) {
     return <p className="text-muted">This lesson has no practice questions yet.</p>;
+  }
+
+  function newQuestions(first?: PracticeQuestion) {
+    const { chosen, nextSeen } = pickFresh(bank, count, seen.current ?? readSeen(lessonId), first);
+    seen.current = nextSeen;
+    saveSeen(lessonId, nextSeen);
+    return chosen;
+  }
+
+  function start() {
+    if (!preview) return;
+    moveFocus.current = true;
+    setQuestions(newQuestions(preview));
+    setIndex(0);
+    setAnswers([]);
+    setFinished(false);
   }
 
   function restart() {
     moveFocus.current = true;
+    setQuestions(newQuestions());
     setIndex(0);
     setAnswers([]);
     setFinished(false);
+  }
+
+  function changeCount() {
+    moveFocus.current = true;
+    const alreadySeen = seen.current ?? readSeen(lessonId);
+    const fresh = bank.filter((question) => !alreadySeen.has(questionKey(question)));
+    setPreview(pickQuestions(fresh.length > 0 ? fresh : bank, 1)[0]);
+    setQuestions(null);
+    setIndex(0);
+    setAnswers([]);
+    setFinished(false);
+  }
+
+  if (questions === null) {
+    const canPick = lengths.min < lengths.max;
+    return (
+      <div className="grid">
+        <div
+          aria-hidden="true"
+          inert
+          className="pointer-events-none [grid-area:1/1] opacity-90 blur-[5px] select-none"
+        >
+          <div className="flex items-center gap-3">
+            <p className="shrink-0 text-muted">Question 1 of {count}</p>
+            <div className="h-2 flex-1 rounded-full bg-divider" />
+          </div>
+          <p className="mt-4 text-lg leading-relaxed font-semibold md:text-xl">
+            <QuestionText text={preview.question} />
+          </p>
+          <div className="mt-4 flex flex-col gap-2.5">
+            {preview.options.map((option) => (
+              <div
+                key={option}
+                className="flex min-h-12 items-center rounded-lg border-2 border-border bg-background px-4 py-2.5 text-lg"
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </div>
+
+      <div className="z-10 mx-4 self-center [grid-area:1/1] sm:mx-8 rounded-xl border border-divider bg-background/90 p-5 shadow-lg backdrop-blur-sm">
+        {canPick ? (
+          <>
+            <div className="flex items-baseline justify-between gap-4">
+              <label htmlFor="quiz-count" className="text-lg font-semibold md:text-xl">
+                How many questions?
+              </label>
+              <span aria-hidden="true" className="font-heading text-4xl font-bold text-heading tabular-nums">
+                {count}
+              </span>
+            </div>
+            <input
+              ref={sliderRef}
+              id="quiz-count"
+              type="range"
+              min={lengths.min}
+              max={lengths.max}
+              step={1}
+              value={count}
+              onChange={(event) => setCount(Number(event.target.value))}
+              aria-valuetext={`${count} questions`}
+              className="mt-1 h-12 w-full cursor-pointer accent-primary"
+            />
+            <div aria-hidden="true" className="flex justify-between text-muted tabular-nums">
+              <span>{lengths.min}</span>
+              <span>{lengths.max}</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-lg font-semibold md:text-xl">
+            {lengths.max} question{lengths.max === 1 ? "" : "s"}
+          </p>
+        )}
+        <button type="button" onClick={start} className={`mt-5 w-full sm:w-auto ${primaryButton}`}>
+          Start quiz
+          <Icon>
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </Icon>
+        </button>
+      </div>
+      </div>
+    );
   }
 
   const question = questions[index];
@@ -226,6 +338,15 @@ export default function Quiz({
               Try again
             </button>
           </div>
+          {lengths.min < lengths.max && (
+            <button
+              type="button"
+              onClick={changeCount}
+              className="mt-3 inline-flex min-h-11 items-center font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+            >
+              Change number of questions
+            </button>
+          )}
         </div>
 
         <h4 className="mt-6 font-heading text-lg font-semibold text-heading md:text-xl">
