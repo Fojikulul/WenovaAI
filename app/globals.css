@@ -33,6 +33,38 @@
   color-scheme: light;
 }
 
+[data-theme="dark"] {
+  --background: #0b1220;
+  --surface: #111a2b;
+  --text: #e2e8f0;
+  --heading: #f1f5f9;
+  --muted: #a3b1c6;
+  --divider: #1f2a3d;
+  --border: #64748b;
+  --ring: #7aa2ff;
+
+  --primary: #6b97ff;
+  --primary-hover: #8fb0ff;
+  --on-primary: #0b1220;
+  --secondary: #34d399;
+  --secondary-hover: #6ee7b7;
+  --on-secondary: #0b1220;
+  --tag-bg: #0f2e22;
+  --tag-text: #6ee7b7;
+
+  --mistake-bg: #3a1717;
+  --mistake-line: #f97066;
+  --mistake-text: #fda29b;
+  --correct-bg: #0f2e22;
+  --correct-text: #6ee7b7;
+  --correct-border: #34d399;
+  --hint-bg: #33240a;
+  --hint-text: #fdb022;
+  --hint-border: #f79009;
+
+  color-scheme: dark;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
