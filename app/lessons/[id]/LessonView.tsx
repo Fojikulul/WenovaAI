@@ -111,7 +111,7 @@ export default function LessonView({
             </h2>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5">
-            <Quiz key={lesson.id} questions={lesson.practice} next={quizNext} />
+            <Quiz key={lesson.id} questions={lesson.practice} lessonId={lesson.id} next={quizNext} />
           </div>
         </section>
       </div>

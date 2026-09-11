@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getLesson, getLessonPlace, getLessons, ruleSentences } from "../lesson";
+import { getQuizLengths } from "../quiz-lengths";
 import LessonView from "./LessonView";
 
 export function generateStaticParams() {
@@ -28,6 +29,24 @@ export default function LessonPage({ params }: PageProps<"/lessons/[id]">) {
   );
 }
 
+function minutesToFinish(questionCount: number) {
+  return Math.ceil(1 + questionCount * 0.5);
+}
+
+function Range({ from, to }: { from: number; to: number }) {
+  if (from === to) return <>{to}</>;
+  return (
+    <>
+      <span aria-hidden="true">
+        {from}–{to}
+      </span>
+      <span className="sr-only">
+        {from} to {to}
+      </span>
+    </>
+  );
+}
+
 async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const lesson = getLesson(id);
@@ -36,6 +55,7 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
+  const lengths = getQuizLengths(lesson.practice.length);
   const next = place.next
     ? { href: `/lessons/${place.next.id}`, label: "Next lesson" }
     : { href: "/lessons", label: "Back to all lessons" };
@@ -76,7 +96,10 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
           {lesson.title}
         </h1>
         <p className="mt-2 text-muted">
-          {lesson.practice.length} question{lesson.practice.length === 1 ? "" : "s"}
+          <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          about <Range from={minutesToFinish(lengths.min)} to={minutesToFinish(lengths.max)} /> min
         </p>
       </section>
 
