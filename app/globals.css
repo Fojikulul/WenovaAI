@@ -30,6 +30,9 @@
   --hint-text: #b54708;
   --hint-border: #dc6803;
 
+  /* Header height from 1024px up. The checker screen fills the rest, so update this if the header changes. */
+  --header-height: 65px;
+
   color-scheme: light;
 }
 
@@ -97,6 +100,82 @@
 
   --font-sans: var(--font-atkinson), system-ui, sans-serif;
   --font-heading: var(--font-bricolage), system-ui, sans-serif;
+}
+
+@theme {
+  --animate-float: wenova-float 6s ease-in-out infinite;
+  --animate-fade-up: wenova-fade-up 0.5s ease-out both;
+  --animate-pop: wenova-pop 0.2s ease-out both;
+  --animate-grow: wenova-grow 0.6s ease-out both;
+  --animate-pulse-ring: wenova-pulse-ring 0.7s ease-out 1;
+  --animate-shimmer: wenova-shimmer 1.2s ease-in-out infinite;
+
+  @keyframes wenova-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes wenova-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes wenova-pulse-ring {
+    from {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--mistake-line) 45%, transparent);
+    }
+    to {
+      box-shadow: 0 0 0 10px transparent;
+    }
+  }
+
+  @keyframes wenova-shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(300%);
+    }
+  }
+
+  @keyframes wenova-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--tilt, 0deg));
+    }
+    50% {
+      transform: translateY(-8px) rotate(var(--tilt, 0deg));
+    }
+  }
+
+  @keyframes wenova-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* A plain class, not a Tailwind @utility: a utility named bg-grid clashes with Tailwind's bg-* colors and is silently dropped. */
+.hero-grid {
+  background-image:
+    linear-gradient(to right, var(--divider) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--divider) 1px, transparent 1px);
+  background-size: 44px 44px;
 }
 
 @layer base {
