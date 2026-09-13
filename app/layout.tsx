@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/google";
 import Link from "next/link";
-import HeaderNav from "@/components/HeaderNav";
+import HeaderNav, { MobileMenu } from "@/components/HeaderNav";
 import MotionProvider from "@/components/MotionProvider";
 import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
@@ -40,21 +40,26 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col">
         <MotionProvider>
-        <header className="border-b border-divider">
-          <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 px-4 py-3 md:px-6">
+        <header className="sticky top-0 z-20 border-b border-divider bg-background/90 backdrop-blur">
+          <div className="mx-auto grid w-full max-w-[1240px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 md:px-6">
             <Link
               href="/"
-              className="flex min-h-11 shrink-0 items-center rounded-lg font-heading text-2xl font-bold text-heading"
+              className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start rounded-lg font-heading text-2xl font-bold text-heading sm:text-[1.75rem] lg:text-[2rem]"
             >
-              Wenova
+              <span>
+                Wenova <span className="-ml-[0.12em] text-secondary">AI</span>
+              </span>
             </Link>
-            <div className="flex items-center gap-2">
-              <HeaderNav />
+            <HeaderNav />
+            <div className="flex items-center gap-2 justify-self-end">
+              <MobileMenu />
               <ThemeToggle />
             </div>
           </div>
         </header>
-        <main className="flex-1">{children}</main>
+        {/* overflow-x-clip: the hero's full-width backdrop can never make
+            the page scroll sideways. */}
+        <main className="flex-1 overflow-x-clip">{children}</main>
         </MotionProvider>
       </body>
     </html>
