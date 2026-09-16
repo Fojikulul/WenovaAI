@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, type Variants } from "motion/react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Quiz from "@/components/Quiz";
@@ -32,6 +33,11 @@ const paneTitle = "text-lg leading-snug font-semibold md:text-xl";
 const navLink =
   "inline-flex min-h-11 items-center gap-2 rounded-lg px-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover";
 
+const springIn: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
+};
+
 export default function LessonView({
   lesson,
   rulePoints,
@@ -59,27 +65,36 @@ export default function LessonView({
               The rule
             </h2>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5">
+          <motion.div
+            className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5"
+            initial="hidden"
+            animate="show"
+            variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
+          >
             <ul className="flex max-w-[65ch] flex-col gap-3">
               {rulePoints.map((sentence, index) => (
-                <li key={index} className="flex gap-3">
+                <motion.li key={index} variants={springIn} className="flex gap-3">
                   <span
                     aria-hidden="true"
                     className="mt-[calc(0.8em-0.25rem)] size-2 shrink-0 rounded-full bg-logo-green"
                   />
                   <span>
-                    <RuleText text={sentence} />
+                    <RuleText text={sentence} delay={index * 0.1} />
                   </span>
-                </li>
+                </motion.li>
               ))}
             </ul>
 
-            <h3 className="mt-6 text-lg font-semibold">Example</h3>
-            <p className="mt-2 rounded-lg bg-surface px-4 py-3 text-lg">{lesson.example}</p>
+            <motion.div variants={springIn}>
+              <h3 className="mt-6 text-lg font-semibold">Example</h3>
+              <p className="mt-2 rounded-lg bg-surface px-4 py-3 text-lg">{lesson.example}</p>
+            </motion.div>
 
-            <h3 className="mt-6 text-lg font-semibold">Common mistake</h3>
+            <motion.div variants={springIn}>
+              <h3 className="mt-6 text-lg font-semibold">Common mistake</h3>
+            </motion.div>
             <div className="mt-2 flex flex-col gap-3">
-              <div className="rounded-lg bg-mistake-bg px-4 py-3">
+              <motion.div variants={springIn} className="rounded-lg bg-mistake-bg px-4 py-3">
                 <p className="flex items-center gap-2 font-bold text-mistake-text">
                   <Icon>
                     <path d="M18 6 6 18" />
@@ -90,8 +105,11 @@ export default function LessonView({
                 <p className="mt-1 text-lg underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4">
                   {lesson.mistake.wrong}
                 </p>
-              </div>
-              <div className="rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3">
+              </motion.div>
+              <motion.div
+                variants={springIn}
+                className="rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3"
+              >
                 <p className="flex items-center gap-2 font-bold text-correct-text">
                   <Icon>
                     <path d="M20 6 9 17l-5-5" />
@@ -99,9 +117,9 @@ export default function LessonView({
                   Right
                 </p>
                 <p className="mt-1 text-lg">{lesson.mistake.right}</p>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         <section aria-labelledby="practice-title" className="flex min-h-0 flex-col">

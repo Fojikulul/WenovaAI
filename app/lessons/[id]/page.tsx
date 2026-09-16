@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import HeroBackdrop from "@/components/HeroBackdrop";
+import HeroPill from "@/components/HeroPill";
 import { getLesson, getLessonPlace, getLessons, ruleSentences } from "../lesson";
 import { getQuizLengths } from "../quiz-lengths";
 import LessonView from "./LessonView";
@@ -21,7 +23,7 @@ export async function generateMetadata({
 // Cache Components: an unknown lesson id is only known on a visit, so params are read inside <Suspense>.
 export default function LessonPage({ params }: PageProps<"/lessons/[id]">) {
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 pb-12 md:px-6">
+    <div className="mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height))] lg:min-h-[40rem]">
       <Suspense fallback={<p className="py-12 text-center text-muted">Loading lesson…</p>}>
         <LessonContent params={params} />
       </Suspense>
@@ -62,10 +64,11 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <section aria-labelledby="lesson-title" className="py-6 md:py-8">
+      <section aria-labelledby="lesson-title" className="relative isolate shrink-0 py-4 text-center md:py-5">
+        <HeroBackdrop />
         <Link
           href="/lessons"
-          className="inline-flex min-h-11 items-center gap-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+          className="mb-2 inline-flex min-h-11 items-center gap-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover lg:absolute lg:top-4 lg:left-0 lg:mb-0"
         >
           {/* Icon paths from Lucide (lucide.dev), ISC license. */}
           <svg
@@ -86,16 +89,20 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
           </svg>
           All lessons
         </Link>
-        <p className="mt-4 text-muted">
-          Lesson {place.card.number} of {place.total} · {place.card.groupTitle}
-        </p>
+        <div>
+          <HeroPill>
+            Lesson {place.card.number} of {place.total} · {place.card.groupTitle}
+          </HeroPill>
+        </div>
         <h1
           id="lesson-title"
-          className="mt-1 text-[2.25rem] leading-[1.1] font-semibold tracking-tight md:text-[2.75rem]"
+          className="mt-3 animate-fade-up text-[2.25rem] leading-[1.1] font-semibold tracking-tight [animation-delay:80ms] md:text-[2.75rem]"
         >
-          {lesson.title}
+          <span className="bg-linear-to-r from-heading to-secondary bg-clip-text pb-1 text-transparent">
+            {lesson.title}
+          </span>
         </h1>
-        <p className="mt-2 text-muted">
+        <p className="mt-2 animate-fade-up text-muted [animation-delay:120ms]">
           <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
           <span aria-hidden="true"> · </span>
           <span className="sr-only">, </span>
@@ -103,13 +110,16 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
         </p>
       </section>
 
-      <LessonView
-        lesson={lesson}
-        rulePoints={ruleSentences(lesson.rule)}
-        previous={place.previous}
-        next={place.next}
-        quizNext={next}
-      />
+      {/* "relative" keeps this above the hero's glow. */}
+      <div className="relative animate-fade-up [animation-delay:160ms] lg:min-h-0 lg:flex-1">
+        <LessonView
+          lesson={lesson}
+          rulePoints={ruleSentences(lesson.rule)}
+          previous={place.previous}
+          next={place.next}
+          quizNext={next}
+        />
+      </div>
     </>
   );
 }
