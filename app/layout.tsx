@@ -36,9 +36,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bricolage.variable} ${atkinson.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* suppressHydrationWarning: some antivirus programs add their own <script> here. */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col">
+      {/* suppressHydrationWarning: extensions like Grammarly add attributes to <body>. */}
+      <body suppressHydrationWarning className="flex min-h-full flex-col">
         <MotionProvider>
         <header className="sticky top-0 z-20 border-b border-divider bg-background/90 backdrop-blur">
           <div className="mx-auto grid w-full max-w-[1240px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 md:px-6">
