@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
 import HeaderNav, { MobileMenu } from "@/components/HeaderNav";
 import MotionProvider from "@/components/MotionProvider";
@@ -48,7 +49,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               href="/"
               className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start rounded-lg font-heading text-2xl font-bold text-heading sm:text-[1.75rem] lg:text-[2rem]"
             >
-              <span>
+              <Image
+                src="/logo.png"
+                alt=""
+                width={176}
+                height={168}
+                loading="eager"
+                // unoptimized: the optimizer's lossy re-save made the see-through edge look rough.
+                unoptimized
+                className="h-11 w-auto sm:-my-1 sm:h-14"
+              />
+              <span className="sr-only sm:not-sr-only">
                 Wenova <span className="-ml-[0.12em] text-secondary">AI</span>
               </span>
             </Link>
