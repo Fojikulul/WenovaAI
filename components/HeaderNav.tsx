@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 const LINKS = [
   { href: "/", label: "Check my essay", isCurrent: (path: string) => path === "/" || path === "/check" },
   { href: "/lessons", label: "Lessons", isCurrent: (path: string) => path.startsWith("/lessons") },
+  { href: "/progress", label: "My progress", isCurrent: (path: string) => path.startsWith("/progress") },
 ];
 
 export default function HeaderNav() {
