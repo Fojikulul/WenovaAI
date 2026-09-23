@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
+import AccountButton from "@/components/AccountButton";
 import HeaderNav, { MobileMenu } from "@/components/HeaderNav";
 import MotionProvider from "@/components/MotionProvider";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -64,8 +66,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </span>
             </Link>
             <HeaderNav />
+            {/* AccountButton reads the login cookie, so it waits in <Suspense>. */}
             <div className="flex items-center gap-2 justify-self-end">
               <MobileMenu />
+              <Suspense fallback={null}>
+                <AccountButton />
+              </Suspense>
               <ThemeToggle />
             </div>
           </div>
