@@ -4,7 +4,9 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { DifficultyBadge } from "@/components/LessonBadges";
 import PillTabs, { type PillTab } from "@/components/PillTabs";
+import { DIFFICULTIES, DIFFICULTY_LABELS, lessonDifficulty, type Difficulty } from "@/lib/learning";
 import type { LessonCard } from "./lesson";
 import { getQuizLengths } from "./quiz-lengths";
 
@@ -124,7 +126,7 @@ function plural(count: number, word: string) {
 function matches(card: LessonCard, query: string) {
   const q = query.trim().toLowerCase();
   if (q === "") return true;
-  return `${card.title} ${card.summary} ${card.groupTitle}`.toLowerCase().includes(q);
+  return `${card.title} ${card.summary} ${card.groupTitle} ${lessonDifficulty(card.id)}`.toLowerCase().includes(q);
 }
 
 export default function LessonsBrowser({
@@ -137,6 +139,7 @@ export default function LessonsBrowser({
   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty | "any">("any");
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -155,6 +158,7 @@ export default function LessonsBrowser({
   const shown = cards.filter(
     (card) =>
       (filter === "all" || card.groupId === filter) &&
+      (difficulty === "any" || lessonDifficulty(card.id) === difficulty) &&
       matches(card, query),
   );
   const sections = groups
@@ -217,6 +221,33 @@ export default function LessonsBrowser({
         </button>
       </div>
 
+      <div role="group" aria-label="Filter by difficulty" className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="mr-1 font-bold text-muted">Difficulty:</span>
+        {(["any", ...DIFFICULTIES] as const).map((level) => {
+          const selected = difficulty === level;
+          return (
+            <button
+              key={level}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setDifficulty(level)}
+              className={`relative inline-flex min-h-11 items-center rounded-full px-4 font-bold transition-colors ${
+                selected ? "text-heading" : "text-muted hover:text-heading"
+              }`}
+            >
+              {selected && (
+                <motion.span
+                  layoutId="difficulty-pill"
+                  className="absolute inset-0 rounded-full border-2 border-primary bg-background shadow-sm"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative">{level === "any" ? "Any" : DIFFICULTY_LABELS[level]}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <p className="mt-3 px-1 text-muted">
         Not sure where to start?{" "}
         <Link
@@ -248,6 +279,7 @@ export default function LessonsBrowser({
               type="button"
               onClick={() => {
                 setQuery("");
+                setDifficulty("any");
                 setFilter("all");
               }}
               className="mt-3 inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-[3px]"
@@ -315,7 +347,10 @@ export default function LessonsBrowser({
                           <span className="flex size-12 items-center justify-center rounded-xl bg-tag-bg text-tag-text transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-108 group-hover:-rotate-8">
                             <Icon size={26}>{LESSON_ICONS[card.id] ?? BOOK_ICON}</Icon>
                           </span>
-                          <h3 className="mt-4 text-lg leading-snug font-semibold md:text-xl">{card.title}</h3>
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            <DifficultyBadge difficulty={lessonDifficulty(card.id)} />
+                          </div>
+                          <h3 className="mt-3 text-lg leading-snug font-semibold md:text-xl">{card.title}</h3>
                           <p className="mt-1 line-clamp-2 text-muted">{card.summary}</p>
                           <p className="mt-auto pt-3 text-base font-bold text-muted">
                             Lesson {card.number} · {plural(getQuizLengths(card.questions).max, "question")}

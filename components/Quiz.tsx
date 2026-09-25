@@ -238,13 +238,22 @@ export default function Quiz({
   questions: bank,
   lessonId,
   next: nextLesson,
+  suggestedCount,
+  onFinish,
+  scoreNote,
 }: {
   questions: PracticeQuestion[];
   lessonId?: string;
   next: { href: string; label: string };
+  suggestedCount?: number | null;
+  onFinish?: (result: { score: number; total: number; durationSeconds: number }) => void;
+  scoreNote?: ReactNode;
 }) {
   const lengths = getQuizLengths(bank.length);
-  const [count, setCount] = useState(lengths.start);
+  const [pickedCount, setCount] = useState<number | null>(null);
+  const count =
+    pickedCount ??
+    (suggestedCount ? Math.min(lengths.max, Math.max(lengths.min, suggestedCount)) : lengths.start);
   const [questions, setQuestions] = useState<PracticeQuestion[] | null>(null);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -256,6 +265,7 @@ export default function Quiz({
   const nextRef = useRef<HTMLButtonElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
   const moveFocus = useRef(false);
+  const startedAt = useRef(0);
   const seen = useRef<Set<string> | null>(null);
 
   const picked: string | null = answers[index] ?? null;
@@ -288,6 +298,7 @@ export default function Quiz({
   function start() {
     if (!preview) return;
     moveFocus.current = true;
+    startedAt.current = Date.now();
     setQuestions(newQuestions(preview));
     setIndex(0);
     setAnswers([]);
@@ -296,6 +307,7 @@ export default function Quiz({
 
   function restart() {
     moveFocus.current = true;
+    startedAt.current = Date.now();
     setQuestions(newQuestions());
     setIndex(0);
     setAnswers([]);
@@ -421,6 +433,7 @@ export default function Quiz({
   const question = questions[index];
   const isCorrect = picked === question.answer;
   const isLast = index === questions.length - 1;
+  const total = questions.length;
   const progress = answers.length / questions.length;
 
   const results = answers.map((answer, i) => answer === questions[i].answer);
@@ -438,6 +451,11 @@ export default function Quiz({
     moveFocus.current = true;
     if (isLast) {
       setFinished(true);
+      onFinish?.({
+        score: rightSoFar,
+        total,
+        durationSeconds: (Date.now() - startedAt.current) / 1000,
+      });
     } else {
       setIndex(index + 1);
     }
@@ -491,6 +509,7 @@ export default function Quiz({
             </span>
           </h3>
           <p className="mt-2">{scoreMessage(score, questions.length)}</p>
+          {scoreNote}
 
           <div className="mt-6 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link href={nextLesson.href} className={primaryButton}>
