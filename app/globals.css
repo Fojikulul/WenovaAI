@@ -32,6 +32,7 @@
 
   /* Header height from 1024px up. The checker screen fills the rest, so update this if the header changes. */
   --header-height: 65px;
+  --footer-height: 45px; /* footer height (app/layout.tsx) */
 
   color-scheme: light;
 }

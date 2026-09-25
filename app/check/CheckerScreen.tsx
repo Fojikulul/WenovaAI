@@ -10,7 +10,7 @@ export default function CheckerScreen() {
   );
 
   return (
-    <div className="group/screen mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height))] lg:min-h-[40rem] lg:has-[[data-status=results]]:h-auto">
+    <div className="group/screen mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height)-var(--footer-height))] lg:min-h-[40rem] lg:has-[[data-status=results]]:h-auto">
       <section
         aria-labelledby="hero-title"
         className="relative isolate shrink-0 py-6 text-center md:py-7 [@media(max-height:820px)]:py-4"

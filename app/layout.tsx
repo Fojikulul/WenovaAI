@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import AccountButton from "@/components/AccountButton";
+import CookieNotice from "@/components/CookieNotice";
 import HeaderNav, { MobileMenu } from "@/components/HeaderNav";
 import MotionProvider from "@/components/MotionProvider";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -79,6 +80,41 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* overflow-x-clip: the hero's full-width backdrop can never make
             the page scroll sideways. */}
         <main className="flex-1 overflow-x-clip">{children}</main>
+        {/* Exactly --footer-height tall from 1024px up (see globals.css). */}
+        <footer className="border-t border-divider text-muted">
+          <div className="mx-auto flex min-h-11 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-6 px-4 md:px-6 lg:h-11">
+            <p>Wenova AI</p>
+            <nav aria-label="Legal">
+              <ul className="flex gap-5">
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/cookies"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    Cookies
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    Terms of Use
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </footer>
+        <CookieNotice />
         </MotionProvider>
       </body>
     </html>
