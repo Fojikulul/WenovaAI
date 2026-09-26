@@ -26,6 +26,8 @@ const atkinson = Atkinson_Hyperlegible_Next({
 export const metadata: Metadata = {
   title: "Wenova",
   description: "A friendly writing coach for students learning English.",
+  // Google Search Console verification. Public by design, not a secret.
+  verification: { google: "OOxVxNw_k-211RKB1gFALeVcObIDJi_J7LHxDnLVMXA" },
 };
 
 // Runs before the page is drawn, so dark mode never flashes white.
