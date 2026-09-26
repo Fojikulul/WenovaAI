@@ -68,6 +68,9 @@ export async function signUp(_state: AuthState, form: FormData): Promise<AuthSta
     return { error: "Use a password with at least 8 characters.", ...keep };
   }
   if (password.length > 72) return { error: "Use a password with 72 characters or fewer.", ...keep };
+  if (form.get("agree") !== "yes") {
+    return { error: "Please confirm you are 13 or older and agree to the Terms and Privacy Policy.", ...keep };
+  }
 
   const supabase = await createClient();
   if (!supabase) return { error: NOT_SET_UP, ...keep };
@@ -92,4 +95,22 @@ export async function signUp(_state: AuthState, form: FormData): Promise<AuthSta
   }
   if (data.session) redirect("/progress");
   return { checkEmail: email };
+}
+
+export async function signInWithGoogle(_state: AuthState, form: FormData): Promise<AuthState> {
+  const supabase = await createClient();
+  if (!supabase) return { error: NOT_SET_UP };
+  const origin = await siteOrigin();
+  const next = safeNext(form.get("next"));
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(next)}` },
+  });
+  if (error || !data.url) {
+    if (error?.code === "validation_failed" || error?.message.includes("provider is not enabled")) {
+      return { error: "Google sign-in isn't switched on yet. Use email and password for now." };
+    }
+    return { error: TRY_AGAIN };
+  }
+  redirect(data.url);
 }
