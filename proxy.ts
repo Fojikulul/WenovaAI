@@ -7,6 +7,16 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (!isSupabaseConfigured) return response;
 
+  // Supabase sends a sign-in code to the Site URL when the return address isn't in its Redirect URLs:
+  // pass it on to /auth/confirm so the sign-in still finishes.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && request.nextUrl.pathname !== "/auth/confirm") {
+    const confirm = new URL("/auth/confirm", request.url);
+    confirm.searchParams.set("code", code);
+    confirm.searchParams.set("next", "/progress");
+    return NextResponse.redirect(confirm);
+  }
+
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {
