@@ -1,8 +1,9 @@
 "use server";
 
-import { getLesson } from "@/app/lessons/lesson";
+import { getLesson, getLessons } from "@/app/lessons/lesson";
 import { QUIZ_LENGTH_BY_DIFFICULTY } from "./learning";
-import { getProfile, recordQuiz } from "./progress";
+import { masteryByLesson, type MasteryLevel } from "./mastery";
+import { getActivity, getProfile, recordQuiz } from "./progress";
 import { getSignedIn } from "./supabase/server";
 
 // Everything from the browser is checked again here; the student is always the one in the session cookie.
@@ -45,4 +46,16 @@ export async function getPreferredQuizLength(): Promise<number | null> {
   if (!signedIn) return null;
   const profile = await getProfile(signedIn.supabase, signedIn.user.id);
   return profile ? QUIZ_LENGTH_BY_DIFFICULTY[profile.preferred_difficulty] : null;
+}
+
+export async function getMyMastery(): Promise<Record<string, MasteryLevel> | null> {
+  const signedIn = await getSignedIn();
+  if (!signedIn) return null;
+  const activity = await getActivity(signedIn.supabase);
+  if (!activity) return null;
+  const mastery = masteryByLesson(
+    getLessons().map((lesson) => lesson.id),
+    activity,
+  );
+  return Object.fromEntries(Object.entries(mastery).map(([id, entry]) => [id, entry.level]));
 }
