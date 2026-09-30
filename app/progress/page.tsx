@@ -7,9 +7,11 @@ import { primaryButton, secondaryButton, textLink } from "@/components/ui";
 import { DIFFICULTY_LABELS, lessonDifficulty } from "@/lib/learning";
 import { buildLearningPath, type ActivityRow, type PathStatus } from "@/lib/learning-path";
 import { getActivity, getLearningPath, getProfile } from "@/lib/progress";
+import { masteryByLesson } from "@/lib/mastery";
 import { insights, summarize } from "@/lib/progress-summary";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getSignedIn } from "@/lib/supabase/server";
+import MasteryGrid from "./MasteryGrid";
 import WeeklyChart from "./WeeklyChart";
 
 export const metadata: Metadata = { title: "My progress - Wenova" };
@@ -69,6 +71,11 @@ async function ProgressContent() {
           },
         );
   const empty = activity.length === 0;
+  const mastery = masteryByLesson(
+    cards.map((card) => card.id),
+    activity,
+  );
+  const masteredCount = Object.values(mastery).filter((entry) => entry.level === "mastered").length;
   const name = profile?.display_name;
 
   return (
@@ -98,7 +105,7 @@ async function ProgressContent() {
         <Stat
           label="Lessons passed"
           value={`${summary.lessonsPassed}`}
-          note={`of ${cards.length}`}
+          note={`of ${cards.length} · ${masteredCount} mastered`}
           delay={0}
         />
         <Stat
@@ -205,6 +212,21 @@ async function ProgressContent() {
           </Card>
         </div>
       </div>
+
+      <Card>
+        <section aria-labelledby="mastery-title">
+          <h2 id="mastery-title" className={sectionTitle}>
+            Lesson mastery
+          </h2>
+          <p className="mt-1 text-muted">
+            Not started → Learning → Practicing → Passed (75%+) → Mastered (90%+ twice on quizzes
+            of 7+ questions, with no recent essay mistakes on that rule).
+          </p>
+          <MasteryGrid
+            rows={cards.map((card) => ({ id: card.id, title: card.title, ...mastery[card.id] }))}
+          />
+        </section>
+      </Card>
 
       <p className="text-center text-sm text-muted">
         Essay scores are practice estimates from Wenova&apos;s AI coach, not official English

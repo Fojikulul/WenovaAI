@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import Quiz from "@/components/Quiz";
 import RuleText from "@/components/RuleText";
-import { getPreferredQuizLength, saveQuizResult, type QuizSaveResult } from "@/lib/quiz-actions";
+import { MasteryBadge } from "@/components/LessonBadges";
+import { MASTERY_LABELS, MASTERY_STEPS, type MasteryLevel } from "@/lib/mastery";
+import { getMyMastery, getPreferredQuizLength, saveQuizResult, type QuizSaveResult } from "@/lib/quiz-actions";
 import type { Lesson, LessonCard } from "../lesson";
 
 // Icon paths from Lucide (lucide.dev), ISC license.
@@ -54,12 +56,19 @@ export default function LessonView({
 }) {
   const [suggestedCount, setSuggestedCount] = useState<number | null>(null);
   const [saveState, setSaveState] = useState<"saving" | QuizSaveResult | null>(null);
+  const [mastery, setMastery] = useState<MasteryLevel | null>(null);
+  const [levelUp, setLevelUp] = useState<MasteryLevel | null>(null);
 
   useEffect(() => {
     let current = true;
     getPreferredQuizLength()
       .then((length) => {
         if (current) setSuggestedCount(length);
+      })
+      .catch(() => {});
+    getMyMastery()
+      .then((levels) => {
+        if (current) setMastery(levels?.[lesson.id] ?? null);
       })
       .catch(() => {});
     return () => {
@@ -69,8 +78,15 @@ export default function LessonView({
 
   function finishQuiz(result: { score: number; total: number; durationSeconds: number }) {
     setSaveState("saving");
+    setLevelUp(null);
     saveQuizResult(lesson.id, result.score, result.total, result.durationSeconds)
-      .then((state) => setSaveState(state))
+      .then(async (state) => {
+        setSaveState(state);
+        if (state !== "saved") return;
+        const level = (await getMyMastery())?.[lesson.id] ?? null;
+        if (level && mastery && MASTERY_STEPS[level] > MASTERY_STEPS[mastery]) setLevelUp(level);
+        setMastery(level);
+      })
       .catch(() => setSaveState("failed"));
   }
 
@@ -81,6 +97,18 @@ export default function LessonView({
       </p>
     ) : saveState === "saved" ? (
       <p className="mt-2 font-bold text-correct-text" role="status">
+        {levelUp && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.5, y: 6 }}
+            animate={{ opacity: 1, scale: [0.5, 1.15, 1], y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-2 flex justify-center"
+          >
+            <span className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-primary to-secondary px-4 py-1 text-on-primary">
+              Level up! You&apos;re now at {MASTERY_LABELS[levelUp]}.
+            </span>
+          </motion.span>
+        )}
         Saved to your progress.{" "}
         <Link href="/progress" className="text-secondary underline underline-offset-[3px] hover:text-secondary-hover">
           See My progress
@@ -175,6 +203,12 @@ export default function LessonView({
             <h2 id="practice-title" className={paneTitle}>
               Practice
             </h2>
+            {mastery && (
+              <span className="ml-auto">
+                <span className="sr-only">Your mastery: </span>
+                <MasteryBadge key={mastery} level={mastery} />
+              </span>
+            )}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5">
             <Quiz

@@ -4,9 +4,11 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { DifficultyBadge } from "@/components/LessonBadges";
+import { DifficultyBadge, MasteryBadge } from "@/components/LessonBadges";
 import PillTabs, { type PillTab } from "@/components/PillTabs";
 import { DIFFICULTIES, DIFFICULTY_LABELS, lessonDifficulty, type Difficulty } from "@/lib/learning";
+import type { MasteryLevel } from "@/lib/mastery";
+import { getMyMastery } from "@/lib/quiz-actions";
 import type { LessonCard } from "./lesson";
 import { getQuizLengths } from "./quiz-lengths";
 
@@ -140,7 +142,20 @@ export default function LessonsBrowser({
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty | "any">("any");
+  const [mastery, setMastery] = useState<Record<string, MasteryLevel> | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let current = true;
+    getMyMastery()
+      .then((levels) => {
+        if (current) setMastery(levels);
+      })
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, []);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -349,6 +364,7 @@ export default function LessonsBrowser({
                           </span>
                           <div className="mt-4 flex flex-wrap gap-1.5">
                             <DifficultyBadge difficulty={lessonDifficulty(card.id)} />
+                            {mastery?.[card.id] && <MasteryBadge level={mastery[card.id]} delay={(position % 3) * 0.06 + 0.2} />}
                           </div>
                           <h3 className="mt-3 text-lg leading-snug font-semibold md:text-xl">{card.title}</h3>
                           <p className="mt-1 line-clamp-2 text-muted">{card.summary}</p>
