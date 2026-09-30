@@ -206,6 +206,45 @@
   }
 }
 
+/* Firefox only understands scrollbar-width/-color; in Chrome they would switch the custom shape off. */
+:root {
+  --scrollbar-thumb: color-mix(in oklab, var(--muted) 45%, transparent);
+  --scrollbar-thumb-hover: var(--primary);
+}
+
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
