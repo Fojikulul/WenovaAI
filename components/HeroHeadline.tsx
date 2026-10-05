@@ -124,7 +124,7 @@ export default function HeroHeadline() {
 
       <h1
         id="hero-title"
-        className="mt-10 text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] lg:[@media(max-height:820px)]:text-[2.75rem]"
+        className="mt-10 text-[2rem] min-[400px]:text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] lg:[@media(max-height:820px)]:text-[2.75rem]"
       >
         {/* One string: Chrome drops a lone space between two text parts here. */}
         <span className="sr-only">{`${LINE_1} ${LINE_2}`}</span>
