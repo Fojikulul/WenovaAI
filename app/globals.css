@@ -30,6 +30,11 @@
   --hint-text: #b54708;
   --hint-border: #dc6803;
 
+  --paper: #fffcf3;
+  --paper-line: #f1eadb;
+  --paper-edge: #ebe2cf;
+  --paper-fold: #f3ecdc;
+
   /* Header height from 1024px up. The checker screen fills the rest, so update this if the header changes. */
   --header-height: 65px;
   --footer-height: 45px; /* footer height (app/layout.tsx) */
@@ -66,6 +71,11 @@
   --hint-text: #fdb022;
   --hint-border: #f79009;
 
+  --paper: #111a2b;
+  --paper-line: #1c2638;
+  --paper-edge: #26324a;
+  --paper-fold: #1f2a3d;
+
   color-scheme: dark;
 }
 
@@ -98,6 +108,10 @@
   --color-hint-bg: var(--hint-bg);
   --color-hint-text: var(--hint-text);
   --color-hint-border: var(--hint-border);
+
+  --color-paper: var(--paper);
+  --color-paper-edge: var(--paper-edge);
+  --color-paper-fold: var(--paper-fold);
 
   --font-sans: var(--font-atkinson), system-ui, sans-serif;
   --font-heading: var(--font-bricolage), system-ui, sans-serif;
@@ -177,6 +191,53 @@
     linear-gradient(to right, var(--divider) 1px, transparent 1px),
     linear-gradient(to bottom, var(--divider) 1px, transparent 1px);
   background-size: 44px 44px;
+}
+
+.hero-paper {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(2.5rem - 1px),
+    var(--paper-line) calc(2.5rem - 1px) 2.5rem
+  );
+  background-position: 0 1.25rem;
+}
+
+.hero-caret-wait {
+  animation:
+    hero-blink 1s step-end infinite,
+    hero-hide 0s 1.5s forwards;
+}
+
+.hero-fallback {
+  animation: hero-show 0s 1.5s forwards;
+}
+
+.hero-fallback-i {
+  animation: hero-show-i 0s 1.5s forwards;
+}
+
+@keyframes hero-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-show {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-show-i {
+  to {
+    font-size: 1em;
+  }
 }
 
 @layer base {
