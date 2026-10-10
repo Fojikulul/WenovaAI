@@ -114,10 +114,10 @@ export default function HeroHeadline() {
     Array.from({ length: to - from }, (_, i) => render(from + i));
 
   return (
-    <div className="relative mx-auto mb-2 w-fit max-w-full">
+    <div className="relative mx-auto mb-3 w-fit max-w-full [@media(max-height:820px)]:mb-6">
       <div
         aria-hidden="true"
-        className="hero-paper pointer-events-none absolute -inset-x-3 -top-4 -bottom-4 -z-5 animate-fade-up rounded-xl border border-paper-edge bg-paper shadow-sm [animation-delay:80ms] md:-inset-x-6"
+        className="hero-paper pointer-events-none absolute -inset-x-4 -top-5 -bottom-5 -z-5 animate-fade-up rounded-2xl border border-paper-edge bg-paper/85 shadow-sm [animation-delay:80ms] md:-inset-x-7 lg:-inset-x-9"
       >
         <span className="absolute bottom-0 left-0 size-6 bg-paper-fold [clip-path:polygon(0_0,100%_0,100%_100%)]" />
       </div>

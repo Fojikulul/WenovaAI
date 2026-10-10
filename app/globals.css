@@ -30,10 +30,10 @@
   --hint-text: #b54708;
   --hint-border: #dc6803;
 
-  --paper: #fffcf3;
-  --paper-line: #f1eadb;
-  --paper-edge: #ebe2cf;
-  --paper-fold: #f3ecdc;
+  --paper: #ffffff;
+  --paper-line: #eef2f7;
+  --paper-edge: #e2e8f0;
+  --paper-fold: #eaeff5;
 
   /* Header height from 1024px up. The checker screen fills the rest, so update this if the header changes. */
   --header-height: 65px;
