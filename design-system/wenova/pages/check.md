@@ -11,10 +11,17 @@ humanizemax.ai (light and dark theme). See AI_LOG.md.
 - The checker is the home page (`/`); `/check` shows the same screen
   (`app/check/CheckerScreen.tsx`).
 - **Hero** (centered): a white pill with a pulsing green dot and "A writing coach for everyone
-  who asks [is my English correct?]", then the headline "Write better English / one fix at a
-  time" (second line in the navy-to-green fade) and one line under it. Behind it: a faint grid
-  and a soft green and blue glow (`components/HeroBackdrop.tsx`). From 1280px up, four tilted
-  mistake stickers float around it (`components/MistakeStickers.tsx`).
+  who asks [is my English correct?]", then a sheet of paper (cream in light, dark sheet in dark;
+  faint ruled lines, a folded corner; colors `--paper*`) with the headline "Write better
+  English / one fix at a time" (second line solid `secondary` green) and one line under it.
+  The headline types itself once on load, fixing "Englsh" to "English" with the checker's
+  mistake highlight (stronger pink on the cream paper in light mode) and a green check; the
+  line under it shows from the start. A CSS caret blinks until JavaScript starts, and after
+  1.5s without it the finished headline shows
+  (`components/HeroHeadline.tsx`, changed by Johnny on 2026-10-21 with Vasyl's OK; under
+  400px wide the headline is 32px so "English" and its check fit). Behind it: a faint grid and a soft
+  green and blue glow (`components/HeroBackdrop.tsx`). From 1280px up, four tilted mistake
+  stickers float around it (`components/MistakeStickers.tsx`).
 - **Width:** up to 1240px. Page side padding 16px, 24px from 768px.
 - **From 1024px up, editing:** the screen is exactly the window's height under the header
   (`--header-height`). The hero takes what it needs and the card fills the rest, so the page

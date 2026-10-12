@@ -151,7 +151,7 @@ export default function HeroHeadline() {
             {caretAt(1, TYPO_LENGTH)}
             <FixedCheck state={frame.check} waiting={waiting} />
           </span>
-          <span className="block bg-linear-to-r from-heading to-secondary bg-clip-text pb-1 text-transparent">
+          <span className="block pb-1 text-secondary">
             {range(0, LINE_2.length, (k) => [
               caretAt(2, k),
               <span key={k} className={k < frame.typed2 ? undefined : waiting}>
