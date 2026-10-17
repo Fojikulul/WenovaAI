@@ -80,7 +80,8 @@ plurals, question-word-order
 - The team owns the actual prompt in `lib/feedback-prompt.ts`. Suggest edits; don't rewrite it.
 
 ## Design rules
-- Minimalist: white or neutral background, one accent color, pallete of green, blue and white, lots of whitespace
+- Minimalist, lots of whitespace. Palette: white background, blue as the main accent
+  (buttons, correct answers), green as the secondary color (rule tags, links)
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
 - No extra pages, popups, animations, or features unless asked
 - Friendly loading and error states everywhere
