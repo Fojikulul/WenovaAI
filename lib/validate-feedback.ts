@@ -68,6 +68,10 @@ export function validateFeedback(data: unknown, mode: FeedbackMode): Feedback | 
       return null;
     }
 
+    // A "fix" identical to the original isn't a mistake (Claude sometimes lists
+    // correct text with "no change needed"), so it's left out.
+    if (fix.trim() === original.trim()) continue;
+
     // An unknown rule shouldn't break the page, so it becomes "other".
     cleaned.push({ original, fix, rule: isLessonId(rule) ? rule : "other", why });
   }
