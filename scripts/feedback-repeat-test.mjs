@@ -78,6 +78,11 @@ const ALL_CASES = [
       text: "The people who live next door are very friendly." },
     allCorrect: true, correctPhrases: ["The people"],
   },
+  {
+    id: 11, name: "practice playing guitar (articles)", body: { mode: "practice", lessonId: "articles",
+      text: "I like playing guitar after school." },
+    allCorrect: true, correctPhrases: ["playing guitar"],
+  },
 ];
 
 // --cases 6,9 runs only those cases; without it, all of them.

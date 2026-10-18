@@ -24,6 +24,7 @@ function whatToCorrect(maxMistakes: number) {
 - Point out only the most important mistakes, at most ${maxMistakes}, most important first. Focus on grammar that makes the meaning unclear or that the student repeats. Skip small style preferences.
 - Only flag clear errors. If a phrase is acceptable English, even if it could be said differently, don't mark it.
 - If a sentence is already correct, don't offer a different way to say it as a "fix".
+- Don't flag acceptable alternative phrasing. If your "why" would say the original is fine, "no change needed", or "both are fine", it is not a mistake: leave it out. Example: "playing the guitar" and "playing guitar" are both correct.
 - Judge each phrase in its whole sentence. Example: "I want to build the bridges that help people in my country." is correct. "that help people in my country" says which bridges, so "the bridges" is right, and changing it to "bridges" would be wrong. This doesn't mean "the" is always right before a plural noun; check what the sentence means.
 - If there are fewer real mistakes, list only those. Never invent a mistake to fill the list.
 - If the text has no real mistakes, return an empty "mistakes" list and a positive summary.
