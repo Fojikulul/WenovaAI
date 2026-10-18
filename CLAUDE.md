@@ -143,7 +143,8 @@ plurals, question-word-order
 
 ## Design rules
 - Minimalist, lots of whitespace. Palette: white background, blue as the main accent
-  (buttons), green as the secondary color and correct answers (rule tags, links)
+  (buttons only), green as the secondary color (rule tags, links) and for correct answers
+  (always with a check icon)
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
 - No extra pages, popups, animations, or features unless asked
 - Friendly loading and error states everywhere
