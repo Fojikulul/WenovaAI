@@ -21,7 +21,8 @@ the team's decisions (logo colors, CLAUDE.md design rules, WCAG AA). See AI_LOG.
 
 ### Color Palette
 
-Brand colors come from the logo (`public/WenovaAI_logo.PNG`). All contrast ratios are
+Brand colors come from the logo (`public/logo.png`; sampled from the full-size original,
+which is in git history). All contrast ratios are
 checked against WCAG AA: 4.5:1 for text, 3:1 for UI parts (borders, underlines, icons).
 
 | Role | Hex | CSS Variable | Contrast |
