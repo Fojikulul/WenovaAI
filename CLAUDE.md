@@ -143,7 +143,7 @@ plurals, question-word-order
 
 ## Design rules
 - Minimalist, lots of whitespace. Palette: white background, blue as the main accent
-  (buttons, correct answers), green as the secondary color (rule tags, links)
+  (buttons), green as the secondary color and correct answers (rule tags, links)
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
 - No extra pages, popups, animations, or features unless asked
 - Friendly loading and error states everywhere
@@ -174,9 +174,12 @@ plurals, question-word-order
 
 ## Team ownership
 - Brain (owner: Vasyl): `app/api/`, `lib/` - feedback route, prompt, validation
-- Face (owner: Johnny, Vasyl will start for a little): `app/`, `components/` - UI, lesson cards,
-  quiz, highlighting, interactive fixes
+- Design foundation (owner: Vasyl): `globals.css`, root layout, home page
+- Check page (owner: Vasyl): `app/check/` - HighlightedText, MistakeFix, RuleTag, GradeCard
+- Lessons (owner: Johnny): `app/lessons/` - LessonCard, Quiz, WritingPractice.
+  WritingPractice reuses Vasyl's check components; ask Vasyl before changing them.
 - Both: `data/lessons.json`
+Don't edit the other person's files without asking.
 Stay inside the folders for the current task unless asked otherwise.
 
 ## Congressional App Challenge AI rules (important)
