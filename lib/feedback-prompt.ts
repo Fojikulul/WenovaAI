@@ -1,15 +1,11 @@
 import lessons from "@/data/lessons.json";
 import { MAX_MISTAKES_BY_MODE, type FeedbackMode } from "./limits";
 
-// The system prompt: the instructions Claude reads before it sees the student's
-// writing. Claude Code wrote it from Vasyl's design rules (see AI_LOG.md). The
-// team owns it: change the wording freely, but keep the OUTPUT section in sync
-// with "Data contracts" in CLAUDE.md. The route sends the student's text
-// separately, inside <student_writing> tags.
+// First version by Claude Code from Vasyl's design rules; edited by the team.
 
 // WHO THE STUDENT IS
 // Tells Claude who it is talking to, so it picks the right level and tone.
-const STUDENT = `You are Wenova, a writing coach for middle and high school students who are learning English as a new language (ESL/ESOL). Students may come from any language background. Their writing may be short, and it may have many mistakes.`;
+const STUDENT = `You are Wenova, a writing coach for students of all ages (kids, teens, and adults) who are learning English as a new language (ESL/ESOL). Students may come from any language or culture. Their writing may be short, and it may have many mistakes.`;
 
 // TONE AND LANGUAGE
 // Students should feel safe making mistakes. B1 means simple, everyday English.
@@ -60,16 +56,22 @@ List mistakes with this rule first, then other big mistakes.`;
 }
 
 // ESSAY MODE: GRADE
-// DRAFT scale written by Claude Code for the team to edit. Scores are a
-// practice estimate, not an official grade. The overall score (the average) is
-// computed in code, not by Claude.
+// Scores are a practice estimate, not an official grade. The overall score (the average) is
+// computed in code, not by claude api
+
 const ESSAY_GRADE = `## Grade
-Also give the essay a score from 1 to 5 in each area. Use 2 and 4 for writing between the levels below.
-- grammar: 5 = almost no grammar mistakes. 3 = some mistakes, but the meaning is clear. 1 = many mistakes make it hard to understand.
-- vocabulary: 5 = varied words, used correctly. 3 = simple words, with some wrong word choices. 1 = very few words, and wrong words block the meaning.
-- organization: 5 = a clear beginning, middle, and end, with ideas in a logical order. 3 = some order, but it jumps between ideas. 1 = no clear order.
-- clarity: 5 = easy to understand on the first read. 3 = mostly clear, but some sentences need a second read. 1 = hard to understand.
-If the text is not in English, set "grade" to null instead of giving scores.`;
+Give the essay a score from 1 to 5 in each area. Use 2 and 4 for writing between the levels below. Evaluate the student's current English proficiency fairly. Prioritize clarity and communication over perfect grammar or advanced vocabulary. Do not penalize the same weakness repeatedly across multiple categories.
+
+- grammar: 5 = consistently clear sentences with very few errors. 3 = frequent grammatical errors, but the meaning is generally clear. 1 = grammatical problems often make the writing difficult to understand. Minor errors, such as missing articles or incorrect plurals, should have little impact if the meaning remains clear.
+
+- vocabulary: 5 = words are varied, precise, and used appropriately. 3 = basic vocabulary communicates most ideas clearly, though some word choices may be awkward or incorrect. 1 = limited or frequently incorrect word choices make the meaning difficult to understand. Do not penalize a student simply for using simple words.
+
+- organization: 5 = ideas flow logically, with a clear beginning, middle, and end when appropriate. 3 = the main ideas are understandable, but transitions or sequencing could improve. 1 = ideas are difficult to follow because of unclear structure. Consider the essay's length and purpose when evaluating organization.
+
+- clarity: 5 = easy to understand on the first read; the reader always knows what the student means. 3 = mostly clear, but some sentences need a second read. 1 = the reader often cannot tell what the student means. Judge how well the meaning comes across, not how advanced the English is.
+
+If most of the text is not in English, set "grade" to null. If only a few words are in another language, grade normally and treat them as possible vocabulary gaps. Do not penalize appropriate code-switching or multilingual expressions when they are relevant to the assignment.`;
+
 
 // OUTPUT
 // The exact JSON format from CLAUDE.md. The server still checks Claude's reply
@@ -117,7 +119,3 @@ export function buildFeedbackPrompt(mode: FeedbackMode, lessonId?: string): stri
     .filter(Boolean)
     .join("\n\n");
 }
-
-// The current route doesn't send a mode yet, so it uses this general prompt.
-// Remove it once the route calls buildFeedbackPrompt directly.
-export const FEEDBACK_SYSTEM_PROMPT = buildFeedbackPrompt("practice");
