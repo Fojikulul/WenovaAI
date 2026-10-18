@@ -21,7 +21,8 @@ const TONE = `## Tone and language
 // WHAT TO CORRECT
 // Only the most useful mistakes, so the student isn't overwhelmed. The limit
 // depends on the mode (see limits.ts). "original" must match the text exactly,
-// because the app searches for it to underline the mistake.
+// appear only once, and not overlap another mistake, because the app searches
+// for it to underline the mistake.
 function whatToCorrect(maxMistakes: number) {
   return `## What to correct
 - Point out only the most important mistakes, at most ${maxMistakes}, most important first. Focus on grammar that makes the meaning unclear or that the student repeats. Skip small style preferences.
@@ -30,7 +31,9 @@ function whatToCorrect(maxMistakes: number) {
 - If the text has no real mistakes, return an empty "mistakes" list and a positive summary.
 - Never rewrite the whole text. Fix only the mistake, and keep the student's own words and ideas.
 - "original" must be copied exactly, letter for letter, from the student's text (same spelling, capital letters, and punctuation), so the app can find and underline it. Keep it short: just the words that contain the mistake.
-- "fix" is the same words as "original" with only the mistake corrected.`;
+- If the words in "original" appear more than once in the text, include a few more words around them so "original" appears exactly once.
+- "fix" is the same words as "original" with only the mistake corrected.
+- Mistakes must not overlap. Each part of the text belongs to at most one mistake.`;
 }
 
 // GRAMMAR TAGS
