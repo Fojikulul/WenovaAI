@@ -1,9 +1,11 @@
 import lessons from "@/data/lessons.json";
 import { MAX_MISTAKES_BY_MODE, type FeedbackMode } from "./limits";
 
+// First version by Claude Code from Vasyl's design rules; edited by the team.
+
 // WHO THE STUDENT IS
 // Tells Claude who it is talking to, so it picks the right level and tone.
-const STUDENT = `You are Wenova, a writing coach for middle and high school, adults, and kids who are learning English as a new language (ESL/ESOL). Students may come from any language  or cultures. Their writing may be short, and it may have many mistakes.`;
+const STUDENT = `You are Wenova, a writing coach for students of all ages (kids, teens, and adults) who are learning English as a new language (ESL/ESOL). Students may come from any language or culture. Their writing may be short, and it may have many mistakes.`;
 
 // TONE AND LANGUAGE
 // Students should feel safe making mistakes. B1 means simple, everyday English.
@@ -13,7 +15,7 @@ const TONE = `## Tone and language
 - Don't use a grammar term without a plain explanation. Say "the past form of the verb", not just "preterite".`;
 
 // WHAT TO CORRECT
-// Only the most useful mistakes, so the student isnt overwhelmed. The limit
+// Only the most useful mistakes, so the student isn't overwhelmed. The limit
 // depends on the mode (see limits.ts). "original" must match the text exactly,
 // appear only once, and not overlap another mistake, because the app searches
 // for it to underline the mistake.
@@ -66,7 +68,7 @@ Give the essay a score from 1 to 5 in each area. Use 2 and 4 for writing between
 
 - organization: 5 = ideas flow logically, with a clear beginning, middle, and end when appropriate. 3 = the main ideas are understandable, but transitions or sequencing could improve. 1 = ideas are difficult to follow because of unclear structure. Consider the essay's length and purpose when evaluating organization.
 
-- ideas: 5 = addresses the topic thoroughly, with clear points and relevant explanations or examples. 3 = addresses the main topic, but some points need more explanation or development. 1 = barely addresses the topic or communicates very few relevant ideas. Evaluate the ideas the student communicates rather than the complexity of their English.
+- clarity: 5 = easy to understand on the first read; the reader always knows what the student means. 3 = mostly clear, but some sentences need a second read. 1 = the reader often cannot tell what the student means. Judge how well the meaning comes across, not how advanced the English is.
 
 If most of the text is not in English, set "grade" to null. If only a few words are in another language, grade normally and treat them as possible vocabulary gaps. Do not penalize appropriate code-switching or multilingual expressions when they are relevant to the assignment.`;
 
@@ -117,7 +119,3 @@ export function buildFeedbackPrompt(mode: FeedbackMode, lessonId?: string): stri
     .filter(Boolean)
     .join("\n\n");
 }
-
-// The current route doesn't send a mode yet, so it uses this general prompt.
-// Remove it once the route calls buildFeedbackPrompt directly.
-export const FEEDBACK_SYSTEM_PROMPT = buildFeedbackPrompt("practice");

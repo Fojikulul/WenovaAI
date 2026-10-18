@@ -24,7 +24,8 @@ export type Feedback = {
   grade?: Grade | null;
 };
 
-const GRADE_AREAS = ["grammar", "vocabulary", "organization", "clarity"] as const;
+// Shared with the JSON schema in claude.ts, so both check the same areas.
+export const GRADE_AREAS = ["grammar", "vocabulary", "organization", "clarity"] as const;
 
 // Checks the essay grade. Returns the clean grade, null for "no grade",
 // or undefined if the grade is broken.
@@ -45,10 +46,7 @@ function validateGrade(data: unknown): Grade | null | undefined {
 
 // Checks that data from Claude has the right shape. Returns clean feedback,
 // or null if something important is missing or the wrong type.
-export function validateFeedback(
-  data: unknown,
-  mode: FeedbackMode = "practice",
-): Feedback | null {
+export function validateFeedback(data: unknown, mode: FeedbackMode): Feedback | null {
   if (typeof data !== "object" || data === null) return null;
 
   const { mistakes, summary, grade } = data as Record<string, unknown>;
@@ -81,4 +79,23 @@ export function validateFeedback(
   const cleanGrade = validateGrade(grade);
   if (cleanGrade === undefined) return null;
   return { mistakes: cleaned, summary, grade: cleanGrade };
+}
+
+// Safety net for the highlighting. The prompt asks Claude for this, and the
+// code makes sure: a mistake is kept only if its "original" appears exactly
+// once in the student's text and doesn't overlap a mistake kept before it.
+// A rare slip then shows one fewer mistake instead of a broken underline.
+export function keepFindableMistakes(mistakes: Mistake[], text: string): Mistake[] {
+  const kept: { start: number; end: number }[] = [];
+
+  return mistakes.filter(({ original }) => {
+    const start = text.indexOf(original);
+    if (original === "" || start === -1) return false; // not in the text
+    if (text.indexOf(original, start + 1) !== -1) return false; // more than once
+
+    const end = start + original.length;
+    if (kept.some((m) => start < m.end && m.start < end)) return false; // overlaps
+    kept.push({ start, end });
+    return true;
+  });
 }
