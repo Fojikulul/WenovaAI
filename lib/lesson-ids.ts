@@ -1,22 +1,12 @@
-// Lesson ids from CLAUDE.md. When data/lessons.json is written, read the ids
-// from that file instead so the two lists can't drift apart.
-export const LESSON_IDS = [
-  "present-simple",
-  "present-continuous",
-  "past-simple",
-  "past-continuous",
-  "present-perfect",
-  "past-perfect",
-  "future",
-  "articles",
-  "prepositions-in-on-at",
-  "subject-verb-agreement",
-  "plurals",
-  "question-word-order",
-] as const;
+import lessons from "@/data/lessons.json";
 
-export type LessonId = (typeof LESSON_IDS)[number];
+// The allowed "rule" tags are read from data/lessons.json, so the prompt, the
+// JSON schema, and the validator always match the lessons the team wrote.
+// Adding a lesson to that file makes its id usable everywhere.
+export const LESSON_IDS: string[] = lessons.map((lesson) => lesson.id);
 
-export function isLessonId(value: string): value is LessonId {
-  return (LESSON_IDS as readonly string[]).includes(value);
+export type LessonId = string;
+
+export function isLessonId(value: string): boolean {
+  return LESSON_IDS.includes(value);
 }
