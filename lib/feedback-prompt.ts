@@ -25,6 +25,7 @@ const TONE = `## Tone and language
 function whatToCorrect(maxMistakes: number) {
   return `## What to correct
 - Point out only the most important mistakes, at most ${maxMistakes}, most important first. Focus on grammar that makes the meaning unclear or that the student repeats. Skip small style preferences.
+- Only flag clear errors. If a phrase is acceptable English, even if it could be said differently, don't mark it.
 - If there are fewer real mistakes, list only those. Never invent a mistake to fill the list.
 - If the text has no real mistakes, return an empty "mistakes" list and a positive summary.
 - Never rewrite the whole text. Fix only the mistake, and keep the student's own words and ideas.
@@ -65,7 +66,7 @@ Also give the essay a score from 1 to 5 in each area. Use 2 and 4 for writing be
 - vocabulary: 5 = varied words, used correctly. 3 = simple words, with some wrong word choices. 1 = very few words, and wrong words block the meaning.
 - organization: 5 = a clear beginning, middle, and end, with ideas in a logical order. 3 = some order, but it jumps between ideas. 1 = no clear order.
 - clarity: 5 = easy to understand on the first read. 3 = mostly clear, but some sentences need a second read. 1 = hard to understand.
-If the text is not in English, give every score 1.`;
+If the text is not in English, set "grade" to null instead of giving scores.`;
 
 // OUTPUT
 // The exact JSON format from CLAUDE.md. The server still checks Claude's reply
@@ -85,7 +86,9 @@ Reply with JSON only, in exactly this format. No other text and no markdown code
 }
 - "why": one or two short sentences in simple English that explain the rule.
 - "summary": one encouraging sentence that names one thing the student did well and one thing to practice.${
-    mode === "essay" ? `\n- "grade": each score is a whole number from 1 to 5.` : ""
+    mode === "essay"
+      ? `\n- "grade": each score is a whole number from 1 to 5, or null if the text is not in English.`
+      : ""
   }`;
 }
 
