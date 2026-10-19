@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { PracticeQuestion } from "@/app/lessons/lesson";
 
@@ -66,15 +67,52 @@ function QuestionText({ text }: { text: string }) {
   );
 }
 
+// For the score review: the question with the right answer in the blank,
+// e.g. "Water boils at 100 degrees Celsius." A question with no blank
+// shows the answer on its own line.
+function FilledQuestion({ text, answer }: { text: string; answer: string }) {
+  const parts = text.split("___");
+  if (parts.length === 1) {
+    return (
+      <>
+        {text}
+        <strong className="block">{answer}</strong>
+      </>
+    );
+  }
+  return (
+    <>
+      {parts.map((part, index) => (
+        <Fragment key={index}>
+          {index > 0 && <strong>{answer}</strong>}
+          {part}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover";
 
+const outlineButton =
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-6 py-3 font-bold text-primary transition-colors hover:bg-surface";
+
 // Multiple-choice quiz: one question at a time. Answers are checked here in
 // code by comparing the picked option with `answer` (no AI call).
-export default function Quiz({ questions }: { questions: PracticeQuestion[] }) {
+// `next` is where the score screen's main button goes: the next lesson, or
+// back to the list after the last lesson.
+export default function Quiz({
+  questions,
+  next: nextLesson,
+}: {
+  questions: PracticeQuestion[];
+  next: { href: string; label: string };
+}) {
   const [index, setIndex] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
+  // The option the student picked for each question so far, in order. The
+  // score screen uses it to show which ones were right.
+  const [answers, setAnswers] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
   const [barHeight, setBarHeight] = useState(0);
 
@@ -84,6 +122,7 @@ export default function Quiz({ questions }: { questions: PracticeQuestion[] }) {
   const nextRef = useRef<HTMLButtonElement>(null);
   const moveFocus = useRef(false);
 
+  const picked: string | null = answers[index] ?? null;
   const answered = picked !== null;
 
   // After "Next question" or "Try again", move keyboard focus to the new
@@ -133,8 +172,7 @@ export default function Quiz({ questions }: { questions: PracticeQuestion[] }) {
 
   function pick(option: string) {
     if (answered) return; // One try per question.
-    setPicked(option);
-    if (option === question.answer) setScore(score + 1);
+    setAnswers([...answers, option]);
   }
 
   function next() {
@@ -144,40 +182,91 @@ export default function Quiz({ questions }: { questions: PracticeQuestion[] }) {
     } else {
       setIndex(index + 1);
     }
-    setPicked(null);
   }
 
   function tryAgain() {
     moveFocus.current = true;
     setIndex(0);
-    setPicked(null);
-    setScore(0);
+    setAnswers([]);
     setFinished(false);
   }
 
   if (finished) {
+    const score = questions.filter((q, i) => answers[i] === q.answer).length;
     const perfect = score === questions.length;
+    const isLastLesson = nextLesson.href === "/lessons";
     return (
-      <div className="mt-6 rounded-xl border border-divider bg-background p-6">
+      <div className="mt-6 rounded-xl border border-divider bg-background p-6 md:p-8">
+        {/* The whole heading is read as one: "3 of 4 questions right". */}
         <h3
           ref={headingRef}
           tabIndex={-1}
-          className="text-lg font-semibold md:text-xl"
+          className="flex flex-wrap items-baseline gap-x-2"
         >
-          You got {score} of {questions.length} right
+          <span className="text-5xl font-bold">{score}</span>{" "}
+          <span className="text-2xl font-semibold text-muted">of {questions.length}</span>{" "}
+          <span className="w-full text-lg font-semibold md:text-xl">questions right</span>
         </h3>
         <p className="mt-2">
           {perfect
             ? "Perfect score! Great job."
             : "Nice work! Try again to practice the questions you missed."}
         </p>
-        <button type="button" onClick={tryAgain} className={`mt-6 ${primaryButton}`}>
-          <Icon>
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-          </Icon>
-          Try again
-        </button>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Link href={nextLesson.href} className={primaryButton}>
+            {isLastLesson && (
+              <Icon>
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </Icon>
+            )}
+            {nextLesson.label}
+            {!isLastLesson && (
+              <Icon>
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </Icon>
+            )}
+          </Link>
+          <button type="button" onClick={tryAgain} className={outlineButton}>
+            <Icon>
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </Icon>
+            Try again
+          </button>
+        </div>
+
+        {/* Review: every question with the right answer filled in. A check
+            means the student got it; an X shows what they picked instead. */}
+        <h4 className="mt-10 font-heading text-lg font-semibold text-heading md:text-xl">
+          Your answers
+        </h4>
+        <ol className="mt-2">
+          {questions.map((q, i) => {
+            const correct = answers[i] === q.answer;
+            return (
+              <li
+                key={i}
+                className="flex gap-3 border-b border-divider py-4 last:border-b-0"
+              >
+                <span className={`mt-1 ${correct ? "text-correct-text" : "text-hint-text"}`}>
+                  {correct ? <CheckIcon /> : <XIcon />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p>
+                    <span className="sr-only">{correct ? "Correct: " : "Not quite: "}</span>
+                    <FilledQuestion text={q.question} answer={q.answer} />
+                  </p>
+                  {!correct && (
+                    <p className="mt-1 text-muted">Your answer: {answers[i]}</p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     );
   }
@@ -191,6 +280,16 @@ export default function Quiz({ questions }: { questions: PracticeQuestion[] }) {
         <p className="text-muted">
           Question {index + 1} of {questions.length}
         </p>
+        {/* Progress bar: one piece per question, filled in navy once it's
+            answered. The text above says the same, so screen readers skip it. */}
+        <div aria-hidden="true" className="mt-2 flex gap-1.5">
+          {questions.map((q, i) => (
+            <span
+              key={i}
+              className={`h-2 flex-1 rounded-full ${i < answers.length ? "bg-heading" : "bg-divider"}`}
+            />
+          ))}
+        </div>
         <h3
           id={questionId}
           ref={headingRef}

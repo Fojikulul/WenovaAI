@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import Quiz from "@/components/Quiz";
-import { getLesson, getLessons } from "../lesson";
+import { getLesson, getLessonPosition, getLessons, ruleSentences } from "../lesson";
 
 // Build all 12 lesson pages ahead of time, one per id in data/lessons.json.
 export function generateStaticParams() {
@@ -54,12 +54,28 @@ export default function LessonPage({ params }: PageProps<"/lessons/[id]">) {
   );
 }
 
+// A rough time to finish a lesson: 1 minute to read the rule card, plus
+// about 30 seconds for each question, rounded up.
+function minutesToFinish(questionCount: number) {
+  return Math.ceil(1 + questionCount * 0.5);
+}
+
+function plural(count: number, word: string) {
+  return `${count} ${word}${count === 1 ? "" : "s"}`;
+}
+
 async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const lesson = getLesson(id);
   if (!lesson) {
     notFound();
   }
+
+  const position = getLessonPosition(lesson.id);
+  // Where to go after this lesson. The last lesson goes back to the list.
+  const next = position?.next
+    ? { href: `/lessons/${position.next.id}`, label: "Next lesson" }
+    : { href: "/lessons", label: "Back to all lessons" };
 
   return (
     <>
@@ -74,25 +90,58 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
         All lessons
       </Link>
 
-      <h1 className="mt-6 text-[1.75rem] leading-tight font-bold md:text-4xl">
+      {/* Header: where this lesson is in the list, its title, and its size. */}
+      {position && (
+        <p className="mt-6 font-bold text-muted">
+          {position.groupTitle}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          Lesson {position.number} of {position.total}
+        </p>
+      )}
+      <h1 className="mt-1 text-[1.75rem] leading-tight font-bold md:text-4xl">
         {lesson.title}
       </h1>
+      <p className="mt-2 text-muted">
+        {plural(lesson.practice.length, "question")}
+        <span aria-hidden="true"> · </span>
+        <span className="sr-only">, </span>
+        about {minutesToFinish(lesson.practice.length)} min
+      </p>
 
-      {/* Rule card: the rule, one example, and a common mistake fixed. */}
+      {/* Rule card: the rule as short points, one example, and a common
+          mistake fixed. */}
       <section
         aria-labelledby="rule-title"
-        className="mt-8 rounded-xl border border-divider bg-background p-6"
+        className="mt-8 rounded-xl border border-divider bg-background p-6 md:p-8"
       >
         <h2 id="rule-title" className="text-[1.375rem] leading-snug font-semibold md:text-[1.75rem]">
           The rule
         </h2>
-        <p className="mt-3">{lesson.rule}</p>
+        {/* One point per sentence. max-w-[65ch] keeps lines short enough
+            to read easily on big screens. */}
+        <ul className="mt-4 flex max-w-[65ch] flex-col gap-3">
+          {ruleSentences(lesson.rule).map((sentence, index) => (
+            <li key={index} className="flex gap-3">
+              {/* A small green dot, for decoration only. calc() puts it in
+                  the middle of the first line. */}
+              <span
+                aria-hidden="true"
+                className="mt-[calc(0.8em-0.25rem)] size-2 shrink-0 rounded-full bg-logo-green"
+              />
+              <span>{sentence}</span>
+            </li>
+          ))}
+        </ul>
 
         <h3 className="mt-8 text-lg font-semibold md:text-xl">Example</h3>
-        <p className="mt-2 rounded-lg bg-surface px-4 py-3 text-lg">{lesson.example}</p>
+        <p className="mt-3 rounded-lg border-l-4 border-logo-green bg-surface px-4 py-3 text-lg">
+          {lesson.example}
+        </p>
 
         <h3 className="mt-8 text-lg font-semibold md:text-xl">Common mistake</h3>
-        <div className="mt-2 flex flex-col gap-3">
+        {/* Stacked on phones, side by side from tablet size up. */}
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-lg bg-mistake-bg px-4 py-3">
             <p className="flex items-center gap-2 font-bold text-mistake-text">
               <Icon>
@@ -126,8 +175,35 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
         </h2>
         <p className="mt-2 text-muted">Pick the right answer for each question.</p>
         {/* The key starts the quiz fresh if the student opens another lesson. */}
-        <Quiz key={lesson.id} questions={lesson.practice} />
+        <Quiz key={lesson.id} questions={lesson.practice} next={next} />
       </section>
+
+      {/* Link to the next lesson (or back to the list after the last one),
+          for students who skip the quiz. */}
+      <nav aria-label="Next lesson" className="mt-12 border-t border-divider pt-6">
+        <Link
+          href={next.href}
+          className="inline-flex min-h-11 items-center gap-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+        >
+          {position?.next ? (
+            <>
+              Next lesson: {position.next.title}
+              <Icon>
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </Icon>
+            </>
+          ) : (
+            <>
+              <Icon>
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </Icon>
+              {next.label}
+            </>
+          )}
+        </Link>
+      </nav>
     </>
   );
 }

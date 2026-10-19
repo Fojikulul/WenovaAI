@@ -86,9 +86,52 @@ export function getLessonGroups(): LessonGroup[] {
   return groups;
 }
 
-// The text up to the first ".", "!" or "?" that ends a sentence, for the
-// short rule on the lesson list. The full rule stays on the lesson page.
+// Where a lesson is in the list: its number (1-12, the same numbers the list
+// page shows), its section, and the lesson after it (none for the last one).
+export type LessonPosition = {
+  number: number;
+  total: number;
+  groupTitle: string;
+  next: Lesson | undefined;
+};
+
+export function getLessonPosition(id: string): LessonPosition | undefined {
+  const ordered = getLessonGroups().flatMap((group) =>
+    group.lessons.map((lesson) => ({ lesson, groupTitle: group.title })),
+  );
+  const index = ordered.findIndex((item) => item.lesson.id === id);
+  if (index === -1) return undefined;
+  return {
+    number: index + 1,
+    total: ordered.length,
+    groupTitle: ordered[index].groupTitle,
+    next: ordered[index + 1]?.lesson,
+  };
+}
+
+// Short words that end with "." but don't end a sentence.
+const ABBREVIATIONS = ["e.g.", "i.e.", "mr.", "mrs.", "ms.", "dr.", "vs.", "a.m.", "p.m."];
+
+// Splits a rule into sentences, so the lesson page can show it as a list.
+// A sentence ends at ".", "!" or "?" followed by a space and then a capital
+// letter or a quote, unless the word before is one of the abbreviations.
+export function ruleSentences(rule: string): string[] {
+  const sentences: string[] = [];
+  let start = 0;
+  for (const match of rule.matchAll(/[.!?](?=\s+["'‘“A-Z])/g)) {
+    const end = match.index + 1;
+    const lastWord = rule.slice(start, end).trim().split(/\s+/).pop() ?? "";
+    // "(e.g." counts as "e.g.", so strip a bracket or quote at the start.
+    if (ABBREVIATIONS.includes(lastWord.replace(/^["'‘“(]+/, "").toLowerCase())) continue;
+    sentences.push(rule.slice(start, end).trim());
+    start = end;
+  }
+  sentences.push(rule.slice(start).trim());
+  return sentences.filter((sentence) => sentence.length > 0);
+}
+
+// The first sentence of a rule, for the short rule on the lesson list. The
+// full rule stays on the lesson page.
 export function firstSentence(text: string): string {
-  const match = text.match(/^.*?[.!?](?=\s|$)/);
-  return match ? match[0] : text;
+  return ruleSentences(text)[0] ?? text;
 }
