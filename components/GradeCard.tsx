@@ -20,11 +20,12 @@ export function overallScore(grade: Grade): number {
 // it says the same thing, so screen readers skip it.
 function ScoreBars({ score }: { score: number }) {
   return (
-    <span aria-hidden="true" className="flex gap-1">
+    // Narrower bars on phones, so the area name and "3 / 5" fit on one line.
+    <span aria-hidden="true" className="flex shrink-0 gap-1">
       {[1, 2, 3, 4, 5].map((point) => (
         <span
           key={point}
-          className={`h-2 w-6 rounded-full ${point <= score ? "bg-heading" : "bg-divider"}`}
+          className={`h-2 w-4 rounded-full sm:w-6 ${point <= score ? "bg-heading" : "bg-divider"}`}
         />
       ))}
     </span>
@@ -53,10 +54,10 @@ export default function GradeCard({ grade }: { grade: Grade }) {
 
       <ul className="mt-4 flex flex-col gap-3">
         {AREAS.map((area) => (
-          <li key={area.key} className="flex items-center gap-3">
-            <span className="flex-1">{area.label}</span>
+          <li key={area.key} className="flex items-center gap-2 sm:gap-3">
+            <span className="min-w-0 flex-1">{area.label}</span>
             <ScoreBars score={grade[area.key]} />
-            <span aria-hidden="true" className="w-12 text-right font-bold">
+            <span aria-hidden="true" className="w-12 shrink-0 text-right font-bold whitespace-nowrap">
               {grade[area.key]} / 5
             </span>
             <span className="sr-only">{grade[area.key]} out of 5</span>

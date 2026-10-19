@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { checkFix, type FixResult } from "./check-fix";
 import type { LocatedMistake } from "./HighlightedText";
-import { CheckIcon, ExternalLinkIcon, LightbulbIcon, UndoIcon, XIcon } from "./icons";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  ExternalLinkIcon,
+  LightbulbIcon,
+  UndoIcon,
+  XIcon,
+} from "./icons";
 import RuleTag from "./RuleTag";
 
 // What the panel needs from data/lessons.json for one lesson.
@@ -12,7 +20,7 @@ export type LessonInfo = { title: string; example: string };
 const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover";
 const secondaryButton =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-[22px] py-[10px] font-bold text-primary transition-colors hover:bg-surface";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-[22px] py-[10px] font-bold text-primary transition-colors hover:bg-surface aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:bg-background";
 const mistakeWords =
   "rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]";
 
@@ -31,6 +39,8 @@ export default function MistakeFix({
   onApply,
   onUndo,
   onClose,
+  onPrevious,
+  onNext,
 }: {
   mistake: LocatedMistake;
   total: number;
@@ -39,6 +49,8 @@ export default function MistakeFix({
   onApply: () => void;
   onUndo: () => void;
   onClose: () => void;
+  onPrevious?: () => void; // undefined on the first mistake
+  onNext?: () => void; // undefined on the last mistake
 }) {
   // Starts with the student's own words, so they only change what's wrong.
   const [answer, setAnswer] = useState(mistake.original);
@@ -198,9 +210,11 @@ export default function MistakeFix({
             <span className="font-bold">Why: </span>
             {mistake.why}
           </p>
+          {/* The lesson's general example, not a fix of the student's
+              sentence, so the label says it's about the rule. */}
           {lesson && (
             <div>
-              <p className="font-bold">Correct example:</p>
+              <p className="font-bold">Another example of this rule:</p>
               <p className="mt-1 rounded-lg bg-surface px-4 py-3">{lesson.example}</p>
             </div>
           )}
@@ -223,6 +237,27 @@ export default function MistakeFix({
           <ExternalLinkIcon />
           <span className="sr-only">(opens in a new tab)</span>
         </a>
+      )}
+
+      {/* Move between mistakes in the order of the text. At the first or
+          last mistake the button stays (so nothing jumps) but does nothing;
+          aria-disabled keeps it focusable. */}
+      {total > 1 && (
+        <div className="mt-6 flex justify-between gap-3 border-t border-divider pt-4">
+          <button
+            type="button"
+            onClick={onPrevious}
+            aria-disabled={!onPrevious}
+            className={secondaryButton}
+          >
+            <ArrowLeftIcon />
+            Previous
+          </button>
+          <button type="button" onClick={onNext} aria-disabled={!onNext} className={secondaryButton}>
+            Next
+            <ArrowRightIcon />
+          </button>
+        </div>
       )}
     </div>
   );

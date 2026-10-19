@@ -6,6 +6,7 @@ import HighlightedText, { locateMistakes, withFixes } from "@/components/Highlig
 import {
   AlertIcon,
   CheckIcon,
+  ExternalLinkIcon,
   FileTextIcon,
   HourglassIcon,
   PencilIcon,
@@ -150,6 +151,19 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
 
   const ruleTitle = (rule: string) => lessons[rule]?.title ?? "Other";
 
+  // "What to work on": how many mistakes each lesson had (fixed ones count
+  // too), the top 3, most mistakes first. Ties keep the order of the text.
+  // "other" and rules without a lesson are left out: there's nothing to link.
+  const lessonCounts = new Map<string, number>();
+  for (const mistake of mistakes) {
+    if (!lessons[mistake.rule]) continue;
+    lessonCounts.set(mistake.rule, (lessonCounts.get(mistake.rule) ?? 0) + 1);
+  }
+  const workOn = [...lessonCounts.entries()]
+    .map(([rule, count]) => ({ rule, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
   // The id of an element to move keyboard focus to once the page has updated
@@ -283,10 +297,10 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     setSelected(selected === index ? null : index);
   }
 
-  // Picking a mistake from the list opens it and scrolls its highlight to the
-  // middle of the screen, so the sentence around it shows too. The scroll is
-  // instant (no animation).
-  function selectFromList(index: number) {
+  // Opens a mistake from the list or from Previous/Next, and scrolls its
+  // highlight to the middle of the screen, so the sentence around it shows
+  // too. The scroll is instant (no animation).
+  function openMistake(index: number) {
     setSelected(index);
     document
       .getElementById(`mistake-${mistakes[index].number}`)
@@ -338,6 +352,9 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                 onApply={() => setFixApplied(selected, true)}
                 onUndo={() => setFixApplied(selected, false)}
                 onClose={closePanel}
+                // Previous and Next follow the order of the text.
+                onPrevious={selected > 0 ? () => openMistake(selected - 1) : undefined}
+                onNext={selected < mistakes.length - 1 ? () => openMistake(selected + 1) : undefined}
               />
             )
           }
@@ -512,7 +529,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                     <li key={mistake.start}>
                       <button
                         type="button"
-                        onClick={() => selectFromList(index)}
+                        onClick={() => openMistake(index)}
                         aria-expanded={selected === index}
                         className={`flex w-full flex-col gap-2 rounded-lg border-2 p-3 text-left transition-colors ${
                           selected === index
@@ -520,8 +537,10 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                             : "border-divider hover:border-primary"
                         }`}
                       >
-                        <span className="flex items-center justify-between gap-3">
-                          <span className="flex items-center gap-2 font-bold text-muted">
+                        {/* On narrow screens the rule tag moves to its own
+                            line instead of squeezing "Mistake 1". */}
+                        <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                          <span className="flex items-center gap-2 font-bold whitespace-nowrap text-muted">
                             Mistake {mistake.number}
                             {applied.has(index) && (
                               <span className="flex items-center gap-1 text-correct-text">
@@ -544,6 +563,44 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                           )}
                         </span>
                       </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* A suggestion, never automatic: the student decides whether to
+                open a lesson. Links open in a new tab, so the results stay. */}
+            {workOn.length > 0 && (
+              <section aria-labelledby="work-on-title">
+                <h3 id="work-on-title" className="text-lg font-semibold md:text-xl">
+                  What to work on
+                </h3>
+                <p className="mt-1 text-muted">You might want to practice these lessons:</p>
+                <ul className="mt-4 flex flex-col gap-3">
+                  {workOn.map(({ rule, count }) => (
+                    <li
+                      key={rule}
+                      className="flex flex-col gap-1 rounded-lg border border-divider p-3"
+                    >
+                      <span>
+                        <span className="font-bold">{lessons[rule].title}</span>{" "}
+                        <span className="text-muted">({plural(count, "mistake")})</span>
+                      </span>
+                      <a
+                        href={`/lessons/${rule}#practice-title`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-11 items-center gap-2 self-start font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+                      >
+                        Practice this lesson
+                        <ExternalLinkIcon />
+                        {/* Every link has the same words, so screen readers
+                            also hear which lesson it is. */}
+                        <span className="sr-only">
+                          : {lessons[rule].title} (opens in a new tab)
+                        </span>
+                      </a>
                     </li>
                   ))}
                 </ul>
