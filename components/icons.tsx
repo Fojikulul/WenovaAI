@@ -46,6 +46,26 @@ export function CheckIcon() {
   );
 }
 
+export function LightbulbIcon() {
+  return (
+    <Icon>
+      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+    </Icon>
+  );
+}
+
+export function ExternalLinkIcon() {
+  return (
+    <Icon>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3" />
+    </Icon>
+  );
+}
+
 export function AlertIcon() {
   return (
     <Icon>

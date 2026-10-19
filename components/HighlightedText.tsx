@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Mistake } from "@/lib/validate-feedback";
+import { CheckIcon } from "./icons";
 
 // A mistake plus where it is in the student's text.
 export type LocatedMistake = Mistake & {
@@ -27,6 +28,19 @@ export function locateMistakes(text: string, mistakes: Mistake[]): LocatedMistak
     .map((mistake, index) => ({ ...mistake, number: index + 1 }));
 }
 
+// The text with the applied fixes put in (`applied` holds indexes in
+// `mistakes`). The original text is never changed, so Undo always works.
+export function withFixes(text: string, mistakes: LocatedMistake[], applied: ReadonlySet<number>) {
+  let result = "";
+  let position = 0;
+  mistakes.forEach((mistake, index) => {
+    if (!applied.has(index)) return;
+    result += text.slice(position, mistake.start) + mistake.fix;
+    position = mistake.end;
+  });
+  return result + text.slice(position);
+}
+
 // Splits the text into paragraphs at line breaks. A line break inside a
 // mistake doesn't split, so every mistake stays in one paragraph.
 function paragraphRanges(text: string, mistakes: LocatedMistake[]) {
@@ -45,11 +59,13 @@ function paragraphRanges(text: string, mistakes: LocatedMistake[]) {
 }
 
 // The student's essay with each mistake highlighted in their own words
-// (MASTER.md "Mistake Highlight"). Each highlight is a button. `panel` (the
-// fix panel) is shown under the paragraph with the selected mistake.
+// (MASTER.md "Mistake Highlight"). Each highlight is a button. A fixed mistake
+// shows the fix in green with a check icon. `panel` (the fix panel) is shown
+// under the paragraph with the selected mistake.
 export default function HighlightedText({
   text,
   mistakes,
+  applied,
   selected,
   onSelect,
   ruleTitle,
@@ -57,6 +73,7 @@ export default function HighlightedText({
 }: {
   text: string;
   mistakes: LocatedMistake[];
+  applied: ReadonlySet<number>; // indexes in `mistakes` that the student fixed
   selected: number | null; // index in `mistakes`, or null when none is open
   onSelect: (index: number) => void;
   ruleTitle: (rule: string) => string;
@@ -74,7 +91,20 @@ export default function HighlightedText({
           if (mistake.start > position) parts.push(text.slice(position, mistake.start));
 
           const isSelected = index === selected;
+          const isFixed = applied.has(index);
           if (isSelected) hasSelected = true;
+
+          // Fixed: green background, solid underline, check icon.
+          // Not fixed: the mistake highlight. Open: plus an outline.
+          const look = isFixed
+            ? "bg-correct-bg decoration-correct-border decoration-solid"
+            : "bg-mistake-bg decoration-mistake-line decoration-wavy";
+          const ring = isSelected
+            ? isFixed
+              ? "ring-2 ring-correct-border"
+              : "ring-2 ring-mistake-line"
+            : "";
+
           parts.push(
             <button
               key={mistake.start}
@@ -82,14 +112,19 @@ export default function HighlightedText({
               type="button"
               onClick={() => onSelect(index)}
               aria-expanded={isSelected}
-              className={`cursor-pointer rounded px-0.5 text-left underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone] transition-colors ${
-                isSelected ? "bg-mistake-bg ring-2 ring-mistake-line" : "bg-mistake-bg"
-              }`}
+              aria-controls={isSelected ? "fix-panel" : undefined}
+              className={`cursor-pointer rounded px-0.5 text-left underline decoration-2 underline-offset-4 [box-decoration-break:clone] transition-colors ${look} ${ring}`}
             >
               <span className="sr-only">
-                Mistake {mistake.number} of {mistakes.length}, {ruleTitle(mistake.rule)}:{" "}
+                Mistake {mistake.number} of {mistakes.length}, {isFixed ? "fixed, " : ""}
+                {ruleTitle(mistake.rule)}:{" "}
               </span>
-              {mistake.original}
+              {isFixed ? mistake.fix : mistake.original}
+              {isFixed && (
+                <span className="ml-1 inline-block align-[-0.2em] text-correct-text">
+                  <CheckIcon />
+                </span>
+              )}
             </button>,
           );
           position = mistake.end;

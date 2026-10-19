@@ -76,6 +76,34 @@ Both areas are cards (MASTER.md card spec): white, 1px `divider` border, 12px co
   carry the meaning. Shown in a `surface` panel inside the card.
 - Picking a mistake from the list scrolls its highlight to the middle of the screen,
   instantly (no animation).
+- With results, the two cards are **not** stretched to the same height: each is only as
+  tall as its content, so a short essay doesn't leave a big empty card (Vasyl, Option A).
+
+## Fix panel (MistakeFix)
+
+Opens inline under the paragraph with the mistake (MASTER.md "Fix Panel"): white, 1px
+`divider` border, 12px corners, 16px / 24px padding. Top to bottom:
+1. "Mistake 2 of 5", the rule tag, and an icon-only Close button (44px, blue X). Escape
+   also closes it, and focus goes back to the highlight.
+2. "Your writing:" and the student's words in the mistake style.
+3. "Try to fix it:" input, **prefilled with the student's words** so they only change the
+   wrong part, then "Check my fix" (primary) and "Show answer" (secondary, hidden once the
+   answer is showing).
+4. The result:
+   - Match: correct box, check icon, "You got it!"
+   - Sent back unchanged: hint box, lightbulb, "That's the same as before. What word needs
+     to change?" (a nudge, no answer).
+   - No match: hint box, lightbulb, "Good try! Here's one way:" and the fix in bold.
+   - "Show answer": the same box with "Here's one way:".
+5. Once the answer is showing: "Why:" and the reason, "Correct example:" with the lesson's
+   example in a `surface` box (skipped for "other"), and "Apply this fix" (secondary).
+6. After applying: "Fixed in your essay." (green, check icon) and "Undo".
+7. "Practice this rule": a green underlined link with an external-link icon, opens
+   `/lessons/<id>#practice-title` in a new tab. Hidden for "other".
+
+A fixed mistake shows the fix in the essay with a `correct-bg` background, a solid green
+underline, and a check icon; in the list it shows "Fixed" with a check icon. The count
+reads "5 things to fix · 1 fixed".
 
 ## Loading
 

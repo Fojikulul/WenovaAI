@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import GradeCard from "@/components/GradeCard";
-import HighlightedText, { locateMistakes } from "@/components/HighlightedText";
+import HighlightedText, { locateMistakes, withFixes } from "@/components/HighlightedText";
 import {
   AlertIcon,
   CheckIcon,
@@ -12,6 +12,7 @@ import {
   UndoIcon,
   XIcon,
 } from "@/components/icons";
+import MistakeFix, { type LessonInfo } from "@/components/MistakeFix";
 import RuleTag from "@/components/RuleTag";
 import { MAX_TEXT_LENGTH_BY_MODE } from "@/lib/limits";
 import type { Feedback } from "@/lib/validate-feedback";
@@ -23,6 +24,28 @@ const NEAR_LIMIT = Math.floor(MAX_LENGTH * 0.9);
 
 const TRY_AGAIN = "We couldn't check your writing right now. Please try again.";
 const WRITE_FIRST = "Please write something first.";
+
+// The draft is kept in sessionStorage: only in this browser tab, on the
+// student's own device, and deleted by the browser when the tab closes. It
+// never goes to our server. Only the text is kept, never the feedback.
+const DRAFT_KEY = "wenova-essay-draft";
+
+function saveDraft(text: string) {
+  // Storage can be turned off or full (for example in private windows), so
+  // any error is ignored and the page works without saving.
+  try {
+    if (text === "") sessionStorage.removeItem(DRAFT_KEY);
+    else sessionStorage.setItem(DRAFT_KEY, text);
+  } catch {}
+}
+
+function loadDraft(): string {
+  try {
+    return sessionStorage.getItem(DRAFT_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
 
 const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:bg-primary";
@@ -95,9 +118,11 @@ function CenteredState({ icon, title, children }: { icon: ReactNode; title: stri
 type Status = "editing" | "checking" | "results";
 
 // The whole Essay Checker: the text box, the "Check my writing" request, and
-// the results. Student writing stays in this component's state only; it is
-// never saved or logged.
-export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<string, string> }) {
+// the results. Student writing is never logged or saved on a server; the
+// current draft is kept in this browser tab only (see DRAFT_KEY).
+export default function EssayChecker({ lessons }: { lessons: Record<string, LessonInfo> }) {
+  // The text box. It also gets the applied fixes, so "Edit my writing" and
+  // the saved draft include them.
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("editing");
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +134,8 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
   const [clearedText, setClearedText] = useState<string | null>(null);
   // The open mistake: an index in `mistakes` (text order), or null.
   const [selected, setSelected] = useState<number | null>(null);
+  // The mistakes the student applied a fix to (indexes in `mistakes`).
+  const [applied, setApplied] = useState<ReadonlySet<number>>(new Set());
 
   // The mistakes with their place in the text, in the order they appear.
   const mistakes = useMemo(
@@ -121,10 +148,13 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
     .map((mistake, index) => ({ mistake, index }))
     .sort((a, b) => a.mistake.rank - b.mistake.rank);
 
-  const ruleTitle = (rule: string) => lessonTitles[rule] ?? "Other";
+  const ruleTitle = (rule: string) => lessons[rule]?.title ?? "Other";
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
+  // The id of an element to move keyboard focus to once the page has updated
+  // (for example a highlight, after its panel closes).
+  const focusAfterUpdate = useRef<string | null>(null);
 
   const checking = status === "checking";
   const length = text.length;
@@ -137,6 +167,26 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
   useEffect(() => {
     if (status === "results") resultsHeadingRef.current?.focus();
   }, [status]);
+
+  // Runs after every update: if a focus move is waiting, do it now that the
+  // element is on the page.
+  useEffect(() => {
+    if (focusAfterUpdate.current === null) return;
+    document.getElementById(focusAfterUpdate.current)?.focus();
+    focusAfterUpdate.current = null;
+  });
+
+  // Coming back to the page: put the saved draft back in the box. This runs
+  // once, after the first render, because the server can't see sessionStorage
+  // (reading it during the first render would make the server's page and the
+  // browser's page different).
+  useEffect(() => {
+    const draft = loadDraft();
+    // Reading browser storage once is what effects are for, so the lint rule
+    // against setting state in an effect is turned off for this line only.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (draft !== "") setText(draft);
+  }, []);
 
   async function check(event: FormEvent) {
     event.preventDefault();
@@ -169,6 +219,7 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
       setFeedback(data as Feedback);
       setCheckedText(sent);
       setSelected(null);
+      setApplied(new Set());
       setStatus("results");
     } catch {
       // No internet, or the server didn't answer.
@@ -177,8 +228,15 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
     }
   }
 
-  function changeText(value: string) {
+  // Every change to the text goes through here, so the saved draft always
+  // matches the box.
+  function updateText(value: string) {
     setText(value);
+    saveDraft(value);
+  }
+
+  function changeText(value: string) {
+    updateText(value);
     setClearedText(null);
     setError(null); // An old error no longer fits the new text.
   }
@@ -188,18 +246,36 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
     textareaRef.current?.focus();
   }
 
+  // Clearing also deletes the saved draft. "Undo clear" saves it again.
   function clear() {
     setClearedText(text);
-    setText("");
+    updateText("");
     setError(null);
     textareaRef.current?.focus();
   }
 
   function undoClear() {
     if (clearedText === null) return;
-    setText(clearedText);
+    updateText(clearedText);
     setClearedText(null);
     textareaRef.current?.focus();
+  }
+
+  // Apply or undo one fix. The highlights always come from the checked text,
+  // and the text box gets that text with the applied fixes put in.
+  function setFixApplied(index: number, isApplied: boolean) {
+    const next = new Set(applied);
+    if (isApplied) next.add(index);
+    else next.delete(index);
+    setApplied(next);
+    updateText(withFixes(checkedText, mistakes, next));
+  }
+
+  // Closing the panel puts keyboard focus back on the highlight it came from.
+  function closePanel() {
+    if (selected === null) return;
+    focusAfterUpdate.current = `mistake-${mistakes[selected].number}`;
+    setSelected(null);
   }
 
   // Tapping a highlight opens that mistake; tapping it again closes it.
@@ -217,12 +293,13 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
       ?.scrollIntoView({ block: "center" });
   }
 
+  // Back to the text box, with any applied fixes already in the text.
   function editAgain() {
     setStatus("editing");
     setFeedback(null);
     setSelected(null);
-    // Wait for the text box to be back on the page before focusing it.
-    requestAnimationFrame(() => textareaRef.current?.focus());
+    setApplied(new Set());
+    focusAfterUpdate.current = "essay"; // the text box, once it's back
   }
 
   let writingCard: ReactNode;
@@ -245,9 +322,25 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
         <HighlightedText
           text={checkedText}
           mistakes={mistakes}
+          applied={applied}
           selected={selected}
           onSelect={selectInText}
           ruleTitle={ruleTitle}
+          panel={
+            selected !== null && (
+              // The key starts the panel fresh for each mistake.
+              <MistakeFix
+                key={mistakes[selected].start}
+                mistake={mistakes[selected]}
+                total={mistakes.length}
+                lesson={lessons[mistakes[selected].rule]}
+                applied={applied.has(selected)}
+                onApply={() => setFixApplied(selected, true)}
+                onUndo={() => setFixApplied(selected, false)}
+                onClose={closePanel}
+              />
+            )
+          }
         />
       </Card>
     );
@@ -347,8 +440,14 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
   }
 
   return (
-    // On desktop the grid stretches both cards to the same height.
-    <div className="mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12">
+    // On desktop the grid stretches both cards to the same height while
+    // editing. With results, each card is only as tall as its content
+    // (items-start), so a short essay doesn't leave a big empty card.
+    <div
+      className={`mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12 ${
+        status === "results" ? "lg:items-start" : ""
+      }`}
+    >
       {writingCard}
 
       <Card
@@ -389,6 +488,7 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
             {mistakes.length > 0 ? (
               <p className="text-lg font-bold">
                 {plural(mistakes.length, "thing")} to fix
+                {applied.size > 0 && ` · ${applied.size} fixed`}
               </p>
             ) : (
               feedback.grade && (
@@ -421,13 +521,27 @@ export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<st
                         }`}
                       >
                         <span className="flex items-center justify-between gap-3">
-                          <span className="font-bold text-muted">Mistake {mistake.number}</span>
-                          <RuleTag title={lessonTitles[mistake.rule]} />
+                          <span className="flex items-center gap-2 font-bold text-muted">
+                            Mistake {mistake.number}
+                            {applied.has(index) && (
+                              <span className="flex items-center gap-1 text-correct-text">
+                                <CheckIcon />
+                                Fixed
+                              </span>
+                            )}
+                          </span>
+                          <RuleTag title={lessons[mistake.rule]?.title} />
                         </span>
                         <span className="text-lg">
-                          <span className="rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]">
-                            {mistake.original}
-                          </span>
+                          {applied.has(index) ? (
+                            <span className="rounded bg-correct-bg px-0.5 underline decoration-correct-border decoration-2 underline-offset-4 [box-decoration-break:clone]">
+                              {mistake.fix}
+                            </span>
+                          ) : (
+                            <span className="rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]">
+                              {mistake.original}
+                            </span>
+                          )}
                         </span>
                       </button>
                     </li>
