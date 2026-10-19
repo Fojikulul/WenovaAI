@@ -1,6 +1,4 @@
-// The text the "Try an example" button puts in the box.
-// PLACEHOLDER: Vasyl will write the real example paragraph and put it here.
-// For now it's the sample essay from lib/mock-feedback.ts, so the underlines
-// line up with the mock feedback when there's no API key.
+// The text the "Try an example" button puts in the box. Written by Vasyl,
+// with mistakes on purpose so students can see how the checker works.
 export const EXAMPLE_ESSAY =
-  "My dream is to become a engineer. I want to build the bridges that help people in my country. In my city there is an university with good program for engineering. The math is hard for me, but I study every day.";
+  "Last year, my family move to a new country, and everything felt unfamiliar. On the first day of school, I was nervous because I didn't knew anyone. My teacher gave me a advice and helped me feel more comfortable. After school, I talked with a classmate who was interested on the same hobbies as me. Now, I feel more confident speaking English, and I enjoy learning something new every day.";
