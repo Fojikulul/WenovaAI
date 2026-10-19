@@ -156,7 +156,9 @@ plurals, question-word-order
 - Keep changes small and focused on one feature or issue
 - Never expose `ANTHROPIC_API_KEY` to the client. Never commit `.env*` files. The repo is PUBLIC.
 - Validate Claude's JSON on the server; if it's invalid, return a friendly error instead of crashing
-- Don't store or log student writing, and don't collect personal info
+- Don't store student writing on our server or log it anywhere, and don't collect personal info.
+  The Essay Checker may keep the current draft in the browser's sessionStorage (this tab only,
+  deleted when the tab closes).
 - Don't add new dependencies without asking
 - Check multiple-choice answers and interactive fixes in code, not with AI
 
