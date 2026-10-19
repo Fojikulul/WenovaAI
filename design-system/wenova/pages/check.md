@@ -53,6 +53,30 @@ Both areas are cards (MASTER.md card spec): white, 1px `divider` border, 12px co
 - While checking: the same centered layout with the hourglass icon and "Checking your
   writing…".
 
+## Results
+
+- **Writing card:** the essay in paragraphs (split at line breaks, never inside a mistake),
+  18px, line height 1.7. Each mistake is a button with the MASTER.md mistake highlight.
+  The open mistake also gets a 2px `mistake-line` outline (a box-shadow ring, so it never
+  hides the blue keyboard focus ring).
+- **Numbers** ("Mistake 2 of 5") follow the order of the text. Screen readers hear
+  "Mistake 2 of 5, Past Simple:" before the words.
+- **Feedback card, top to bottom:** summary; "5 things to fix" (bold); the grade; "Your
+  mistakes" with "Most important first." and the list in the server's order.
+- **No mistakes** and a grade: a correct box (check icon, "Nothing to fix. Great work!").
+  **Not in English** (`grade: null`): only the summary, which asks for English. No correct
+  box, because there was nothing to check.
+- **List items** are buttons: "Mistake 2" and the rule tag on top, the words below in the
+  mistake style. Normal: 2px `divider` border, `primary` border on hover. Open: 2px
+  `primary` border on a `surface` background.
+- **Grade:** "Practice estimate" / "Not an official grade.", the overall score (average of
+  the four areas, rounded to one decimal) in large Lexend, then each area with five bars
+  and "3 / 5". Filled bars use `heading` navy (not blue, which is for buttons, and not green,
+  which means "correct"); empty bars use `divider`. The bars are decoration: the numbers
+  carry the meaning. Shown in a `surface` panel inside the card.
+- Picking a mistake from the list scrolls its highlight to the middle of the screen,
+  instantly (no animation).
+
 ## Loading
 
 - **No spinner or moving bar** (CLAUDE.md: no animations). While checking, the button shows

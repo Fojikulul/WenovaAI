@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import GradeCard from "@/components/GradeCard";
+import HighlightedText, { locateMistakes } from "@/components/HighlightedText";
 import {
   AlertIcon,
+  CheckIcon,
   FileTextIcon,
   HourglassIcon,
   PencilIcon,
   UndoIcon,
   XIcon,
 } from "@/components/icons";
+import RuleTag from "@/components/RuleTag";
 import { MAX_TEXT_LENGTH_BY_MODE } from "@/lib/limits";
 import type { Feedback } from "@/lib/validate-feedback";
 import { EXAMPLE_ESSAY } from "./example-essay";
@@ -93,7 +97,7 @@ type Status = "editing" | "checking" | "results";
 // The whole Essay Checker: the text box, the "Check my writing" request, and
 // the results. Student writing stays in this component's state only; it is
 // never saved or logged.
-export default function EssayChecker() {
+export default function EssayChecker({ lessonTitles }: { lessonTitles: Record<string, string> }) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("editing");
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +107,21 @@ export default function EssayChecker() {
   // The text from just before "Clear", so "Undo clear" can bring it back.
   // Forgotten as soon as the student types or picks the example.
   const [clearedText, setClearedText] = useState<string | null>(null);
+  // The open mistake: an index in `mistakes` (text order), or null.
+  const [selected, setSelected] = useState<number | null>(null);
+
+  // The mistakes with their place in the text, in the order they appear.
+  const mistakes = useMemo(
+    () => (feedback ? locateMistakes(checkedText, feedback.mistakes) : []),
+    [feedback, checkedText],
+  );
+  // The same mistakes, most important first (the order the server sent), for
+  // the list in the feedback card. `index` still points into `mistakes`.
+  const mistakesByImportance = mistakes
+    .map((mistake, index) => ({ mistake, index }))
+    .sort((a, b) => a.mistake.rank - b.mistake.rank);
+
+  const ruleTitle = (rule: string) => lessonTitles[rule] ?? "Other";
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -149,6 +168,7 @@ export default function EssayChecker() {
 
       setFeedback(data as Feedback);
       setCheckedText(sent);
+      setSelected(null);
       setStatus("results");
     } catch {
       // No internet, or the server didn't answer.
@@ -182,9 +202,25 @@ export default function EssayChecker() {
     textareaRef.current?.focus();
   }
 
+  // Tapping a highlight opens that mistake; tapping it again closes it.
+  function selectInText(index: number) {
+    setSelected(selected === index ? null : index);
+  }
+
+  // Picking a mistake from the list opens it and scrolls its highlight to the
+  // middle of the screen, so the sentence around it shows too. The scroll is
+  // instant (no animation).
+  function selectFromList(index: number) {
+    setSelected(index);
+    document
+      .getElementById(`mistake-${mistakes[index].number}`)
+      ?.scrollIntoView({ block: "center" });
+  }
+
   function editAgain() {
     setStatus("editing");
     setFeedback(null);
+    setSelected(null);
     // Wait for the text box to be back on the page before focusing it.
     requestAnimationFrame(() => textareaRef.current?.focus());
   }
@@ -206,12 +242,13 @@ export default function EssayChecker() {
           </button>
         }
       >
-        {/* Step 2 replaces this with the highlighted text. */}
-        <div className="flex flex-col gap-4 text-lg leading-[1.7]">
-          {checkedText.split(/\n+/).map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
+        <HighlightedText
+          text={checkedText}
+          mistakes={mistakes}
+          selected={selected}
+          onSelect={selectInText}
+          ruleTitle={ruleTitle}
+        />
       </Card>
     );
   } else {
@@ -343,8 +380,62 @@ export default function EssayChecker() {
         )}
 
         {status === "results" && feedback && (
-          // Step 2 adds the count, grade, and list of mistakes.
-          <p>{feedback.summary}</p>
+          <div className="flex flex-col gap-6">
+            <p>{feedback.summary}</p>
+
+            {/* No mistakes: a positive state. But a non-English essay also has
+                no mistakes; it's the one with grade null, and its summary
+                already asks for English, so it gets no "Nothing to fix". */}
+            {mistakes.length > 0 ? (
+              <p className="text-lg font-bold">
+                {plural(mistakes.length, "thing")} to fix
+              </p>
+            ) : (
+              feedback.grade && (
+                <p className="flex items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
+                  <CheckIcon />
+                  Nothing to fix. Great work!
+                </p>
+              )
+            )}
+
+            {feedback.grade && <GradeCard grade={feedback.grade} />}
+
+            {mistakes.length > 0 && (
+              <section aria-labelledby="mistakes-title">
+                <h3 id="mistakes-title" className="text-lg font-semibold md:text-xl">
+                  Your mistakes
+                </h3>
+                <p className="mt-1 text-muted">Most important first.</p>
+                <ul className="mt-4 flex flex-col gap-3">
+                  {mistakesByImportance.map(({ mistake, index }) => (
+                    <li key={mistake.start}>
+                      <button
+                        type="button"
+                        onClick={() => selectFromList(index)}
+                        aria-expanded={selected === index}
+                        className={`flex w-full flex-col gap-2 rounded-lg border-2 p-3 text-left transition-colors ${
+                          selected === index
+                            ? "border-primary bg-surface"
+                            : "border-divider hover:border-primary"
+                        }`}
+                      >
+                        <span className="flex items-center justify-between gap-3">
+                          <span className="font-bold text-muted">Mistake {mistake.number}</span>
+                          <RuleTag title={lessonTitles[mistake.rule]} />
+                        </span>
+                        <span className="text-lg">
+                          <span className="rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]">
+                            {mistake.original}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
         )}
       </Card>
     </div>

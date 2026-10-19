@@ -38,6 +38,14 @@ export function HourglassIcon({ size }: IconProps) {
   );
 }
 
+export function CheckIcon() {
+  return (
+    <Icon>
+      <path d="M20 6 9 17l-5-5" />
+    </Icon>
+  );
+}
+
 export function AlertIcon() {
   return (
     <Icon>
