@@ -257,6 +257,10 @@ export default function EssayChecker() {
             value={text}
             onChange={(event) => changeText(event.target.value)}
             placeholder="Paste or type your essay here…"
+            // Turn off the browser's spellcheck and the Grammarly extension in
+            // this box, so they don't show the mistakes before Wenova does.
+            spellCheck={false}
+            data-gramm="false"
             // Locked while checking, so the highlights match the text that was sent.
             readOnly={checking}
             aria-describedby="essay-counter essay-too-long"
