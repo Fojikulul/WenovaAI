@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { AlertIcon, FileTextIcon, HourglassIcon, PencilIcon, XIcon } from "@/components/icons";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import {
+  AlertIcon,
+  FileTextIcon,
+  HourglassIcon,
+  PencilIcon,
+  UndoIcon,
+  XIcon,
+} from "@/components/icons";
 import { MAX_TEXT_LENGTH_BY_MODE } from "@/lib/limits";
 import type { Feedback } from "@/lib/validate-feedback";
 import { EXAMPLE_ESSAY } from "./example-essay";
@@ -17,7 +24,11 @@ const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:bg-primary";
 const secondaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-[22px] py-[10px] font-bold text-primary transition-colors hover:bg-surface";
-const sectionTitle = "text-[1.375rem] leading-snug font-semibold md:text-[1.75rem]";
+// The secondary button for the small toolbar in a card header: exactly 48px
+// tall and less side padding, so both card headers are the same height.
+const toolbarButton =
+  "inline-flex h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-4 font-bold text-primary transition-colors hover:bg-surface";
+const cardTitle = "text-lg leading-snug font-semibold md:text-xl";
 
 function countWords(text: string) {
   const trimmed = text.trim();
@@ -26,6 +37,55 @@ function countWords(text: string) {
 
 function plural(count: number, word: string) {
   return `${count.toLocaleString("en-US")} ${word}${count === 1 ? "" : "s"}`;
+}
+
+// A card from MASTER.md: white, 1px divider border, rounded corners. The header
+// row holds the title on the left and a small toolbar on the right; on narrow
+// screens the toolbar moves under the title and stays on the right.
+function Card({
+  titleId,
+  title,
+  toolbar,
+  className = "",
+  children,
+}: {
+  titleId: string;
+  title: ReactNode;
+  toolbar?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby={titleId}
+      className={`flex min-w-0 flex-col rounded-xl border border-divider bg-background ${className}`}
+    >
+      {/* 72px tall: a 48px button plus 12px above and below. The dividing
+          line belongs to the body, so it never changes the header height. */}
+      <div className="flex min-h-[4.5rem] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:px-6">
+        {title}
+        {toolbar && (
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+            {toolbar}
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col border-t border-divider p-4 md:p-6">{children}</div>
+    </section>
+  );
+}
+
+// Centered message for the feedback card before there is any feedback.
+function CenteredState({ icon, title, children }: { icon: ReactNode; title: string; children?: ReactNode }) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center py-8 text-center">
+      <span className="flex size-16 items-center justify-center rounded-full bg-surface text-muted">
+        {icon}
+      </span>
+      <h3 className="mt-4 text-lg font-semibold md:text-xl">{title}</h3>
+      {children}
+    </div>
+  );
 }
 
 type Status = "editing" | "checking" | "results";
@@ -40,6 +100,9 @@ export default function EssayChecker() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   // The exact text that was checked. The highlights are found in this text.
   const [checkedText, setCheckedText] = useState("");
+  // The text from just before "Clear", so "Undo clear" can bring it back.
+  // Forgotten as soon as the student types or picks the example.
+  const [clearedText, setClearedText] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -94,15 +157,28 @@ export default function EssayChecker() {
     }
   }
 
+  function changeText(value: string) {
+    setText(value);
+    setClearedText(null);
+    setError(null); // An old error no longer fits the new text.
+  }
+
   function tryExample() {
-    setText(EXAMPLE_ESSAY);
-    setError(null);
+    changeText(EXAMPLE_ESSAY);
     textareaRef.current?.focus();
   }
 
   function clear() {
+    setClearedText(text);
     setText("");
     setError(null);
+    textareaRef.current?.focus();
+  }
+
+  function undoClear() {
+    if (clearedText === null) return;
+    setText(clearedText);
+    setClearedText(null);
     textareaRef.current?.focus();
   }
 
@@ -113,137 +189,160 @@ export default function EssayChecker() {
     requestAnimationFrame(() => textareaRef.current?.focus());
   }
 
-  return (
-    <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px]">
-      {/* Left (or top on phones): the student's writing. */}
-      <section aria-labelledby="writing-title" className="min-w-0">
-        {status === "results" ? (
+  let writingCard: ReactNode;
+  if (status === "results") {
+    writingCard = (
+      <Card
+        titleId="writing-title"
+        title={
+          <h2 id="writing-title" className={cardTitle}>
+            Your writing
+          </h2>
+        }
+        toolbar={
+          <button type="button" onClick={editAgain} className={toolbarButton}>
+            <PencilIcon />
+            Edit my writing
+          </button>
+        }
+      >
+        {/* Step 2 replaces this with the highlighted text. */}
+        <div className="flex flex-col gap-4 text-lg leading-[1.7]">
+          {checkedText.split(/\n+/).map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </div>
+      </Card>
+    );
+  } else {
+    writingCard = (
+      <Card
+        titleId="writing-title"
+        title={
+          <h2 id="writing-title" className={cardTitle}>
+            <label htmlFor="essay">Your writing</label>
+          </h2>
+        }
+        toolbar={
           <>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 id="writing-title" className={sectionTitle}>
-                Your writing
-              </h2>
-              <button type="button" onClick={editAgain} className={secondaryButton}>
-                <PencilIcon />
-                Edit my writing
-              </button>
-            </div>
-            {/* Step 2 replaces this with the highlighted text. */}
-            <div className="mt-4 flex flex-col gap-4 rounded-xl border border-divider p-6 text-lg leading-[1.7]">
-              {checkedText.split(/\n+/).map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </div>
-          </>
-        ) : (
-          <form onSubmit={check}>
-            <h2 id="writing-title" className={sectionTitle}>
-              <label htmlFor="essay">Your writing</label>
-            </h2>
-            <textarea
-              id="essay"
-              ref={textareaRef}
-              value={text}
-              onChange={(event) => {
-                setText(event.target.value);
-                setError(null); // An old error no longer fits the new text.
-              }}
-              // Locked while checking, so the highlights match the text that was sent.
-              readOnly={checking}
-              aria-describedby="essay-counter essay-too-long"
-              className="mt-4 block min-h-[300px] w-full resize-y rounded-lg border border-border bg-background px-4 py-3 text-lg leading-[1.7] text-text read-only:bg-surface"
-            />
-
             <p
               id="essay-counter"
-              className={`mt-2 ${nearLimit ? "font-bold text-hint-text" : "text-muted"}`}
+              className={`text-right ${nearLimit ? "font-bold text-hint-text" : "text-muted"}`}
             >
               {plural(countWords(text), "word")} · {length.toLocaleString("en-US")} /{" "}
               {MAX_LENGTH.toLocaleString("en-US")} characters
               {nearLimit && !tooLong && " · Almost at the limit"}
             </p>
-            {/* A live region, so screen readers hear it when the essay gets too long. */}
-            <p id="essay-too-long" aria-live="polite" className="font-bold text-hint-text">
-              {tooLong &&
-                `That's ${plural(length - MAX_LENGTH, "character")} too many. Please make it shorter.`}
-            </p>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <button type="submit" aria-disabled={!canCheck} className={primaryButton}>
-                {checking ? (
-                  <>
-                    <HourglassIcon />
-                    Checking your writing…
-                  </>
-                ) : (
-                  "Check my writing"
-                )}
+            {/* "Clear" while there is text; "Undo clear" right after clearing,
+                until the student types something. */}
+            {!checking && text !== "" && (
+              <button type="button" onClick={clear} className={toolbarButton}>
+                <XIcon />
+                Clear
               </button>
-              {/* Only one of these shows at a time, so a tap on "Try an example"
-                  never replaces writing the student already put in the box. */}
-              {text === "" ? (
-                <button type="button" onClick={tryExample} className={secondaryButton}>
-                  <FileTextIcon />
-                  Try an example
-                </button>
-              ) : (
-                !checking && (
-                  <button type="button" onClick={clear} className={secondaryButton}>
-                    <XIcon />
-                    Clear
-                  </button>
-                )
-              )}
-            </div>
-
-            {error && (
-              <div
-                role="alert"
-                className="mt-6 flex gap-3 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3 text-hint-text"
-              >
-                <span className="mt-1">
-                  <AlertIcon />
-                </span>
-                <p className="font-bold">{error}</p>
-              </div>
             )}
-          </form>
-        )}
-      </section>
+            {!checking && text === "" && clearedText !== null && (
+              <button type="button" onClick={undoClear} className={toolbarButton}>
+                <UndoIcon />
+                Undo clear
+              </button>
+            )}
+          </>
+        }
+      >
+        <form onSubmit={check} className="flex flex-1 flex-col">
+          <textarea
+            id="essay"
+            ref={textareaRef}
+            value={text}
+            onChange={(event) => changeText(event.target.value)}
+            placeholder="Paste or type your essay here…"
+            // Locked while checking, so the highlights match the text that was sent.
+            readOnly={checking}
+            aria-describedby="essay-counter essay-too-long"
+            className="block min-h-[300px] w-full flex-1 resize-y rounded-lg border border-border bg-background px-4 py-3 text-lg leading-[1.7] text-text placeholder:text-muted read-only:bg-surface lg:min-h-[26rem] lg:resize-none"
+          />
+          {/* A live region, so screen readers hear it when the essay gets too long. */}
+          <p id="essay-too-long" aria-live="polite" className="font-bold text-hint-text">
+            {tooLong &&
+              `That's ${plural(length - MAX_LENGTH, "character")} too many. Please make it shorter.`}
+          </p>
 
-      {/* Right (or bottom on phones): the feedback. */}
-      <section aria-labelledby="feedback-title" className="min-w-0">
-        <h2
-          id="feedback-title"
-          ref={resultsHeadingRef}
-          tabIndex={-1}
-          // Before the first check there is nothing here, so phones skip it.
-          className={`${sectionTitle} ${status === "editing" ? "hidden lg:block" : ""}`}
-        >
-          Your feedback
-        </h2>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <button type="submit" aria-disabled={!canCheck} className={primaryButton}>
+              {checking ? (
+                <>
+                  <HourglassIcon />
+                  Checking your writing…
+                </>
+              ) : (
+                "Check my writing"
+              )}
+            </button>
+            {/* Only while the box is empty, so a tap here never replaces
+                writing the student already put in the box. */}
+            {text === "" && (
+              <button type="button" onClick={tryExample} className={secondaryButton}>
+                <FileTextIcon />
+                Try an example
+              </button>
+            )}
+          </div>
 
-        {/* Always on the page, so screen readers announce "Checking…" when it appears. */}
-        <div role="status">
-          {checking && (
-            <p className="mt-4 flex items-center gap-3 rounded-xl bg-surface p-6 font-bold">
-              <HourglassIcon />
-              Checking your writing…
-            </p>
+          {error && (
+            <div
+              role="alert"
+              className="mt-4 flex gap-3 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3 text-hint-text"
+            >
+              <span className="mt-1">
+                <AlertIcon />
+              </span>
+              <p className="font-bold">{error}</p>
+            </div>
           )}
-        </div>
+        </form>
+      </Card>
+    );
+  }
+
+  return (
+    // On desktop the grid stretches both cards to the same height.
+    <div className="mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12">
+      {writingCard}
+
+      <Card
+        titleId="feedback-title"
+        // Before the first check there is nothing here, so phones skip it.
+        className={status === "editing" ? "hidden lg:flex" : ""}
+        title={
+          <h2 id="feedback-title" ref={resultsHeadingRef} tabIndex={-1} className={cardTitle}>
+            Your feedback
+          </h2>
+        }
+      >
+        {/* Always on the page and empty until checking starts, so screen
+            readers announce it. The box below shows the same words. */}
+        <p role="status" className="sr-only">
+          {checking ? "Checking your writing…" : ""}
+        </p>
 
         {status === "editing" && (
-          <p className="mt-4 hidden rounded-xl bg-surface p-6 text-muted lg:block">
-            Your feedback will show here.
-          </p>
+          <CenteredState icon={<FileTextIcon size={32} />} title="Ready when you are">
+            <p className="mt-2 text-muted">Paste your essay and press Check my writing.</p>
+          </CenteredState>
+        )}
+
+        {checking && (
+          <div aria-hidden="true" className="flex flex-1 flex-col">
+            <CenteredState icon={<HourglassIcon size={32} />} title="Checking your writing…" />
+          </div>
         )}
 
         {status === "results" && feedback && (
           // Step 2 adds the count, grade, and list of mistakes.
-          <p className="mt-4 rounded-xl border border-divider p-6">{feedback.summary}</p>
+          <p>{feedback.summary}</p>
         )}
-      </section>
+      </Card>
     </div>
   );
 }
