@@ -1,15 +1,19 @@
 "use client";
 
-import { useLayoutEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { motion } from "motion/react";
+import { useRef, type KeyboardEvent, type ReactNode } from "react";
 
 // label can be more than plain text, e.g. a shorter word on phones.
 export type PillTab = { id: string; label: ReactNode; badge?: number };
 
 // Pill-shaped tabs, like the option rows in the reference design. A white
-// pill slides to the selected tab. Arrow keys, Home and End move between tabs
-// (the usual keyboard pattern for tabs); only the selected tab is in the Tab
-// order. Each panel needs id `${idPrefix}-panel-${tab.id}` and
-// aria-labelledby `${idPrefix}-tab-${tab.id}`.
+// pill springs to the selected tab (Motion's shared layout animation: the
+// pill has one layoutId, so Motion animates it from the old tab to the new
+// one). The tabs wrap onto a second line when there isn't room, instead of
+// being cut off. Arrow keys, Home and End move between tabs (the usual
+// keyboard pattern for tabs); only the selected tab is in the Tab order.
+// Each panel needs id `${idPrefix}-panel-${tab.id}` and aria-labelledby
+// `${idPrefix}-tab-${tab.id}`.
 export default function PillTabs({
   tabs,
   selected,
@@ -24,27 +28,6 @@ export default function PillTabs({
   label: string;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
-  const pillRef = useRef<HTMLSpanElement>(null);
-
-  // Move the pill under the selected tab, and again whenever the tabs change
-  // size (for example when the font finishes loading). This sets the pill's
-  // style directly instead of using state, so it never lags a frame behind.
-  useLayoutEffect(() => {
-    const list = listRef.current;
-    const pill = pillRef.current;
-    if (!list || !pill) return;
-
-    const place = () => {
-      const tab = list.querySelector<HTMLElement>(`[data-tab="${selected}"]`);
-      if (!tab) return;
-      pill.style.width = `${tab.offsetWidth}px`;
-      pill.style.transform = `translateX(${tab.offsetLeft}px)`;
-    };
-    place();
-    const observer = new ResizeObserver(place);
-    observer.observe(list);
-    return () => observer.disconnect();
-  }, [selected, tabs]);
 
   function moveWithKeys(event: KeyboardEvent) {
     const index = tabs.findIndex((tab) => tab.id === selected);
@@ -66,14 +49,8 @@ export default function PillTabs({
       role="tablist"
       aria-label={label}
       onKeyDown={moveWithKeys}
-      className="relative flex max-w-full shrink-0 gap-1 self-start overflow-x-auto rounded-xl border border-divider bg-surface p-1"
+      className="inline-flex max-w-full flex-wrap justify-center gap-1 rounded-xl border border-divider bg-surface p-1"
     >
-      {/* The sliding pill. It sits behind the tab labels. */}
-      <span
-        ref={pillRef}
-        aria-hidden="true"
-        className="absolute top-1 bottom-1 left-0 rounded-lg border border-divider bg-background shadow-sm transition-[transform,width] duration-200 ease-out"
-      />
       {tabs.map((tab) => {
         const isSelected = tab.id === selected;
         return (
@@ -91,9 +68,19 @@ export default function PillTabs({
               isSelected ? "text-heading" : "text-muted hover:text-heading"
             }`}
           >
-            {tab.label}
+            {/* The white pill. Only the selected tab has it; because every
+                tab's pill shares one layoutId, it springs across. */}
+            {isSelected && (
+              <motion.span
+                layoutId={`${idPrefix}-pill`}
+                aria-hidden="true"
+                className="absolute inset-0 rounded-lg border border-divider bg-background shadow-sm"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              />
+            )}
+            <span className="relative">{tab.label}</span>
             {tab.badge !== undefined && (
-              <span className="rounded-full bg-divider px-2 text-base leading-6 text-heading">
+              <span className="relative rounded-full bg-divider px-2 text-base leading-6 text-heading">
                 {tab.badge}
               </span>
             )}

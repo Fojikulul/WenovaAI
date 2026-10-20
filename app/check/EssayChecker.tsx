@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import GradeCard from "@/components/GradeCard";
 import HighlightedText, { locateMistakes, withFixes } from "@/components/HighlightedText";
@@ -16,7 +17,6 @@ import {
   XIcon,
 } from "@/components/icons";
 import MistakeFix, { type LessonInfo } from "@/components/MistakeFix";
-import PillTabs, { type PillTab } from "@/components/PillTabs";
 import RuleTag from "@/components/RuleTag";
 import { MAX_TEXT_LENGTH_BY_MODE } from "@/lib/limits";
 import type { Feedback } from "@/lib/validate-feedback";
@@ -72,6 +72,13 @@ const startButton =
   "pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-lg border border-dashed border-border bg-background px-4 font-bold text-primary transition-colors hover:border-primary hover:bg-surface";
 const paneTitle = "text-lg leading-snug font-semibold md:text-xl";
 
+// How each part of the feedback appears: it springs up into place. Used with
+// a parent that staggers its children, so the parts arrive one by one.
+const springIn: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
+};
+
 function countWords(text: string) {
   const trimmed = text.trim();
   return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
@@ -116,7 +123,6 @@ function Pane({
 }
 
 type Status = "editing" | "checking" | "results";
-type TabId = "mistakes" | "grade" | "work-on";
 
 // The whole Essay Checker as one card, like the reference design: the
 // student's writing on the left, the feedback on the right, and a bar at the
@@ -139,8 +145,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   const [selected, setSelected] = useState<number | null>(null);
   // The mistakes the student applied a fix to (indexes in `mistakes`).
   const [applied, setApplied] = useState<ReadonlySet<number>>(new Set());
-  // Which feedback tab is showing.
-  const [tab, setTab] = useState<TabId>("mistakes");
 
   // The mistakes with their place in the text, in the order they appear.
   const mistakes = useMemo(
@@ -168,28 +172,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
 
-  // The feedback tabs. A tab only shows when it has something in it: a
-  // non-English essay (no mistakes, grade null) gets no tabs at all, just the
-  // summary asking for English.
-  const tabs: PillTab[] = [];
-  if (mistakes.length > 0 || feedback?.grade) {
-    tabs.push({ id: "mistakes", label: "Mistakes", badge: mistakes.length });
-  }
-  if (feedback?.grade) tabs.push({ id: "grade", label: "Grade" });
-  if (workOn.length > 0) {
-    tabs.push({
-      id: "work-on",
-      // "What to work on" doesn't fit next to the other tabs on phones.
-      label: (
-        <>
-          <span className="sm:hidden">Practice</span>
-          <span className="hidden sm:inline">What to work on</span>
-        </>
-      ),
-    });
-  }
-  const currentTab = tabs.some((t) => t.id === tab) ? tab : tabs[0]?.id;
-
+  const cardRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -204,9 +187,18 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   const canCheck = text.trim() !== "" && !tooLong && !checking;
 
   // When results arrive, move focus to them. On phones they are under the
-  // text box, so this also scrolls them into view.
+  // text box, so focusing also scrolls them into view. From 1024px up the
+  // card grows to the window's full height, so the page scrolls down until
+  // the card fills the screen; the hero stays above it, and the student can
+  // scroll back up to it at any time.
   useEffect(() => {
-    if (status === "results") resultsHeadingRef.current?.focus();
+    if (status !== "results") return;
+    const wide = window.matchMedia("(min-width: 1024px)").matches;
+    resultsHeadingRef.current?.focus({ preventScroll: wide });
+    if (wide) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      cardRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }
   }, [status]);
 
   // Runs after every update: if a focus move is waiting, do it now that the
@@ -261,7 +253,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       setCheckedText(sent);
       setSelected(null);
       setApplied(new Set());
-      setTab("mistakes");
       setStatus("results");
     } catch {
       // No internet, or the server didn't answer.
@@ -519,31 +510,95 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       </Pane>
     );
 
-  // ---- Right side, results: the tab contents ----
-  let tabContent: ReactNode = null;
-  if (currentTab === "mistakes") {
-    tabContent =
-      mistakes.length === 0 ? (
-        // No mistakes (and a grade, so the essay was in English): a positive state.
-        <p className="flex animate-pop items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
-          <CheckIcon />
-          Nothing to fix. Great work!
-        </p>
+  // ---- Right side, results: everything a student needs, in one view ----
+  // Top to bottom: the grade (the first thing a student wants to know), the
+  // summary, the lessons to practice, then the mistakes (the only part that
+  // scrolls). Each part springs in a moment after the one before it.
+  const resultsView = feedback && (
+    <motion.div
+      className="flex min-h-0 flex-1 flex-col gap-3"
+      initial="hidden"
+      animate="show"
+      variants={{ show: { transition: { staggerChildren: 0.08 } } }}
+    >
+      {feedback.grade && (
+        <motion.div variants={springIn} className="shrink-0">
+          <GradeCard grade={feedback.grade} />
+        </motion.div>
+      )}
+
+      <motion.p variants={springIn} className="shrink-0">
+        {feedback.summary}
+      </motion.p>
+
+      {/* A suggestion, never automatic: the student decides whether to open
+          a lesson. Links open in a new tab, so the results stay. */}
+      {workOn.length > 0 && (
+        <motion.section variants={springIn} aria-labelledby="practice-next-title" className="shrink-0">
+          <h3 id="practice-next-title" className="text-base font-semibold md:text-lg">
+            Practice next
+          </h3>
+          <ul className="mt-1.5 flex flex-wrap gap-2">
+            {workOn.map(({ rule, count }) => (
+              <li key={rule}>
+                <motion.a
+                  href={`/lessons/${rule}#practice-title`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tag-bg px-3.5 font-bold text-tag-text transition-colors hover:bg-correct-bg"
+                >
+                  <span className="underline underline-offset-[3px]">{lessons[rule].title}</span>
+                  <span className="rounded-full bg-background px-2 text-base leading-6 font-bold">
+                    {count}
+                  </span>
+                  <ExternalLinkIcon size={16} />
+                  <span className="sr-only">
+                    ({plural(count, "mistake")}, opens in a new tab)
+                  </span>
+                </motion.a>
+              </li>
+            ))}
+          </ul>
+        </motion.section>
+      )}
+
+      {mistakes.length === 0 ? (
+        // No mistakes: a positive state. A non-English essay also has no
+        // mistakes; it's the one with grade null, and its summary already
+        // asks for English, so it gets no "Nothing to fix".
+        feedback.grade && (
+          <motion.p
+            variants={springIn}
+            className="flex items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text"
+          >
+            <CheckIcon />
+            Nothing to fix. Great work!
+          </motion.p>
+        )
       ) : (
-        <>
-          <p className="text-muted">Most important first.</p>
-          <ul className="mt-3 flex flex-col gap-3">
-            {mistakesByImportance.map(({ mistake, index }, position) => (
-              // Each item fades in a moment after the one before it.
-              <li
-                key={mistake.start}
-                className="animate-fade-up"
-                style={{ animationDelay: `${position * 50}ms` }}
-              >
-                <button
+        <motion.section
+          variants={springIn}
+          aria-labelledby="mistakes-title"
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <h3 id="mistakes-title" className="shrink-0 text-base font-semibold md:text-lg">
+            {plural(mistakes.length, "mistake")}{" "}
+            <span className="text-base font-normal text-muted">· most important first</span>
+          </h3>
+          <motion.ul
+            className="mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1"
+            variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
+          >
+            {mistakesByImportance.map(({ mistake, index }) => (
+              <motion.li key={mistake.start} variants={springIn}>
+                <motion.button
                   type="button"
                   onClick={() => openMistake(index)}
-                  className="flex w-full flex-col gap-2 rounded-lg border-2 border-divider p-3 text-left transition-colors hover:border-primary"
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex w-full flex-col gap-1.5 rounded-lg border-2 border-divider p-3 text-left transition-colors hover:border-primary"
                 >
                   {/* On narrow screens the rule tag moves to its own line
                       instead of squeezing "Mistake 1". */}
@@ -570,49 +625,14 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                       </span>
                     )}
                   </span>
-                </button>
-              </li>
+                </motion.button>
+              </motion.li>
             ))}
-          </ul>
-        </>
-      );
-  } else if (currentTab === "grade" && feedback?.grade) {
-    tabContent = <GradeCard grade={feedback.grade} />;
-  } else if (currentTab === "work-on") {
-    // A suggestion, never automatic: the student decides whether to open a
-    // lesson. Links open in a new tab, so the results stay.
-    tabContent = (
-      <>
-        <p className="text-muted">You might want to practice these lessons:</p>
-        <ul className="mt-3 flex flex-col gap-3">
-          {workOn.map(({ rule, count }, position) => (
-            <li
-              key={rule}
-              className="flex animate-fade-up flex-col gap-1 rounded-lg border border-divider p-3"
-              style={{ animationDelay: `${position * 50}ms` }}
-            >
-              <span>
-                <span className="font-bold">{lessons[rule].title}</span>{" "}
-                <span className="text-muted">({plural(count, "mistake")})</span>
-              </span>
-              <a
-                href={`/lessons/${rule}#practice-title`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-2 self-start font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
-              >
-                Practice this lesson
-                <ExternalLinkIcon />
-                {/* Every link has the same words, so screen readers also hear
-                    which lesson it is. */}
-                <span className="sr-only">: {lessons[rule].title} (opens in a new tab)</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </>
-    );
-  }
+          </motion.ul>
+        </motion.section>
+      )}
+    </motion.div>
+  );
 
   // ---- Right side: the feedback ----
   const feedbackPane = (
@@ -644,56 +664,48 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
         </div>
       )}
 
-      {status === "results" && feedback && selected !== null && (
-        // One mistake is open: the fix panel takes the whole side. Its Close
-        // button (or Escape) goes back to the tabs.
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {/* The key starts the panel fresh for each mistake. */}
-          <MistakeFix
-            key={mistakes[selected].start}
-            mistake={mistakes[selected]}
-            total={mistakes.length}
-            lesson={lessons[mistakes[selected].rule]}
-            applied={applied.has(selected)}
-            onApply={() => setFixApplied(selected, true)}
-            onUndo={() => setFixApplied(selected, false)}
-            onClose={closePanel}
-            // Previous and Next follow the order of the text.
-            onPrevious={selected > 0 ? () => openMistake(selected - 1) : undefined}
-            onNext={selected < mistakes.length - 1 ? () => openMistake(selected + 1) : undefined}
-          />
-        </div>
-      )}
-
-      {status === "results" && feedback && selected === null && (
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
-          <p className="shrink-0 animate-fade-up">{feedback.summary}</p>
-          {currentTab && (
-            <>
-              <PillTabs
-                tabs={tabs}
-                selected={currentTab}
-                onSelect={(id) => setTab(id as TabId)}
-                idPrefix="feedback"
-                label="Feedback"
+      {/* Results: the overview, or one open mistake's fix panel, which
+          slides in from the side (and back out) when it opens and closes.
+          The panel's Close button (or Escape) goes back to the overview. */}
+      {status === "results" && feedback && (
+        <AnimatePresence mode="wait" initial={false}>
+          {selected !== null ? (
+            <motion.div
+              key={`fix-${mistakes[selected].start}`}
+              initial={{ opacity: 0, x: 32 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -32 }}
+              transition={{ type: "spring", stiffness: 320, damping: 30 }}
+              className="min-h-0 flex-1 overflow-y-auto"
+            >
+              {/* The key starts the panel fresh for each mistake. */}
+              <MistakeFix
+                key={mistakes[selected].start}
+                mistake={mistakes[selected]}
+                total={mistakes.length}
+                lesson={lessons[mistakes[selected].rule]}
+                applied={applied.has(selected)}
+                onApply={() => setFixApplied(selected, true)}
+                onUndo={() => setFixApplied(selected, false)}
+                onClose={closePanel}
+                // Previous and Next follow the order of the text.
+                onPrevious={selected > 0 ? () => openMistake(selected - 1) : undefined}
+                onNext={selected < mistakes.length - 1 ? () => openMistake(selected + 1) : undefined}
               />
-              <div
-                // Each tab gets its own panel element, so its contents
-                // (and their fade-in) start fresh when the tab changes.
-                key={currentTab}
-                id={`feedback-panel-${currentTab}`}
-                role="tabpanel"
-                aria-labelledby={`feedback-tab-${currentTab}`}
-                // The grade has nothing to click, so the panel itself can take
-                // keyboard focus (for scrolling).
-                tabIndex={currentTab === "grade" ? 0 : undefined}
-                className="min-h-0 flex-1 overflow-y-auto pr-1"
-              >
-                {tabContent}
-              </div>
-            </>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, x: -32 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 32 }}
+              transition={{ type: "spring", stiffness: 320, damping: 30 }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              {resultsView}
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       )}
     </Pane>
   );
@@ -737,11 +749,14 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     );
 
   return (
-    // data-status lets the screen around the card react to it (the hero
-    // folds away while results are showing; see CheckerScreen.tsx).
+    // data-status lets the screen around the card react to it (from 1024px
+    // up the card is the window's full height while results are showing; see
+    // CheckerScreen.tsx). scroll-mt keeps it clear of the sticky header when
+    // the page scrolls to it.
     <div
+      ref={cardRef}
       data-status={status}
-      className="flex h-full flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm"
+      className="flex h-full scroll-mt-[calc(var(--header-height)+0.75rem)] flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm"
     >
       {/* The gradient line along the top, in the logo's blue and green.
           While checking, a light moves along it. Decoration only. */}

@@ -13,7 +13,9 @@
 the team's decisions (logo colors, CLAUDE.md design rules, WCAG AA). See AI_LOG.md.
 **Audience:** teens learning English (not young kids). Calm, clear, encouraging.
 **Design Dials:** Variance 2/10 (Centered / Minimal) | Density 3/10 (Spacious)
-**Mode:** Light only. No dark mode.
+**Mode:** Light and dark (Vasyl, 2026-10-20). Dark values for every color role are in
+`app/globals.css` under `[data-theme="dark"]`; each pair passes WCAG AA (body text 15.2:1,
+muted 8.6:1, buttons 6.7:1 with dark text on light blue, input borders 3.9:1).
 
 ---
 
@@ -261,8 +263,10 @@ No hover lift or movement. A clickable card changes only its border color on hov
 **Keywords:** Clean, simple, spacious, functional, white space, high contrast, sans-serif,
 grid-based, essential
 
-**Motion:** No animations (CLAUDE.md). Only color and background changes on hover, press, and
-focus, 150ms or less. With `prefers-reduced-motion: reduce`, turn transitions off.
+**Motion:** Animated, with Motion (motion.dev) and CSS keyframes (Vasyl, 2026-10-20). Springs
+for things that move into place, short fades for things that appear, nothing that loops except
+the hero stickers and the pulsing dot. With `prefers-reduced-motion: reduce`, movement stops
+(`MotionConfig reducedMotion="user"` and the CSS rule in `globals.css`).
 
 **Icons:** One SVG icon set (Lucide or Heroicons), never emojis. Icons next to text are
 decorative (`aria-hidden`). Icon-only buttons need an `aria-label`.
@@ -287,9 +291,10 @@ An app, not a landing page: no hero banner, testimonials, or marketing sections.
 - ❌ **Feedback colors on buttons or links** (mistake red, hint amber)
 - ❌ **Color as the only signal** (always add an icon or a word)
 - ❌ **Red text for the student's own words** (use the soft highlight instead)
-- ❌ **Dark mode or tinted page backgrounds** (white only)
+- ❌ **Tinted page backgrounds** (white in light mode, `#0B1220` in dark mode; the hero's faint grid
+  and glow are the only exception)
 - ❌ **Playful kids' styling** (rounded cartoon fonts, mascots, confetti)
-- ❌ **Popups, modals, or animations** unless the team asks
+- ❌ **Popups or modals** unless the team asks
 - ❌ **Emojis as icons** (use SVG)
 - ❌ **Text smaller than 16px**
 - ❌ **Invisible focus states**
@@ -307,7 +312,7 @@ Before delivering any UI code, verify:
 - [ ] Tap targets at least 44×44px; buttons 48px tall
 - [ ] Every feedback state has an icon or a word, not color alone
 - [ ] Focus states visible for keyboard navigation
-- [ ] No animations; `prefers-reduced-motion` respected
+- [ ] Animations respect `prefers-reduced-motion` (Motion and CSS)
 - [ ] No emojis as icons; one SVG icon set
 - [ ] Friendly loading and error states
 - [ ] Responsive: 375px, 768px, 1024px, 1440px; no horizontal scroll on mobile

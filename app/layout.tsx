@@ -3,6 +3,8 @@ import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/googl
 import Image from "next/image";
 import Link from "next/link";
 import HeaderNav from "@/components/HeaderNav";
+import MotionProvider from "@/components/MotionProvider";
+import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
 
 // Fonts from design-system/wenova/MASTER.md. next/font serves them from our
@@ -27,16 +29,28 @@ export const metadata: Metadata = {
   description: "A friendly writing coach for students learning English.",
 };
 
+// Runs before the page is drawn: uses the saved theme, or the device's
+// setting on a first visit, so a dark-theme student never sees a white flash.
+const THEME_SCRIPT = `try{var t=localStorage.getItem("wenova-theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t}catch(e){}`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // suppressHydrationWarning: the theme script sets data-theme on <html>
+    // before React loads, so the server's <html> and the browser's differ
+    // on purpose.
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${bricolage.variable} ${atkinson.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col">
+        <MotionProvider>
         {/* Full-width header like the reference design: logo on the left,
-            the page links in the center. The three columns (logo, links,
-            empty) keep the links truly centered. It stays at the top while a
+            the page links in the center, the theme button on the right. The
+            three equal side columns keep the links truly centered. It stays at the top while a
             long page scrolls. */}
         <header className="sticky top-0 z-20 border-b border-divider bg-background/90 backdrop-blur">
           <div className="mx-auto grid w-full max-w-[1240px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 md:px-6">
@@ -63,11 +77,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </span>
             </Link>
             <HeaderNav />
+            <div className="justify-self-end">
+              <ThemeToggle />
+            </div>
           </div>
         </header>
         {/* overflow-x-clip: the hero's full-width backdrop can never make
             the page scroll sideways. */}
         <main className="flex-1 overflow-x-clip">{children}</main>
+        </MotionProvider>
       </body>
     </html>
   );
