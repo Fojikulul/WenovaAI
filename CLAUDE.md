@@ -146,9 +146,14 @@ plurals, question-word-order
   (buttons only), green as the secondary color (rule tags, links) and for correct answers
   (always with a check icon)
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
-- No extra pages, popups, animations, or features unless asked. Exceptions: the quiz feedback
-  bar may slide up from the bottom of the screen, and section arrows on the lesson list may
-  rotate. With reduced motion on, both change instantly without moving.
+- No extra pages, popups, animations, or features unless asked. Exceptions: quiz feedback
+  may animate (all in `components/Quiz.css`). The feedback bar slides up; a correct
+  answer pops, its check draws in with a small particle burst, and streak and progress
+  segments pop; a wrong answer shakes gently, its X draws in, and the right answer glows
+  once (never red, never shaming). On the score screen the score counts up, with a bigger
+  celebration for a perfect score. Each animation is CSS-only, about 600ms or less, and
+  never blocks input. Section arrows on the lesson list may rotate. With reduced motion on,
+  all of these show the final result instantly without moving.
 - Friendly loading and error states everywhere
 
 ## Engineering rules
