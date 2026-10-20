@@ -68,19 +68,21 @@ checked against WCAG AA: 4.5:1 for text, 3:1 for UI parts (borders, underlines, 
 
 ### Typography
 
-- **Heading Font:** Lexend (weights 600, 700). Designed to make reading easier.
+- **Heading Font:** Bricolage Grotesque (weights 600, 700), the heading font of the reference
+  design (humanizemax.ai). Chosen by Vasyl on 2026-10-20; it replaced Lexend. The big hero
+  headline uses 600 with slightly tight letters (`tracking-tight`).
 - **Body Font:** Atkinson Hyperlegible Next (weights 400, 700). Made by the Braille Institute
   so similar letters (I / l / 1, O / 0) are easy to tell apart, which helps when a student
   compares their words with the fix letter by letter.
-- **Loading:** `next/font/google` (`Lexend`, `Atkinson_Hyperlegible_Next`, subset `latin` and
+- **Loading:** `next/font/google` (`Bricolage_Grotesque`, `Atkinson_Hyperlegible_Next`, subset `latin` and
   `latin-ext`). The fonts are served from our own site, so no request goes to Google at
   runtime. Don't use a CSS `@import` from Google Fonts.
 
 | Use | Size (mobile / desktop) | Line height | Font |
 |-----|------------------------|-------------|------|
-| Page title (h1) | 28px / 36px | 1.25 | Lexend 700 |
-| Section title (h2) | 22px / 28px | 1.3 | Lexend 600 |
-| Card title (h3) | 18px / 20px | 1.4 | Lexend 600 |
+| Page title (h1) | 28px / 36px | 1.25 | Bricolage Grotesque 700 |
+| Section title (h2) | 22px / 28px | 1.3 | Bricolage Grotesque 600 |
+| Card title (h3) | 18px / 20px | 1.4 | Bricolage Grotesque 600 |
 | Body | 16px / 18px | 1.6 | Atkinson 400 |
 | Student writing (text box, highlighted text) | 18px | 1.7 | Atkinson 400 |
 | Buttons, tags, labels | 16px | 1.4 | Atkinson 700 |

@@ -14,8 +14,22 @@ export default function CheckerScreen() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 pb-6 md:px-6">
-      <section aria-labelledby="hero-title" className="relative isolate py-6 text-center md:py-8">
+    // From 1024px up the screen is exactly the window's height below the
+    // header (--header-height in globals.css): the hero takes what it needs
+    // and the card fills the rest, so the page never scrolls. On shorter
+    // windows it stops shrinking at 40rem and the page scrolls a little.
+    //
+    // Once feedback is showing (the checker card has data-status="results"),
+    // the hero folds away on wide screens and the card gets that space, so the
+    // feedback and lessons need less scrolling. It comes back on "Edit my
+    // writing". The heading stays in the page for screen readers.
+    <div className="group/screen mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height))] lg:min-h-[40rem]">
+      <section
+        aria-labelledby="hero-title"
+        // On short windows (820px tall or less) the hero is more compact, so
+        // the writing box keeps enough room.
+        className="relative isolate shrink-0 py-6 text-center md:py-7 [@media(max-height:820px)]:py-4 lg:max-h-96 lg:transition-[max-height,padding,opacity] lg:duration-500 lg:ease-in-out lg:group-has-[[data-status=results]]/screen:max-h-0 lg:group-has-[[data-status=results]]/screen:overflow-hidden lg:group-has-[[data-status=results]]/screen:py-2 lg:group-has-[[data-status=results]]/screen:opacity-0"
+      >
         {/* Behind the headline, across the full width of the screen: a
             faint grid and a soft glow, mostly the logo's green with a little
             blue. Decoration only. It reaches down behind the top of the card
@@ -31,18 +45,26 @@ export default function CheckerScreen() {
         </div>
         <MistakeStickers />
 
-        <p className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-divider bg-background px-3 py-1 text-muted">
-          {/* A green "live" light: the dot, with a ring that keeps growing
-              and fading behind it (Tailwind's animate-ping). Decoration only. */}
+        {/* A rounded white pill with a flashing green "live" light in front,
+            then a line like the reference's "A special tool for everyone
+            typing [make this sound human] into a chatbot", with the phrase
+            in its own small box. */}
+        <p className="inline-flex animate-fade-up flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-divider bg-background px-4 py-1.5 text-muted shadow-sm">
+          {/* The dot, with a ring that keeps growing and fading behind it
+              (Tailwind's animate-ping). Decoration only. */}
           <span aria-hidden="true" className="relative flex size-2.5 shrink-0">
             <span className="absolute inset-0 animate-ping rounded-full bg-logo-green opacity-75" />
             <span className="relative size-2.5 rounded-full bg-logo-green" />
           </span>
-          A writing coach for students learning English
+          A writing coach for everyone who asks
+          <span className="rounded-md border border-divider bg-surface px-2 font-mono text-base text-heading">
+            is my English correct?
+          </span>
         </p>
         <h1
           id="hero-title"
-          className="mt-4 animate-fade-up text-[2.25rem] leading-[1.1] font-bold [animation-delay:80ms] md:text-5xl lg:text-[3.5rem]"
+          // Weight 600 with slightly tight letters, like the reference headline.
+          className="mt-4 animate-fade-up text-[2.25rem] leading-[1.1] font-semibold tracking-tight [animation-delay:80ms] md:text-5xl lg:text-[3.5rem] [@media(max-height:820px)]:mt-3 lg:[@media(max-height:820px)]:text-[2.75rem]"
         >
           Write better English
           {/* Navy to green (both pass 4.5:1 on white), from the logo. */}
@@ -55,7 +77,7 @@ export default function CheckerScreen() {
         </p>
       </section>
 
-      <div className="animate-fade-up [animation-delay:240ms]">
+      <div className="animate-fade-up [animation-delay:240ms] lg:min-h-0 lg:flex-1">
         <EssayChecker lessons={lessons} />
       </div>
     </div>

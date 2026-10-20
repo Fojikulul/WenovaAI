@@ -35,6 +35,11 @@
   --hint-bg: #fffaeb;
   --hint-text: #b54708;
   --hint-border: #dc6803;
+
+  /* Height of the header in app/layout.tsx from 1024px up (48px logo + 8px
+     above and below + 1px line). The checker screen fills the rest of the
+     window, so update this if the header changes. */
+  --header-height: 65px;
 }
 
 /* Makes Tailwind classes for each color and font, e.g. bg-primary,
@@ -71,7 +76,7 @@
 
   /* The font variables are set by next/font in app/layout.tsx. */
   --font-sans: var(--font-atkinson), system-ui, sans-serif;
-  --font-heading: var(--font-lexend), system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), system-ui, sans-serif;
 }
 
 /* Motion, as listed in CLAUDE.md's animation exception. Each name becomes a
@@ -81,8 +86,55 @@
   /* Hero stickers drift up and down. The sticker sets its own tilt in --tilt,
      so the tilt stays while it floats. */
   --animate-float: wenova-float 6s ease-in-out infinite;
-  /* Hero text and the card fade up once when the page loads. */
+  /* Hero text and the card fade up once when the page loads; feedback items
+     use it too, one after another. */
   --animate-fade-up: wenova-fade-up 0.5s ease-out both;
+  /* "You got it!" and the hint boxes pop in. */
+  --animate-pop: wenova-pop 0.2s ease-out both;
+  /* Grade bars grow from empty to their score (use with origin-left). */
+  --animate-grow: wenova-grow 0.6s ease-out both;
+  /* A highlight pulses once when it is opened. */
+  --animate-pulse-ring: wenova-pulse-ring 0.7s ease-out 1;
+  /* A light moving along the card's top line while checking. */
+  --animate-shimmer: wenova-shimmer 1.2s ease-in-out infinite;
+
+  @keyframes wenova-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes wenova-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes wenova-pulse-ring {
+    from {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--mistake-line) 45%, transparent);
+    }
+    to {
+      box-shadow: 0 0 0 10px transparent;
+    }
+  }
+
+  @keyframes wenova-shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(300%);
+    }
+  }
 
   @keyframes wenova-float {
     0%,

@@ -6,14 +6,17 @@ import HighlightedText, { locateMistakes, withFixes } from "@/components/Highlig
 import {
   AlertIcon,
   CheckIcon,
+  ClipboardIcon,
   ExternalLinkIcon,
   FileTextIcon,
   HourglassIcon,
   PencilIcon,
   UndoIcon,
+  UploadIcon,
   XIcon,
 } from "@/components/icons";
 import MistakeFix, { type LessonInfo } from "@/components/MistakeFix";
+import PillTabs, { type PillTab } from "@/components/PillTabs";
 import RuleTag from "@/components/RuleTag";
 import { MAX_TEXT_LENGTH_BY_MODE } from "@/lib/limits";
 import type { Feedback } from "@/lib/validate-feedback";
@@ -25,6 +28,12 @@ const NEAR_LIMIT = Math.floor(MAX_LENGTH * 0.9);
 
 const TRY_AGAIN = "We couldn't check your writing right now. Please try again.";
 const WRITE_FIRST = "Please write something first.";
+// Some browsers don't let a page read the clipboard, or the student says no.
+const PASTE_BY_HAND = "Your browser didn't let us paste. Click in the box and press Ctrl+V (Cmd+V on a Mac).";
+const TEXT_FILES_ONLY = "Please choose a text file (.txt).";
+const EMPTY_FILE = "That file is empty.";
+// A file bigger than this is surely not one essay, so it isn't read at all.
+const MAX_FILE_BYTES = 200_000;
 
 // The draft is kept in sessionStorage: only in this browser tab, on the
 // student's own device, and deleted by the browser when the tab closes. It
@@ -52,11 +61,16 @@ const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:bg-primary";
 const secondaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-[22px] py-[10px] font-bold text-primary transition-colors hover:bg-surface";
-// The secondary button for the small toolbar in a card header: exactly 48px
-// tall and less side padding, so both card headers are the same height.
-const toolbarButton =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-4 font-bold text-primary transition-colors hover:bg-surface";
-const cardTitle = "text-lg leading-snug font-semibold md:text-xl";
+// The small "Clear" / "Undo clear" button inside the text box. 32px tall
+// (still above WCAG's 24px minimum) with 16px text, so it stays out of the way
+// of the writing.
+const smallButton =
+  "inline-flex h-8 items-center gap-1.5 rounded-md border border-divider bg-surface px-2.5 text-base font-bold text-primary transition-colors hover:border-primary";
+// The start buttons in the empty box ("Paste text", "Upload file", "Try a
+// sample"), with dashed borders like the reference design's.
+const startButton =
+  "pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-lg border border-dashed border-border bg-background px-4 font-bold text-primary transition-colors hover:border-primary hover:bg-surface";
+const paneTitle = "text-lg leading-snug font-semibold md:text-xl";
 
 function countWords(text: string) {
   const trimmed = text.trim();
@@ -67,43 +81,7 @@ function plural(count: number, word: string) {
   return `${count.toLocaleString("en-US")} ${word}${count === 1 ? "" : "s"}`;
 }
 
-// A card from MASTER.md: white, 1px divider border, rounded corners. The header
-// row holds the title on the left and a small toolbar on the right; on narrow
-// screens the toolbar moves under the title and stays on the right.
-function Card({
-  titleId,
-  title,
-  toolbar,
-  className = "",
-  children,
-}: {
-  titleId: string;
-  title: ReactNode;
-  toolbar?: ReactNode;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <section
-      aria-labelledby={titleId}
-      className={`flex min-w-0 flex-col rounded-xl border border-divider bg-background ${className}`}
-    >
-      {/* 72px tall: a 48px button plus 12px above and below. The dividing
-          line belongs to the body, so it never changes the header height. */}
-      <div className="flex min-h-[4.5rem] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:px-6">
-        {title}
-        {toolbar && (
-          <div className="ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
-            {toolbar}
-          </div>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col border-t border-divider p-4 md:p-6">{children}</div>
-    </section>
-  );
-}
-
-// Centered message for the feedback card before there is any feedback.
+// Centered message in the feedback side before there is any feedback.
 function CenteredState({ icon, title, children }: { icon: ReactNode; title: string; children?: ReactNode }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-8 text-center">
@@ -116,11 +94,35 @@ function CenteredState({ icon, title, children }: { icon: ReactNode; title: stri
   );
 }
 
-type Status = "editing" | "checking" | "results";
+// One side of the card: a title row, then a body that scrolls on its own
+// from 1024px up, so the page itself never has to.
+function Pane({
+  titleId,
+  title,
+  className = "",
+  children,
+}: {
+  titleId: string;
+  title: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section aria-labelledby={titleId} className={`min-h-0 min-w-0 flex-col ${className}`}>
+      <div className="flex min-h-14 shrink-0 items-center px-4 md:px-5">{title}</div>
+      <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 md:px-5">{children}</div>
+    </section>
+  );
+}
 
-// The whole Essay Checker: the text box, the "Check my writing" request, and
-// the results. Student writing is never logged or saved on a server; the
-// current draft is kept in this browser tab only (see DRAFT_KEY).
+type Status = "editing" | "checking" | "results";
+type TabId = "mistakes" | "grade" | "work-on";
+
+// The whole Essay Checker as one card, like the reference design: the
+// student's writing on the left, the feedback on the right, and a bar at the
+// bottom with the counter and the main button. Student writing is never
+// logged or saved on a server; the current draft is kept in this browser tab
+// only (see DRAFT_KEY).
 export default function EssayChecker({ lessons }: { lessons: Record<string, LessonInfo> }) {
   // The text box. It also gets the applied fixes, so "Edit my writing" and
   // the saved draft include them.
@@ -137,6 +139,8 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   const [selected, setSelected] = useState<number | null>(null);
   // The mistakes the student applied a fix to (indexes in `mistakes`).
   const [applied, setApplied] = useState<ReadonlySet<number>>(new Set());
+  // Which feedback tab is showing.
+  const [tab, setTab] = useState<TabId>("mistakes");
 
   // The mistakes with their place in the text, in the order they appear.
   const mistakes = useMemo(
@@ -144,7 +148,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     [feedback, checkedText],
   );
   // The same mistakes, most important first (the order the server sent), for
-  // the list in the feedback card. `index` still points into `mistakes`.
+  // the list in the Mistakes tab. `index` still points into `mistakes`.
   const mistakesByImportance = mistakes
     .map((mistake, index) => ({ mistake, index }))
     .sort((a, b) => a.mistake.rank - b.mistake.rank);
@@ -164,7 +168,30 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
 
+  // The feedback tabs. A tab only shows when it has something in it: a
+  // non-English essay (no mistakes, grade null) gets no tabs at all, just the
+  // summary asking for English.
+  const tabs: PillTab[] = [];
+  if (mistakes.length > 0 || feedback?.grade) {
+    tabs.push({ id: "mistakes", label: "Mistakes", badge: mistakes.length });
+  }
+  if (feedback?.grade) tabs.push({ id: "grade", label: "Grade" });
+  if (workOn.length > 0) {
+    tabs.push({
+      id: "work-on",
+      // "What to work on" doesn't fit next to the other tabs on phones.
+      label: (
+        <>
+          <span className="sm:hidden">Practice</span>
+          <span className="hidden sm:inline">What to work on</span>
+        </>
+      ),
+    });
+  }
+  const currentTab = tabs.some((t) => t.id === tab) ? tab : tabs[0]?.id;
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
   // The id of an element to move keyboard focus to once the page has updated
   // (for example a highlight, after its panel closes).
@@ -234,6 +261,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       setCheckedText(sent);
       setSelected(null);
       setApplied(new Set());
+      setTab("mistakes");
       setStatus("results");
     } catch {
       // No internet, or the server didn't answer.
@@ -257,6 +285,42 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
 
   function tryExample() {
     changeText(EXAMPLE_ESSAY);
+    textareaRef.current?.focus();
+  }
+
+  // "Paste text": reads the clipboard. The browser may ask the student first,
+  // and some browsers don't allow it at all; then we explain Ctrl+V instead.
+  async function pasteText() {
+    try {
+      const pasted = await navigator.clipboard.readText();
+      if (pasted.trim() === "") {
+        setError(PASTE_BY_HAND);
+        return;
+      }
+      changeText(pasted);
+      textareaRef.current?.focus();
+    } catch {
+      setError(PASTE_BY_HAND);
+      textareaRef.current?.focus();
+    }
+  }
+
+  // "Upload file": reads a plain .txt file here in the browser. Nothing is
+  // sent anywhere until the student presses Check my writing. (Word files
+  // would need an extra package, which CLAUDE.md says to ask about first.)
+  async function uploadFile(file: File | undefined) {
+    if (!file) return;
+    const isText = file.type === "text/plain" || file.name.toLowerCase().endsWith(".txt");
+    if (!isText || file.size > MAX_FILE_BYTES) {
+      setError(TEXT_FILES_ONLY);
+      return;
+    }
+    const contents = await file.text();
+    if (contents.trim() === "") {
+      setError(EMPTY_FILE);
+      return;
+    }
+    changeText(contents); // A too-long file shows the usual "too many characters" message.
     textareaRef.current?.focus();
   }
 
@@ -285,7 +349,8 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     updateText(withFixes(checkedText, mistakes, next));
   }
 
-  // Closing the panel puts keyboard focus back on the highlight it came from.
+  // Closing the panel goes back to the tabs and puts keyboard focus back on
+  // the highlight it came from.
   function closePanel() {
     if (selected === null) return;
     focusAfterUpdate.current = `mistake-${mistakes[selected].number}`;
@@ -298,8 +363,8 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   }
 
   // Opens a mistake from the list or from Previous/Next, and scrolls its
-  // highlight to the middle of the screen, so the sentence around it shows
-  // too. The scroll is instant (no animation).
+  // highlight to the middle of the writing side, so the sentence around it
+  // shows too. The scroll is instant (no animation).
   function openMistake(index: number) {
     setSelected(index);
     document
@@ -316,134 +381,133 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     focusAfterUpdate.current = "essay"; // the text box, once it's back
   }
 
-  let writingCard: ReactNode;
-  if (status === "results") {
-    writingCard = (
-      <Card
+  // ---- Left side: the student's writing ----
+  const writingPane =
+    status === "results" ? (
+      <Pane
         titleId="writing-title"
         title={
-          <h2 id="writing-title" className={cardTitle}>
+          <h2 id="writing-title" className={paneTitle}>
             Your writing
           </h2>
         }
-        toolbar={
-          <button type="button" onClick={editAgain} className={toolbarButton}>
-            <PencilIcon />
-            Edit my writing
-          </button>
-        }
+        className="flex border-b border-divider lg:border-r lg:border-b-0"
       >
-        <HighlightedText
-          text={checkedText}
-          mistakes={mistakes}
-          applied={applied}
-          selected={selected}
-          onSelect={selectInText}
-          ruleTitle={ruleTitle}
-          panel={
-            selected !== null && (
-              // The key starts the panel fresh for each mistake.
-              <MistakeFix
-                key={mistakes[selected].start}
-                mistake={mistakes[selected]}
-                total={mistakes.length}
-                lesson={lessons[mistakes[selected].rule]}
-                applied={applied.has(selected)}
-                onApply={() => setFixApplied(selected, true)}
-                onUndo={() => setFixApplied(selected, false)}
-                onClose={closePanel}
-                // Previous and Next follow the order of the text.
-                onPrevious={selected > 0 ? () => openMistake(selected - 1) : undefined}
-                onNext={selected < mistakes.length - 1 ? () => openMistake(selected + 1) : undefined}
-              />
-            )
-          }
-        />
-      </Card>
-    );
-  } else {
-    writingCard = (
-      <Card
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <HighlightedText
+            text={checkedText}
+            mistakes={mistakes}
+            applied={applied}
+            selected={selected}
+            onSelect={selectInText}
+            ruleTitle={ruleTitle}
+          />
+        </div>
+      </Pane>
+    ) : (
+      <Pane
         titleId="writing-title"
         title={
-          <h2 id="writing-title" className={cardTitle}>
+          <h2 id="writing-title" className={paneTitle}>
             <label htmlFor="essay">Your writing</label>
           </h2>
         }
-        toolbar={
-          <>
-            <p
-              id="essay-counter"
-              className={`text-right ${nearLimit ? "font-bold text-hint-text" : "text-muted"}`}
-            >
-              {plural(countWords(text), "word")} · {length.toLocaleString("en-US")} /{" "}
-              {MAX_LENGTH.toLocaleString("en-US")} characters
-              {nearLimit && !tooLong && " · Almost at the limit"}
-            </p>
-            {/* "Clear" while there is text; "Undo clear" right after clearing,
-                until the student types something. */}
-            {!checking && text !== "" && (
-              <button type="button" onClick={clear} className={toolbarButton}>
-                <XIcon />
-                Clear
-              </button>
-            )}
-            {!checking && text === "" && clearedText !== null && (
-              <button type="button" onClick={undoClear} className={toolbarButton}>
-                <UndoIcon />
-                Undo clear
-              </button>
-            )}
-          </>
-        }
+        className="flex border-b border-divider lg:border-r lg:border-b-0"
       >
-        <form onSubmit={check} className="flex flex-1 flex-col">
-          <textarea
-            id="essay"
-            ref={textareaRef}
-            value={text}
-            onChange={(event) => changeText(event.target.value)}
-            placeholder="Paste or type your essay here…"
-            // Turn off the browser's spellcheck and the Grammarly extension in
-            // this box, so they don't show the mistakes before Wenova does.
-            spellCheck={false}
-            data-gramm="false"
-            // Locked while checking, so the highlights match the text that was sent.
-            readOnly={checking}
-            aria-describedby="essay-counter essay-too-long"
-            className="block min-h-[300px] w-full flex-1 resize-y rounded-lg border border-border bg-background px-4 py-3 text-lg leading-[1.7] text-text placeholder:text-muted read-only:bg-surface lg:min-h-[26rem] lg:resize-none"
-          />
+        <form id="essay-form" onSubmit={check} className="flex min-h-0 flex-1 flex-col gap-3">
+          {/* The writing box. The keyboard focus ring goes around the whole
+              box (it has the small buttons in it), not only the text area. */}
+          <div
+            className={`flex min-h-[300px] flex-1 flex-col rounded-lg border border-border has-[textarea:focus-visible]:[outline:3px_solid_var(--ring)] has-[textarea:focus-visible]:outline-offset-2 lg:min-h-0 ${
+              checking ? "bg-surface" : "bg-background"
+            }`}
+          >
+            {/* Small button inside the box, top right: "Clear" while there is
+                text, "Undo clear" right after clearing. */}
+            <div className="flex min-h-10 shrink-0 items-center justify-end gap-2 px-2 pt-2">
+              {!checking && text !== "" && (
+                <button type="button" onClick={clear} className={smallButton}>
+                  <XIcon size={16} />
+                  Clear
+                </button>
+              )}
+              {!checking && text === "" && clearedText !== null && (
+                <button type="button" onClick={undoClear} className={smallButton}>
+                  <UndoIcon size={16} />
+                  Undo clear
+                </button>
+              )}
+            </div>
+
+            {/* The text area, with the start buttons over it while it's
+                empty (like the reference design). The layer over it lets
+                clicks through to the text area, except on the buttons, so
+                the student can still click anywhere and type. */}
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              {text === "" && !checking && (
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 pb-8 text-center">
+                  <p className="text-muted">Paste your essay to get started</p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button type="button" onClick={pasteText} className={startButton}>
+                      <ClipboardIcon size={16} />
+                      Paste text
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className={startButton}
+                    >
+                      <UploadIcon size={16} />
+                      Upload file
+                    </button>
+                    <button type="button" onClick={tryExample} className={startButton}>
+                      <FileTextIcon size={16} />
+                      Try a sample
+                    </button>
+                  </div>
+                  {/* Hidden; the "Upload file" button opens it. Cleared after
+                      each pick, so the same file can be chosen again. */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".txt,text/plain"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="hidden"
+                    onChange={(event) => {
+                      void uploadFile(event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                </div>
+              )}
+              <textarea
+                id="essay"
+                ref={textareaRef}
+                value={text}
+                onChange={(event) => changeText(event.target.value)}
+                // Turn off the browser's spellcheck and the Grammarly extension in
+                // this box, so they don't show the mistakes before Wenova does.
+                spellCheck={false}
+                data-gramm="false"
+                // Locked while checking, so the highlights match the text that was sent.
+                readOnly={checking}
+                aria-describedby="essay-counter essay-too-long"
+                className="block w-full flex-1 resize-none bg-transparent px-4 pt-1 pb-3 text-lg leading-[1.7] text-text focus-visible:outline-none"
+              />
+            </div>
+          </div>
+
           {/* A live region, so screen readers hear it when the essay gets too long. */}
-          <p id="essay-too-long" aria-live="polite" className="font-bold text-hint-text">
+          <p id="essay-too-long" aria-live="polite" className="shrink-0 font-bold text-hint-text empty:hidden">
             {tooLong &&
               `That's ${plural(length - MAX_LENGTH, "character")} too many. Please make it shorter.`}
           </p>
 
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <button type="submit" aria-disabled={!canCheck} className={primaryButton}>
-              {checking ? (
-                <>
-                  <HourglassIcon />
-                  Checking your writing…
-                </>
-              ) : (
-                "Check my writing"
-              )}
-            </button>
-            {/* Only while the box is empty, so a tap here never replaces
-                writing the student already put in the box. */}
-            {text === "" && (
-              <button type="button" onClick={tryExample} className={secondaryButton}>
-                <FileTextIcon />
-                Try an example
-              </button>
-            )}
-          </div>
-
           {error && (
             <div
               role="alert"
-              className="mt-4 flex gap-3 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3 text-hint-text"
+              className="flex shrink-0 animate-pop gap-3 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3 text-hint-text"
             >
               <span className="mt-1">
                 <AlertIcon />
@@ -452,163 +516,251 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
             </div>
           )}
         </form>
-      </Card>
+      </Pane>
+    );
+
+  // ---- Right side, results: the tab contents ----
+  let tabContent: ReactNode = null;
+  if (currentTab === "mistakes") {
+    tabContent =
+      mistakes.length === 0 ? (
+        // No mistakes (and a grade, so the essay was in English): a positive state.
+        <p className="flex animate-pop items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
+          <CheckIcon />
+          Nothing to fix. Great work!
+        </p>
+      ) : (
+        <>
+          <p className="text-muted">Most important first.</p>
+          <ul className="mt-3 flex flex-col gap-3">
+            {mistakesByImportance.map(({ mistake, index }, position) => (
+              // Each item fades in a moment after the one before it.
+              <li
+                key={mistake.start}
+                className="animate-fade-up"
+                style={{ animationDelay: `${position * 50}ms` }}
+              >
+                <button
+                  type="button"
+                  onClick={() => openMistake(index)}
+                  className="flex w-full flex-col gap-2 rounded-lg border-2 border-divider p-3 text-left transition-colors hover:border-primary"
+                >
+                  {/* On narrow screens the rule tag moves to its own line
+                      instead of squeezing "Mistake 1". */}
+                  <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-2 font-bold whitespace-nowrap text-muted">
+                      Mistake {mistake.number}
+                      {applied.has(index) && (
+                        <span className="flex items-center gap-1 text-correct-text">
+                          <CheckIcon />
+                          Fixed
+                        </span>
+                      )}
+                    </span>
+                    <RuleTag title={lessons[mistake.rule]?.title} />
+                  </span>
+                  <span className="text-lg">
+                    {applied.has(index) ? (
+                      <span className="rounded bg-correct-bg px-0.5 underline decoration-correct-border decoration-2 underline-offset-4 [box-decoration-break:clone]">
+                        {mistake.fix}
+                      </span>
+                    ) : (
+                      <span className="rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]">
+                        {mistake.original}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      );
+  } else if (currentTab === "grade" && feedback?.grade) {
+    tabContent = <GradeCard grade={feedback.grade} />;
+  } else if (currentTab === "work-on") {
+    // A suggestion, never automatic: the student decides whether to open a
+    // lesson. Links open in a new tab, so the results stay.
+    tabContent = (
+      <>
+        <p className="text-muted">You might want to practice these lessons:</p>
+        <ul className="mt-3 flex flex-col gap-3">
+          {workOn.map(({ rule, count }, position) => (
+            <li
+              key={rule}
+              className="flex animate-fade-up flex-col gap-1 rounded-lg border border-divider p-3"
+              style={{ animationDelay: `${position * 50}ms` }}
+            >
+              <span>
+                <span className="font-bold">{lessons[rule].title}</span>{" "}
+                <span className="text-muted">({plural(count, "mistake")})</span>
+              </span>
+              <a
+                href={`/lessons/${rule}#practice-title`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 self-start font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+              >
+                Practice this lesson
+                <ExternalLinkIcon />
+                {/* Every link has the same words, so screen readers also hear
+                    which lesson it is. */}
+                <span className="sr-only">: {lessons[rule].title} (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>
     );
   }
 
-  return (
-    // On desktop the grid stretches both cards to the same height while
-    // editing. With results, each card is only as tall as its content
-    // (items-start), so a short essay doesn't leave a big empty card.
-    <div
-      className={`mt-6 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12 ${
-        status === "results" ? "lg:items-start" : ""
-      }`}
+  // ---- Right side: the feedback ----
+  const feedbackPane = (
+    <Pane
+      titleId="feedback-title"
+      title={
+        <h2 id="feedback-title" ref={resultsHeadingRef} tabIndex={-1} className={paneTitle}>
+          Your feedback
+        </h2>
+      }
+      // Before the first check there is nothing here, so phones skip it.
+      className={status === "editing" ? "hidden lg:flex" : "flex"}
     >
-      {writingCard}
+      {/* Always on the page and empty until checking starts, so screen
+          readers announce it. The box below shows the same words. */}
+      <p role="status" className="sr-only">
+        {checking ? "Checking your writing…" : ""}
+      </p>
 
-      <Card
-        titleId="feedback-title"
-        // Before the first check there is nothing here, so phones skip it.
-        className={status === "editing" ? "hidden lg:flex" : ""}
-        title={
-          <h2 id="feedback-title" ref={resultsHeadingRef} tabIndex={-1} className={cardTitle}>
-            Your feedback
-          </h2>
-        }
-      >
-        {/* Always on the page and empty until checking starts, so screen
-            readers announce it. The box below shows the same words. */}
-        <p role="status" className="sr-only">
-          {checking ? "Checking your writing…" : ""}
+      {status === "editing" && (
+        <CenteredState icon={<FileTextIcon size={32} />} title="Ready when you are">
+          <p className="mt-2 text-muted">Paste your essay and press Check my writing.</p>
+        </CenteredState>
+      )}
+
+      {checking && (
+        <div aria-hidden="true" className="flex flex-1 flex-col">
+          <CenteredState icon={<HourglassIcon size={32} />} title="Checking your writing…" />
+        </div>
+      )}
+
+      {status === "results" && feedback && selected !== null && (
+        // One mistake is open: the fix panel takes the whole side. Its Close
+        // button (or Escape) goes back to the tabs.
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {/* The key starts the panel fresh for each mistake. */}
+          <MistakeFix
+            key={mistakes[selected].start}
+            mistake={mistakes[selected]}
+            total={mistakes.length}
+            lesson={lessons[mistakes[selected].rule]}
+            applied={applied.has(selected)}
+            onApply={() => setFixApplied(selected, true)}
+            onUndo={() => setFixApplied(selected, false)}
+            onClose={closePanel}
+            // Previous and Next follow the order of the text.
+            onPrevious={selected > 0 ? () => openMistake(selected - 1) : undefined}
+            onNext={selected < mistakes.length - 1 ? () => openMistake(selected + 1) : undefined}
+          />
+        </div>
+      )}
+
+      {status === "results" && feedback && selected === null && (
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          <p className="shrink-0 animate-fade-up">{feedback.summary}</p>
+          {currentTab && (
+            <>
+              <PillTabs
+                tabs={tabs}
+                selected={currentTab}
+                onSelect={(id) => setTab(id as TabId)}
+                idPrefix="feedback"
+                label="Feedback"
+              />
+              <div
+                // Each tab gets its own panel element, so its contents
+                // (and their fade-in) start fresh when the tab changes.
+                key={currentTab}
+                id={`feedback-panel-${currentTab}`}
+                role="tabpanel"
+                aria-labelledby={`feedback-tab-${currentTab}`}
+                // The grade has nothing to click, so the panel itself can take
+                // keyboard focus (for scrolling).
+                tabIndex={currentTab === "grade" ? 0 : undefined}
+                className="min-h-0 flex-1 overflow-y-auto pr-1"
+              >
+                {tabContent}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </Pane>
+  );
+
+  // ---- Bottom bar ----
+  const footer =
+    status === "results" ? (
+      <>
+        <p className="font-bold">
+          {mistakes.length > 0
+            ? `${plural(mistakes.length, "thing")} to fix${applied.size > 0 ? ` · ${applied.size} fixed` : ""}`
+            : ""}
         </p>
+        <button type="button" onClick={editAgain} className={secondaryButton}>
+          <PencilIcon />
+          Edit my writing
+        </button>
+      </>
+    ) : (
+      <>
+        <p
+          id="essay-counter"
+          className={nearLimit ? "font-bold text-hint-text" : "text-muted"}
+        >
+          {plural(countWords(text), "word")} · {length.toLocaleString("en-US")} /{" "}
+          {MAX_LENGTH.toLocaleString("en-US")} characters
+          {nearLimit && !tooLong && " · Almost at the limit"}
+        </p>
+        {/* Outside the <form>, so it names the form it sends. */}
+        <button type="submit" form="essay-form" aria-disabled={!canCheck} className={primaryButton}>
+          {checking ? (
+            <>
+              <HourglassIcon />
+              Checking your writing…
+            </>
+          ) : (
+            "Check my writing"
+          )}
+        </button>
+      </>
+    );
 
-        {status === "editing" && (
-          <CenteredState icon={<FileTextIcon size={32} />} title="Ready when you are">
-            <p className="mt-2 text-muted">Paste your essay and press Check my writing.</p>
-          </CenteredState>
-        )}
-
+  return (
+    // data-status lets the screen around the card react to it (the hero
+    // folds away while results are showing; see CheckerScreen.tsx).
+    <div
+      data-status={status}
+      className="flex h-full flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm"
+    >
+      {/* The gradient line along the top, in the logo's blue and green.
+          While checking, a light moves along it. Decoration only. */}
+      <div aria-hidden="true" className="relative h-1 shrink-0 overflow-hidden bg-linear-to-r from-primary to-logo-green">
         {checking && (
-          <div aria-hidden="true" className="flex flex-1 flex-col">
-            <CenteredState icon={<HourglassIcon size={32} />} title="Checking your writing…" />
-          </div>
+          <span className="absolute inset-y-0 left-0 w-1/3 animate-shimmer bg-linear-to-r from-transparent via-white/90 to-transparent" />
         )}
+      </div>
 
-        {status === "results" && feedback && (
-          <div className="flex flex-col gap-6">
-            <p>{feedback.summary}</p>
+      {/* The two sides. From 1024px up they sit side by side and fill the
+          card's height; below that they stack. */}
+      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        {writingPane}
+        {feedbackPane}
+      </div>
 
-            {/* No mistakes: a positive state. But a non-English essay also has
-                no mistakes; it's the one with grade null, and its summary
-                already asks for English, so it gets no "Nothing to fix". */}
-            {mistakes.length > 0 ? (
-              <p className="text-lg font-bold">
-                {plural(mistakes.length, "thing")} to fix
-                {applied.size > 0 && ` · ${applied.size} fixed`}
-              </p>
-            ) : (
-              feedback.grade && (
-                <p className="flex items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
-                  <CheckIcon />
-                  Nothing to fix. Great work!
-                </p>
-              )
-            )}
-
-            {feedback.grade && <GradeCard grade={feedback.grade} />}
-
-            {mistakes.length > 0 && (
-              <section aria-labelledby="mistakes-title">
-                <h3 id="mistakes-title" className="text-lg font-semibold md:text-xl">
-                  Your mistakes
-                </h3>
-                <p className="mt-1 text-muted">Most important first.</p>
-                <ul className="mt-4 flex flex-col gap-3">
-                  {mistakesByImportance.map(({ mistake, index }) => (
-                    <li key={mistake.start}>
-                      <button
-                        type="button"
-                        onClick={() => openMistake(index)}
-                        aria-expanded={selected === index}
-                        className={`flex w-full flex-col gap-2 rounded-lg border-2 p-3 text-left transition-colors ${
-                          selected === index
-                            ? "border-primary bg-surface"
-                            : "border-divider hover:border-primary"
-                        }`}
-                      >
-                        {/* On narrow screens the rule tag moves to its own
-                            line instead of squeezing "Mistake 1". */}
-                        <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                          <span className="flex items-center gap-2 font-bold whitespace-nowrap text-muted">
-                            Mistake {mistake.number}
-                            {applied.has(index) && (
-                              <span className="flex items-center gap-1 text-correct-text">
-                                <CheckIcon />
-                                Fixed
-                              </span>
-                            )}
-                          </span>
-                          <RuleTag title={lessons[mistake.rule]?.title} />
-                        </span>
-                        <span className="text-lg">
-                          {applied.has(index) ? (
-                            <span className="rounded bg-correct-bg px-0.5 underline decoration-correct-border decoration-2 underline-offset-4 [box-decoration-break:clone]">
-                              {mistake.fix}
-                            </span>
-                          ) : (
-                            <span className="rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]">
-                              {mistake.original}
-                            </span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {/* A suggestion, never automatic: the student decides whether to
-                open a lesson. Links open in a new tab, so the results stay. */}
-            {workOn.length > 0 && (
-              <section aria-labelledby="work-on-title">
-                <h3 id="work-on-title" className="text-lg font-semibold md:text-xl">
-                  What to work on
-                </h3>
-                <p className="mt-1 text-muted">You might want to practice these lessons:</p>
-                <ul className="mt-4 flex flex-col gap-3">
-                  {workOn.map(({ rule, count }) => (
-                    <li
-                      key={rule}
-                      className="flex flex-col gap-1 rounded-lg border border-divider p-3"
-                    >
-                      <span>
-                        <span className="font-bold">{lessons[rule].title}</span>{" "}
-                        <span className="text-muted">({plural(count, "mistake")})</span>
-                      </span>
-                      <a
-                        href={`/lessons/${rule}#practice-title`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-11 items-center gap-2 self-start font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
-                      >
-                        Practice this lesson
-                        <ExternalLinkIcon />
-                        {/* Every link has the same words, so screen readers
-                            also hear which lesson it is. */}
-                        <span className="sr-only">
-                          : {lessons[rule].title} (opens in a new tab)
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-        )}
-      </Card>
+      <div className="flex shrink-0 flex-col gap-3 border-t border-divider bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-5">
+        {footer}
+      </div>
     </div>
   );
 }

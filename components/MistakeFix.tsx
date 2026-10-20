@@ -27,8 +27,8 @@ const mistakeWords =
 // "shown" means the student pressed "Show answer".
 type Result = FixResult | "shown" | null;
 
-// The fix panel for one mistake (MASTER.md "Fix Panel"). It opens inline
-// under the paragraph with the mistake, never as a popup. The student tries a
+// The fix panel for one mistake (MASTER.md "Fix Panel"). In the Essay
+// Checker it opens in the feedback side of the card, never as a popup. The student tries a
 // fix, which is checked in code; they can see the answer, apply it to their
 // essay (and undo), and open the lesson in a new tab.
 export default function MistakeFix({
@@ -106,7 +106,7 @@ export default function MistakeFix({
       role="region"
       aria-labelledby="fix-title"
       onKeyDown={closeOnEscape}
-      className="mt-4 rounded-xl border border-divider bg-background p-4 text-base leading-[1.6] md:p-6 md:text-lg"
+      className="rounded-xl border border-divider bg-background p-4 text-base leading-[1.6] md:p-5 md:text-lg"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -180,13 +180,13 @@ export default function MistakeFix({
       {/* Screen readers read the result out when it appears. */}
       <div aria-live="polite">
         {result === "correct" && (
-          <p className="mt-4 flex items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
+          <p className="mt-4 flex animate-pop items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
             <CheckIcon />
             You got it!
           </p>
         )}
         {result === "unchanged" && (
-          <p className="mt-4 flex gap-2 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3 font-bold text-hint-text">
+          <p className="mt-4 flex animate-pop gap-2 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3 font-bold text-hint-text">
             <span className="mt-1">
               <LightbulbIcon />
             </span>
@@ -194,7 +194,7 @@ export default function MistakeFix({
           </p>
         )}
         {(result === "wrong" || result === "shown") && (
-          <div className="mt-4 rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3">
+          <div className="mt-4 animate-pop rounded-lg border-2 border-hint-border bg-hint-bg px-4 py-3">
             <p className="flex items-center gap-2 font-bold text-hint-text">
               <LightbulbIcon />
               {result === "wrong" ? "Good try! Here's one way:" : "Here's one way:"}

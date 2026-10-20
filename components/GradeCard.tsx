@@ -22,11 +22,16 @@ function ScoreBars({ score }: { score: number }) {
   return (
     // Narrower bars on phones, so the area name and "3 / 5" fit on one line.
     <span aria-hidden="true" className="flex shrink-0 gap-1">
+      {/* Each filled bar grows in from the left, one after another. */}
       {[1, 2, 3, 4, 5].map((point) => (
-        <span
-          key={point}
-          className={`h-2 w-4 rounded-full sm:w-6 ${point <= score ? "bg-heading" : "bg-divider"}`}
-        />
+        <span key={point} className="h-2 w-4 overflow-hidden rounded-full bg-divider sm:w-6">
+          {point <= score && (
+            <span
+              style={{ animationDelay: `${point * 80}ms` }}
+              className="block h-full origin-left animate-grow rounded-full bg-heading"
+            />
+          )}
+        </span>
       ))}
     </span>
   );

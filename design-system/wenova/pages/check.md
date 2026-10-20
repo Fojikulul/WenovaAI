@@ -70,7 +70,7 @@ Both areas are cards (MASTER.md card spec): white, 1px `divider` border, 12px co
   mistake style. Normal: 2px `divider` border, `primary` border on hover. Open: 2px
   `primary` border on a `surface` background.
 - **Grade:** "Practice estimate" / "Not an official grade.", the overall score (average of
-  the four areas, rounded to one decimal) in large Lexend, then each area with five bars
+  the four areas, rounded to one decimal) in large Bricolage Grotesque, then each area with five bars
   and "3 / 5". Filled bars use `heading` navy (not blue, which is for buttons, and not green,
   which means "correct"); empty bars use `divider`. The bars are decoration: the numbers
   carry the meaning. Shown in a `surface` panel inside the card.

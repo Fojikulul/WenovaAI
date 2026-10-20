@@ -145,6 +145,8 @@ plurals, question-word-order
 - Minimalist, lots of whitespace. Palette: white background, blue as the main accent
   (buttons only), green as the secondary color (rule tags, links) and for correct answers
   (always with a check icon)
+- Fonts: Bricolage Grotesque for headings (the reference design's heading font), Atkinson
+  Hyperlegible Next for body text. Both load through `next/font`; no other fonts.
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
 - No extra pages, popups, animations, or features unless asked. Exceptions: the quiz feedback
   bar may slide up from the bottom of the screen, and section arrows on the lesson list may

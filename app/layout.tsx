@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Atkinson_Hyperlegible_Next, Lexend } from "next/font/google";
+import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import HeaderNav from "@/components/HeaderNav";
@@ -7,8 +7,9 @@ import "./globals.css";
 
 // Fonts from design-system/wenova/MASTER.md. next/font serves them from our
 // own site, so the browser never sends a request to Google.
-const lexend = Lexend({
-  variable: "--font-lexend",
+// Headings: Bricolage Grotesque, the heading font of the reference design.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin", "latin-ext"],
 });
 
@@ -30,16 +31,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${lexend.variable} ${atkinson.variable} h-full antialiased`}
+      className={`${bricolage.variable} ${atkinson.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        {/* Full-width header: logo on the left, the two pages on the right.
-            It stays at the top while a long page scrolls. */}
+        {/* Full-width header like the reference design: logo on the left,
+            the page links in the center. The three columns (logo, links,
+            empty) keep the links truly centered. It stays at the top while a
+            long page scrolls. */}
         <header className="sticky top-0 z-20 border-b border-divider bg-background/90 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 px-4 py-2 md:px-6">
+          <div className="mx-auto grid w-full max-w-[1240px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 md:px-6">
             <Link
               href="/"
-              className="flex min-h-11 shrink-0 items-center gap-3 rounded-lg font-heading text-2xl font-bold text-heading"
+              className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start rounded-lg font-heading text-2xl font-bold text-heading"
             >
               {/* The logo is above the fold, so it loads right away. Its text
                   is the word next to it, so screen readers skip the image. */}
