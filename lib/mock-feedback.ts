@@ -39,33 +39,44 @@ export const MOCK_FEEDBACK: Record<FeedbackMode, Feedback> = {
       "You told a clear, fun story about your weekend, so now practice the past forms of irregular verbs like go, swim, and find.",
   },
 
-  // Sample text:
-  // My dream is to become a engineer. I want to build the bridges that help
-  // people in my country. In my city there is an university with good program
-  // for engineering. The math is hard for me, but I study every day.
+  // Sample text: the "Try an example" essay in app/check/example-essay.ts.
+  // Last year, my family move to a new country, and everything felt
+  // unfamiliar. On the first day of school, I was nervous because I didn't
+  // knew anyone. My teacher gave me a advice and helped me feel more
+  // comfortable. After school, I talked with a classmate who was interested
+  // on the same hobbies as me. Now, I feel more confident speaking English,
+  // and I enjoy learning something new every day.
   essay: {
     mistakes: [
       {
-        original: "a engineer",
-        fix: "an engineer",
-        rule: "articles",
-        why: "Use 'an' before a word that starts with a vowel sound, like 'engineer'.",
+        original: "didn't knew",
+        fix: "didn't know",
+        rule: "past-simple",
+        why: "After 'didn't', use the base verb: 'didn't know', not 'didn't knew'.",
       },
       {
-        original: "an university",
-        fix: "a university",
-        rule: "articles",
-        why: "'University' starts with a 'you' sound, so use 'a', not 'an'.",
+        original: "my family move",
+        fix: "my family moved",
+        rule: "past-simple",
+        why: "'Last year' is finished, so use the past form of the verb: 'moved'.",
       },
       {
-        original: "with good program",
-        fix: "with a good program",
+        original: "a advice",
+        fix: "advice",
         rule: "articles",
-        why: "'Program' is one thing you can count, so it needs 'a' before it.",
+        why: "'Advice' is a noun you can't count, so don't put 'a' before it. You can also say 'some advice'.",
+      },
+      {
+        // "Interested in" isn't part of the in/on/at lesson (time and place),
+        // so it has no lesson to link to.
+        original: "interested on",
+        fix: "interested in",
+        rule: "other",
+        why: "We always say 'interested in' something.",
       },
     ],
     summary:
-      "Your goal of becoming an engineer comes through clearly, so now practice choosing between 'a' and 'an'.",
-    grade: { grammar: 3, vocabulary: 3, organization: 3, clarity: 4 },
+      "You told a clear story about moving to a new country, and your ending is positive and strong. Next, practice the past simple, like 'moved' and 'didn't know'.",
+    grade: { grammar: 3, vocabulary: 4, organization: 4, clarity: 4 },
   },
 };
