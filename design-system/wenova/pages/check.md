@@ -1,114 +1,83 @@
-# Check Page (`app/check/`)
+# Check Page (`/` and `/check`)
 
 > These rules override `MASTER.md` for the Essay Checker only. Everything not listed here
 > follows `MASTER.md`. CLAUDE.md still wins over both.
 
-Decided by Vasyl on 2026-10-18 (see AI_LOG.md).
+First decided by Vasyl on 2026-10-18; redesigned on 2026-10-20 after the reference design
+humanizemax.ai (light and dark theme). See AI_LOG.md.
 
-## Layout
+## Screen
 
-- **Below 1024px:** one column, the same as every other page: max width 720px, editor on
-  top, results under it.
-- **From 1024px up:** two columns side by side. The page can be up to 1120px wide.
-  - Left: the student's writing (the text box, or the highlighted essay after checking).
-    About 620px wide, so lines of student writing stay under about 70 characters.
-  - Right: the results (summary, count, grade, list of mistakes). 400px wide.
-  - 48px gap between the columns.
-- The header stays 720px wide, so on wide screens the logo does not line up with the page.
-  That's accepted.
-- Page background stays **white**. Vasyl asked for a light gray page; MASTER.md forbids
-  tinted page backgrounds, so the cards get their edges from the border instead.
-- Spacing (tighter than other pages, so the cards start right under the title): page top
-  padding 32px (40px from 768px), 8px between the h1 and the instruction line, 24px (32px
-  from 768px) before the cards.
+- The checker is the home page (`/`); `/check` shows the same screen
+  (`app/check/CheckerScreen.tsx`).
+- **Hero** (centered): a white pill with a pulsing green dot and "A writing coach for everyone
+  who asks [is my English correct?]", the headline "Write better English / one fix at a time"
+  (second line navy-to-green), and one line under it. Behind it: a faint grid and a soft
+  green and blue glow (`components/HeroBackdrop.tsx`). From 1280px up, four tilted mistake
+  stickers float around it (`components/MistakeStickers.tsx`).
+- **Width:** up to 1240px. Page side padding 16px, 24px from 768px.
+- **From 1024px up, editing:** the screen is exactly the window's height under the header
+  (`--header-height`). The hero takes what it needs and the card fills the rest, so the page
+  doesn't scroll. On windows 820px tall or less the hero is more compact.
+- **From 1024px up, results:** the card becomes the window's full height and the page scrolls
+  down to it. The hero stays above, so the student can scroll back up.
+- **Below 1024px:** the two sides of the card stack and the page scrolls normally.
 
-## Cards
+## The card (`app/check/EssayChecker.tsx`)
 
-Both areas are cards (MASTER.md card spec): white, 1px `divider` border, 12px corners.
-- **Header row**, 72px tall (fits a 48px button with 12px above and below): the card title
-  on the left (h2 element, card-title size 18px / 20px), a small toolbar on the right. On
-  narrow screens the toolbar wraps under the title and stays right-aligned. A 1px `divider`
-  line separates the header from the body. (Layout idea from the team's reference
-  screenshot: bordered editor and results cards with a toolbar row. Only the layout was
-  used, none of its colors or illustrations.)
-- **Body padding:** 16px on phones, 24px from 768px.
-- From 1024px the two cards are the **same height** (the grid stretches them).
+One card: white (`background`), 1px `divider` border, 16px corners, small shadow. A 4px
+blue-to-green line runs along the top; while checking, a light moves along it.
+- **Left side, "Your writing":** the writing box (input `border`, 3:1), with a small
+  "Clear" / "Undo clear" button in its top right corner. While the box is empty, its middle
+  shows "Paste your essay to get started" and three dashed buttons: **Paste text**
+  (clipboard; if the browser refuses, a message explains Ctrl+V), **Upload file** (.txt only,
+  read in the browser), **Try a sample** (`app/check/example-essay.ts`).
+- **Right side, "Your feedback":** before checking, a centered "Ready when you are" (hidden on
+  phones); while checking, the same layout with an hourglass; then the results.
+- **Bottom bar:** the word and character counter and "Check my writing" while editing;
+  "N things to fix · N fixed" and "Edit my writing" with results.
+- Each side scrolls on its own from 1024px up.
 
-### Writing card
-- Toolbar: the word and character counter, then "Clear" (or "Undo clear" right after
-  clearing, until the student types or picks the example). Toolbar buttons are the
-  secondary button at exactly 48px tall with 16px side padding.
-- The text box grows to fill the card: at least 300px tall, at least 416px from 1024px.
-  Its border stays the input `border` color (3:1), not the lighter divider.
-- Placeholder: "Paste or type your essay here…" in `muted`. The visible label is still the
-  card title.
-- "Check my writing" and "Try an example" sit under the text box. "Try an example" only
-  shows while the box is empty, so it never replaces the student's writing.
+## Results, top to bottom (no tabs: everything is in one view)
 
-### Feedback card
-- Before the first check: a centered empty state, vertically centered in the card. A 32px
-  document icon in a 64px `surface` circle, the heading "Ready when you are", and one line
-  "Paste your essay and press Check my writing." The card is hidden on phones until the
-  first check, where it would only push the page down.
-- While checking: the same centered layout with the hourglass icon and "Checking your
-  writing…".
+1. **Grade** (`components/GradeCard.tsx`): a ring that fills to the overall score and counts
+   up to it (average of the four areas, computed in code, one decimal), "Practice estimate ·
+   not an official grade", then the four areas with small navy bars and "4/5". Shown only
+   when `grade` isn't null.
+2. **Summary.**
+3. **Practice next:** up to 3 lesson chips (green, underlined title, mistake count), opening
+   `/lessons/<id>#practice-title` in a new tab. "other" is left out.
+4. **Mistakes**, "most important first" (the server's order): buttons with "Mistake 2" (the
+   number follows the text order), the rule tag, and the words in the mistake style. This
+   list is the only part that scrolls.
 
-## Results
+- **No mistakes** and a grade: a correct box ("Nothing to fix. Great work!").
+  **Not in English** (`grade: null`): only the summary, which asks for English.
+- **Essay:** paragraphs split at line breaks (never inside a mistake), 18px, line height 1.7.
+  Each mistake is a button with the MASTER.md highlight; the open one also gets a 2px
+  `mistake-line` ring and pulses once. Screen readers hear "Mistake 2 of 5, Past Simple:".
+- Picking a mistake (from the essay or the list) opens the **fix panel** in the feedback side.
 
-- **Writing card:** the essay in paragraphs (split at line breaks, never inside a mistake),
-  18px, line height 1.7. Each mistake is a button with the MASTER.md mistake highlight.
-  The open mistake also gets a 2px `mistake-line` outline (a box-shadow ring, so it never
-  hides the blue keyboard focus ring).
-- **Numbers** ("Mistake 2 of 5") follow the order of the text. Screen readers hear
-  "Mistake 2 of 5, Past Simple:" before the words.
-- **Feedback card, top to bottom:** summary; "5 things to fix" (bold); the grade; "Your
-  mistakes" with "Most important first." and the list in the server's order.
-- **No mistakes** and a grade: a correct box (check icon, "Nothing to fix. Great work!").
-  **Not in English** (`grade: null`): only the summary, which asks for English. No correct
-  box, because there was nothing to check.
-- **List items** are buttons: "Mistake 2" and the rule tag on top, the words below in the
-  mistake style. Normal: 2px `divider` border, `primary` border on hover. Open: 2px
-  `primary` border on a `surface` background.
-- **Grade:** "Practice estimate" / "Not an official grade.", the overall score (average of
-  the four areas, rounded to one decimal) in large Bricolage Grotesque, then each area with five bars
-  and "3 / 5". Filled bars use `heading` navy (not blue, which is for buttons, and not green,
-  which means "correct"); empty bars use `divider`. The bars are decoration: the numbers
-  carry the meaning. Shown in a `surface` panel inside the card.
-- Picking a mistake from the list scrolls its highlight to the middle of the screen,
-  instantly (no animation).
-- With results, the two cards are **not** stretched to the same height: each is only as
-  tall as its content, so a short essay doesn't leave a big empty card (Vasyl, Option A).
+## Fix panel (`components/MistakeFix.tsx`)
 
-## Fix panel (MistakeFix)
+It slides in from the side in the feedback side, replacing the overview; Close (X) or Escape
+slides back to the overview and returns focus to the highlight. Top to bottom:
+1. "Mistake 2 of 5", the rule tag, Close.
+2. "Your writing:" and the student's words.
+3. "Try to fix it:" input, **prefilled with the student's words**, "Check my fix" and
+   "Show answer".
+4. The result (pops in): "You got it!"; or the nudge "That's the same as before. What word
+   needs to change?"; or "Good try! Here's one way:" with the fix; "Show answer" gives
+   "Here's one way:".
+5. Once the answer shows: "Why:", "Another example of this rule:" (the lesson's example;
+   skipped for "other"), and "Apply this fix" / after applying "Fixed in your essay." + Undo.
+6. "Practice this rule" (new tab; hidden for "other").
+7. Previous / Next, in text order.
 
-Opens inline under the paragraph with the mistake (MASTER.md "Fix Panel"): white, 1px
-`divider` border, 12px corners, 16px / 24px padding. Top to bottom:
-1. "Mistake 2 of 5", the rule tag, and an icon-only Close button (44px, blue X). Escape
-   also closes it, and focus goes back to the highlight.
-2. "Your writing:" and the student's words in the mistake style.
-3. "Try to fix it:" input, **prefilled with the student's words** so they only change the
-   wrong part, then "Check my fix" (primary) and "Show answer" (secondary, hidden once the
-   answer is showing).
-4. The result:
-   - Match: correct box, check icon, "You got it!"
-   - Sent back unchanged: hint box, lightbulb, "That's the same as before. What word needs
-     to change?" (a nudge, no answer).
-   - No match: hint box, lightbulb, "Good try! Here's one way:" and the fix in bold.
-   - "Show answer": the same box with "Here's one way:".
-5. Once the answer is showing: "Why:" and the reason, "Correct example:" with the lesson's
-   example in a `surface` box (skipped for "other"), and "Apply this fix" (secondary).
-6. After applying: "Fixed in your essay." (green, check icon) and "Undo".
-7. "Practice this rule": a green underlined link with an external-link icon, opens
-   `/lessons/<id>#practice-title` in a new tab. Hidden for "other".
+## Motion and loading
 
-A fixed mistake shows the fix in the essay with a `correct-bg` background, a solid green
-underline, and a check icon; in the list it shows "Fixed" with a check icon. The count
-reads "5 things to fix · 1 fixed".
-
-## Loading
-
-- **No spinner or moving bar** (CLAUDE.md: no animations). While checking, the button shows
-  an hourglass icon and the words "Checking your writing…", and the results area says the
-  same. Nothing moves.
-- The message is in a live region, so screen readers say it too.
-- Never fake progress steps or claim work the server hasn't done.
+- Motion (motion.dev) and CSS keyframes, as listed in CLAUDE.md. Everything respects
+  "reduce motion".
+- While checking: the button and the feedback side say "Checking your writing…" (the side's
+  message is in a live region). The only moving part is the light along the top line. Never
+  fake progress steps.

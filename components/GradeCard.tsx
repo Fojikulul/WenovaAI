@@ -81,8 +81,10 @@ export default function GradeCard({ grade }: { grade: Grade }) {
             <li key={area.key} className="flex items-center gap-2">
               <span className="min-w-0 flex-1 text-base">{area.label}</span>
               {/* Five bars, one filled per point, growing in one after
-                  another. Decoration: the number says the same thing. */}
-              <span aria-hidden="true" className="flex shrink-0 gap-0.5">
+                  another. Decoration: the number says the same thing, so on
+                  the narrowest phones (where "Organization" would touch
+                  them) they're left out. */}
+              <span aria-hidden="true" className="hidden shrink-0 gap-0.5 min-[400px]:flex">
                 {[1, 2, 3, 4, 5].map((point) => (
                   <span key={point} className="h-1.5 w-3 overflow-hidden rounded-full bg-divider">
                     {point <= grade[area.key] && (
