@@ -1,0 +1,342 @@
+/* Quiz animations, CSS only. This is a normal stylesheet, not a CSS module
+   (next.config.ts loads every .css file as plain CSS), so every class and
+   animation name starts with "quiz-" to avoid clashing with other styles.
+   Each animation lasts about 600ms or less, never blocks a click, and only
+   moves things with transform and opacity (drawn icons also animate their
+   stroke). Every element's normal state is its finished state, so with
+   reduced motion on (bottom of this file) the animations are switched off
+   and the student just sees the result.
+   Colors come from the variables in app/globals.css. */
+
+/* Two timing curves for the whole quiz:
+   spring: overshoots a little, then settles. For "you got it" moments.
+   calm:   slows down smoothly, no overshoot. For wrong answers. */
+.quiz {
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --calm: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Correct answer ---------- */
+
+/* The picked option grows a little, then settles. */
+.quiz-pop {
+  animation: quiz-pop 250ms ease-out;
+}
+
+@keyframes quiz-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+  75% {
+    transform: scale(0.99);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Icons that draw themselves like a pen stroke. pathLength="1" on each path
+   makes the whole line 1 unit long, so the dash moves from 1 (hidden) to 0
+   (fully drawn). */
+.quiz-draw-check path,
+.quiz-draw-x path {
+  stroke-dasharray: 1;
+}
+
+.quiz-draw-check path {
+  animation: quiz-draw 300ms var(--calm) 80ms both;
+}
+
+/* The X draws one line, then the other. */
+.quiz-draw-x path:nth-child(1) {
+  animation: quiz-draw 200ms var(--calm) both;
+}
+
+.quiz-draw-x path:nth-child(2) {
+  animation: quiz-draw 200ms var(--calm) 120ms both;
+}
+
+@keyframes quiz-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Particle burst: small dots fly out from the middle of the parent and fade.
+   Each dot gets its direction from --angle (set in Quiz.tsx). */
+.quiz-burst {
+  --distance: 28px;
+  --size: 6px;
+  --burst-delay: 100ms;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+}
+
+.quiz-burst span {
+  position: absolute;
+  top: calc(var(--size) / -2);
+  left: calc(var(--size) / -2);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 9999px;
+  background: var(--correct-text);
+  /* Hidden until the burst starts ("forwards", not "both", so the dots
+     don't sit in the middle during the delay). */
+  opacity: 0;
+  animation: quiz-burst 450ms var(--calm) var(--burst-delay) forwards;
+}
+
+.quiz-burst span:nth-child(even) {
+  background: var(--logo-green);
+}
+
+/* The bigger burst for a perfect score: more dots, further, some navy. */
+.quiz-burst-big {
+  --distance: 56px;
+  --size: 8px;
+}
+
+.quiz-burst-big span:nth-child(3n) {
+  background: var(--heading);
+}
+
+/* The dots stay fully visible for the first half of the flight, then fade. */
+@keyframes quiz-burst {
+  from {
+    transform: rotate(var(--angle)) translateX(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    transform: rotate(var(--angle)) translateX(var(--distance)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* "2 in a row!" chip pops in just after the bar. */
+.quiz-chip {
+  animation: quiz-chip 300ms var(--spring) 150ms both;
+}
+
+@keyframes quiz-chip {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ---------- Wrong answer ---------- */
+
+/* A gentle sideways shake, at most 6px, getting smaller each time. */
+.quiz-shake {
+  animation: quiz-shake 350ms ease-in-out;
+}
+
+@keyframes quiz-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* One soft green glow around the right answer, so the student sees where
+   to look. */
+.quiz-glow {
+  animation: quiz-glow 600ms var(--calm) 150ms;
+}
+
+@keyframes quiz-glow {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--correct-border) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--correct-border) 0%, transparent);
+  }
+}
+
+/* ---------- Feedback bar and progress bar ---------- */
+
+/* The bar slides up: with a slight overshoot when correct, calmly when
+   wrong. */
+.quiz-bar-spring {
+  animation: quiz-bar-up 400ms var(--spring);
+}
+
+.quiz-bar-calm {
+  animation: quiz-bar-up 250ms var(--calm);
+}
+
+/* A strip of the bar's color below it, so the overshoot never shows a gap
+   at the bottom of the screen. */
+.quiz-bar-spring::after,
+.quiz-bar-calm::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: 48px;
+  background: inherit;
+}
+
+@keyframes quiz-bar-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* The navy fill sweeps in from the left. */
+.quiz-fill {
+  transform-origin: left;
+  animation: quiz-fill 250ms var(--calm);
+}
+
+@keyframes quiz-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* After a correct answer, the segment puffs up and settles. */
+.quiz-segment-pop {
+  animation: quiz-segment-pop 300ms ease-out 150ms;
+}
+
+@keyframes quiz-segment-pop {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.8);
+  }
+}
+
+/* ---------- Score screen ---------- */
+
+/* The card and the review rows fade in while rising 8px. Rows start one
+   after another, --row-step apart (40ms, or less in long lessons, so the
+   last row is done within 600ms). --row and --row-step are set in Quiz.tsx. */
+.quiz-rise {
+  animation: quiz-rise 250ms var(--calm) both;
+}
+
+.quiz-row {
+  animation: quiz-rise 250ms var(--calm) both;
+  animation-delay: calc(150ms + var(--row) * var(--row-step));
+}
+
+@keyframes quiz-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Count-up: --quiz-count is registered as a whole number so the browser can
+   animate it, and the counter shows it as text. --score and --count-time
+   (150ms per point, 600ms at most) are set in Quiz.tsx. A browser without @property shows
+   the final number without counting. */
+@property --quiz-count {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+.quiz-count,
+.quiz-count-perfect {
+  display: inline-block;
+  --quiz-count: var(--score);
+  counter-reset: quiz-count var(--quiz-count);
+}
+
+.quiz-count::after,
+.quiz-count-perfect::after {
+  content: counter(quiz-count);
+}
+
+.quiz-count {
+  animation: quiz-count-up var(--count-time) ease-out 100ms both;
+}
+
+/* A perfect score also pops when the count finishes. */
+.quiz-count-perfect {
+  animation:
+    quiz-count-up var(--count-time) ease-out 100ms both,
+    quiz-score-pop 300ms ease-out calc(var(--count-time) + 100ms);
+}
+
+@keyframes quiz-score-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes quiz-count-up {
+  from {
+    --quiz-count: 0;
+  }
+  to {
+    --quiz-count: var(--score);
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+/* No movement at all: every element shows its finished state, and the
+   particles aren't shown. */
+@media (prefers-reduced-motion: reduce) {
+  .quiz,
+  .quiz *,
+  .quiz *::after {
+    animation: none !important;
+  }
+
+  .quiz-burst {
+    display: none;
+  }
+}
