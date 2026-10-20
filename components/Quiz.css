@@ -251,14 +251,15 @@
 /* ---------- Score screen ---------- */
 
 /* The card and the review rows fade in while rising 8px. Rows start one
-   after another, 40ms apart (--row is set in Quiz.tsx). */
+   after another, --row-step apart (40ms, or less in long lessons, so the
+   last row is done within 600ms). --row and --row-step are set in Quiz.tsx. */
 .quiz-rise {
   animation: quiz-rise 250ms var(--calm) both;
 }
 
 .quiz-row {
   animation: quiz-rise 250ms var(--calm) both;
-  animation-delay: calc(250ms + var(--row) * 40ms);
+  animation-delay: calc(150ms + var(--row) * var(--row-step));
 }
 
 @keyframes quiz-rise {

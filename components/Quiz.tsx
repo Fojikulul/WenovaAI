@@ -17,15 +17,15 @@ import "./Quiz.css";
 const CORRECT_MESSAGES = ["You got it!", "Nice!", "Great job!", "Perfect!"];
 const WRONG_MESSAGES = ["Not quite!", "Almost!", "Good try!", "Keep going!"];
 
-// Messages on the score screen. The team writes the final wording.
+// Messages on the score screen, chosen by the team.
 const SCORE_MESSAGES = {
-  perfect: "[MESSAGE FOR 100%]", // every answer right
-  most: "[MESSAGE FOR 75%+]", // 75% or more right
-  half: "[MESSAGE FOR 50%+]", // 50% or more right
-  low: "[MESSAGE FOR BELOW 50%]", // under 50% right
+  perfect: "Perfect! You know this rule.", // every answer right
+  most: "So close! Just a few to fix.", // 75% or more right
+  half: "Nice try! Try again to get more right.", // 50% or more right
+  low: "Every mistake helps you learn. Try again!", // under 50% right
 };
 
-// Lessons have 3-5 questions, so the message is picked by percentage.
+// Lessons can have up to 10 questions, so the message is picked by percentage.
 function scoreMessage(score: number, total: number) {
   if (score === total) return SCORE_MESSAGES.perfect;
   if (score / total >= 0.75) return SCORE_MESSAGES.most;
@@ -261,8 +261,12 @@ export default function Quiz({
     const perfect = score === questions.length;
     const isLastLesson = nextLesson.href === "/lessons";
     // The count-up takes 150ms per point, but never more than 600ms (a
-    // lesson can have up to 5 questions).
+    // lesson can have up to 10 questions).
     const countTime = Math.min(score * 150, 600);
+    // The review rows fade in 40ms apart, closer together for long lessons,
+    // so the last row is done within 600ms (150ms wait + 200ms of steps +
+    // 250ms fade).
+    const rowStep = Math.min(40, 200 / Math.max(questions.length - 1, 1));
     return (
       <div
         className="quiz quiz-rise mt-6 rounded-xl border border-divider bg-background p-6 md:p-8"
@@ -322,7 +326,7 @@ export default function Quiz({
         <h4 className="mt-10 font-heading text-lg font-semibold text-heading md:text-xl">
           Your answers
         </h4>
-        <ol className="mt-2">
+        <ol className="mt-2" style={{ "--row-step": `${rowStep}ms` } as CSSProperties}>
           {questions.map((q, i) => {
             const correct = results[i];
             return (
