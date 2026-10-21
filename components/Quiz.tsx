@@ -276,7 +276,7 @@ export default function Quiz({
         <div
           aria-hidden="true"
           inert
-          className="pointer-events-none [grid-area:1/1] opacity-70 blur-[6px] select-none"
+          className="pointer-events-none [grid-area:1/1] opacity-90 blur-[5px] select-none"
         >
           <div className="flex items-center gap-3">
             <p className="shrink-0 text-muted">Question 1 of {count}</p>
@@ -301,7 +301,7 @@ export default function Quiz({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 24 }}
-        className="z-10 w-full max-w-md self-center justify-self-center [grid-area:1/1] rounded-xl border border-divider bg-background/90 p-5 shadow-lg backdrop-blur-sm"
+        className="z-10 mx-4 self-center [grid-area:1/1] sm:mx-8 rounded-xl border border-divider bg-background/90 p-5 shadow-lg backdrop-blur-sm"
       >
         {canPick ? (
           <>
