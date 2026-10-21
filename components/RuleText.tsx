@@ -5,8 +5,8 @@ import { Fragment } from "react";
 import { parseRuleText } from "@/lib/rule-text";
 
 // One rule point with its emphasis (see lib/rule-text.ts). **Highlighted**
-// parts are bold with a green marker stroke that sweeps in from the left
-// once the point is on screen; __underlined__ parts get a thick green
+// parts are bold green on a soft green highlight that sweeps in from the
+// left once the point is on screen; __underlined__ parts get a thick green
 // underline. The words themselves never move, so it's easy to read.
 export default function RuleText({ text, delay = 0 }: { text: string; delay?: number }) {
   let marker = 0;
@@ -18,7 +18,10 @@ export default function RuleText({ text, delay = 0 }: { text: string; delay?: nu
           return (
             <motion.strong
               key={index}
-              className="rounded-sm bg-[linear-gradient(to_top,color-mix(in_oklab,var(--logo-green)_35%,transparent)_45%,transparent_45%)] bg-no-repeat px-0.5 font-bold text-heading [box-decoration-break:clone]"
+              // A soft rounded highlight in the tag colors (WCAG-checked in
+              // both themes). box-decoration-break keeps the rounded ends when
+              // a highlight wraps onto the next line.
+              className="rounded-md bg-[linear-gradient(var(--tag-bg),var(--tag-bg))] bg-no-repeat px-1.5 py-0.5 font-bold text-tag-text [box-decoration-break:clone]"
               initial={{ backgroundSize: "0% 100%" }}
               whileInView={{ backgroundSize: "100% 100%" }}
               viewport={{ once: true }}

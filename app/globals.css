@@ -240,6 +240,51 @@
   }
 }
 
+/* Scrollbars that match the design: a slim rounded thumb on an invisible
+   track, no arrow buttons. Soft gray, brand blue on hover, in both themes.
+   Chrome, Edge and Safari use the ::-webkit-scrollbar rules; Firefox only
+   understands scrollbar-width/-color, so those are given to Firefox alone
+   (in Chrome they would switch the custom shape off). */
+:root {
+  --scrollbar-thumb: color-mix(in oklab, var(--muted) 45%, transparent);
+  --scrollbar-thumb-hover: var(--primary);
+}
+
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* The transparent border makes the thumb look 6px wide while the area you
+   can grab stays 12px. */
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
 /* For people who turn on "reduce motion": switch off transitions and
    animations everywhere. */
 @media (prefers-reduced-motion: reduce) {

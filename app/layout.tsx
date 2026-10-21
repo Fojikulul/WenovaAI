@@ -55,7 +55,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             report as a mismatch here. Our script has already run by then. */}
         <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col">
+      {/* suppressHydrationWarning: browser extensions such as Grammarly add
+          their own attributes to <body> (data-gr-ext-installed, …) before
+          React loads. It only covers <body>'s own attributes, not the page. */}
+      <body suppressHydrationWarning className="flex min-h-full flex-col">
         <MotionProvider>
         {/* Full-width header like the reference design: logo on the left,
             the page links in the center, the theme button on the right. The
