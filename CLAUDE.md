@@ -177,8 +177,15 @@ plurals, question-word-order
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
 - No extra pages, popups, or features unless asked. Animations are wanted (Vasyl,
   2026-10-20): entrances, hover/tap feedback, sliding pills, the checker's fix panel and quiz
-  questions sliding in, grade and progress fills, and the floating stickers on the hero. Every
-  animation must respect reduced motion: Motion via `MotionConfig reducedMotion="user"`
+  questions sliding in, grade and progress fills, and the floating stickers on the hero.
+  The check page hero headline types itself once on page load (Johnny, 2026-10-21, OK'd by
+  Vasyl; `components/HeroHeadline.tsx`): "Write better Englsh" gets the checker's mistake
+  highlight, the caret fixes it to "English", a green check pops in, and "one fix at a time" is
+  typed (about 3.3s, never loops, never blocks the checker). The subtitle shows from the start
+  (page load speed). Until JavaScript starts, a CSS caret blinks; if typing hasn't started
+  1.5s after first paint, CSS shows the finished headline and the typing is skipped. The
+  space is reserved so nothing moves, and the h1 keeps the full headline for screen readers.
+  Every animation must respect reduced motion: Motion via `MotionConfig reducedMotion="user"`
   (`components/MotionProvider.tsx`), CSS via the rule at the end of `globals.css`.
 - Friendly loading and error states everywhere
 
@@ -225,6 +232,8 @@ plurals, question-word-order
 - Check page (owner: Vasyl): `app/check/` - HighlightedText, MistakeFix, RuleTag, GradeCard
 - Lessons (owner: Johnny): `app/lessons/` - LessonCard, Quiz, WritingPractice.
   WritingPractice reuses Vasyl's check components; ask Vasyl before changing them.
+- Hero headline (owner: Johnny): `components/HeroHeadline.tsx`, placed in Vasyl's
+  `app/check/CheckerScreen.tsx`. The paper colors (`--paper*`) are in `globals.css`.
 - Both: `data/lessons.json`
 Don't edit the other person's files without asking.
 Stay inside the folders for the current task unless asked otherwise.
