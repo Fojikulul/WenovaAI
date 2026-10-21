@@ -62,14 +62,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start rounded-lg font-heading text-2xl font-bold text-heading sm:text-[1.75rem] lg:text-[2rem]"
             >
               {/* The logo is above the fold, so it loads right away. Its text
-                  is the word next to it, so screen readers skip the image. */}
+                  is the word next to it, so screen readers skip the image.
+                  Just the paper, no box (Vasyl, 2026-10-21). From 640px up it's
+                  56px tall; the negative margin keeps the header 65px. */}
               <Image
                 src="/logo.png"
                 alt=""
-                width={48}
-                height={48}
+                width={176}
+                height={168}
                 loading="eager"
-                className="size-10 rounded-xl sm:size-12"
+                // Served as the original PNG: the image optimizer's lossy
+                // re-save made the see-through bottom edge look rough at this
+                // small size. The file is saved at 3x its header size, so it
+                // stays sharp and small (about 45 KB).
+                unoptimized
+                className="h-11 w-auto sm:-my-1 sm:h-14"
               />
               {/* On phones there is only room for the logo; the name stays
                   for screen readers. */}
