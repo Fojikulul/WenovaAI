@@ -28,7 +28,7 @@ export async function generateMetadata({
 // inside <Suspense> lets Next.js show "Loading lesson…" while it checks.
 export default function LessonPage({ params }: PageProps<"/lessons/[id]">) {
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height))] lg:min-h-[40rem]">
+    <div className="mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height)-var(--footer-height))] lg:min-h-[40rem]">
       <Suspense fallback={<p className="py-12 text-center text-muted">Loading lesson…</p>}>
         <LessonContent params={params} />
       </Suspense>

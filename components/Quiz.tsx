@@ -168,6 +168,10 @@ const outlineButton =
 // `questions` is every question in the lesson; each quiz uses a random set.
 // `next` is where the score screen's main button goes: the next lesson, or
 // back to the list after the last lesson.
+// Optional, for signed-in students: `suggestedCount` is where the slider
+// starts (from their preferred difficulty) until they move it; `onFinish`
+// is called once when the score screen opens, to save the result; and
+// `scoreNote` is shown under the score message (e.g. "Saved to your progress").
 //
 // Motion (motion.dev): a progress bar fills as questions are answered; each
 // question slides in; a right answer pops and a wrong one shakes; the
@@ -178,13 +182,23 @@ const outlineButton =
 export default function Quiz({
   questions: bank,
   next: nextLesson,
+  suggestedCount,
+  onFinish,
+  scoreNote,
 }: {
   questions: PracticeQuestion[];
   next: { href: string; label: string };
+  suggestedCount?: number | null;
+  onFinish?: (result: { score: number; total: number; durationSeconds: number }) => void;
+  scoreNote?: ReactNode;
 }) {
   const lengths = getQuizLengths(bank.length);
-  // How many questions the slider is set to.
-  const [count, setCount] = useState(lengths.start);
+  // How many questions the slider is set to: the student's own pick, or the
+  // suggested number, or the default start.
+  const [pickedCount, setCount] = useState<number | null>(null);
+  const count =
+    pickedCount ??
+    (suggestedCount ? Math.min(lengths.max, Math.max(lengths.min, suggestedCount)) : lengths.start);
   // The questions for this quiz, or null while the student is still picking
   // how many.
   const [questions, setQuestions] = useState<PracticeQuestion[] | null>(null);
@@ -203,6 +217,8 @@ export default function Quiz({
   const nextRef = useRef<HTMLButtonElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
   const moveFocus = useRef(false);
+  // When the current quiz started (Date.now()), for the practice time.
+  const startedAt = useRef(0);
 
   const picked: string | null = answers[index] ?? null;
   const answered = picked !== null;
@@ -235,6 +251,7 @@ export default function Quiz({
     if (!preview) return;
     const others = bank.filter((question) => question.question !== preview.question);
     moveFocus.current = true;
+    startedAt.current = Date.now();
     setQuestions([preview, ...pickQuestions(others, count - 1)]);
     setIndex(0);
     setAnswers([]);
@@ -244,6 +261,7 @@ export default function Quiz({
   // "Try again": a fresh random set of the same size.
   function restart() {
     moveFocus.current = true;
+    startedAt.current = Date.now();
     setQuestions(pickQuestions(bank, count));
     setIndex(0);
     setAnswers([]);
@@ -366,6 +384,7 @@ export default function Quiz({
   const question = questions[index];
   const isCorrect = picked === question.answer;
   const isLast = index === questions.length - 1;
+  const total = questions.length;
   // How far through the quiz: answered questions out of all of them.
   const progress = answers.length / questions.length;
 
@@ -386,6 +405,11 @@ export default function Quiz({
     moveFocus.current = true;
     if (isLast) {
       setFinished(true);
+      onFinish?.({
+        score: rightSoFar,
+        total,
+        durationSeconds: (Date.now() - startedAt.current) / 1000,
+      });
     } else {
       setIndex(index + 1);
     }
@@ -441,6 +465,7 @@ export default function Quiz({
             </span>
           </h3>
           <p className="mt-2">{scoreMessage(score, questions.length)}</p>
+          {scoreNote}
 
           <div className="mt-6 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link href={nextLesson.href} className={primaryButton}>

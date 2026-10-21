@@ -1,7 +1,10 @@
+import { after } from "next/server";
 import { getClaudeFeedback } from "@/lib/claude";
 import { isLessonId } from "@/lib/lesson-ids";
 import { MAX_TEXT_LENGTH_BY_MODE, type FeedbackMode } from "@/lib/limits";
 import { MOCK_FEEDBACK } from "@/lib/mock-feedback";
+import { recordEssayCheck } from "@/lib/progress";
+import { getSignedIn } from "@/lib/supabase/server";
 
 const TRY_AGAIN = "We couldn't check your writing right now. Please try again.";
 
@@ -63,6 +66,21 @@ export async function POST(request: Request) {
   try {
     const feedback = await getClaudeFeedback(text, mode, practiceLessonId);
     if (!feedback) return errorResponse(TRY_AGAIN, 502);
+    // Signed-in students: save this check to their progress after the
+    // response is sent, so it never slows the feedback down. Only real
+    // essay checks count (not the sample feedback above), once per check.
+    // Only mistake categories and the grade are saved, never the text.
+    if (mode === "essay") {
+      after(async () => {
+        try {
+          const signedIn = await getSignedIn();
+          if (signedIn) await recordEssayCheck(signedIn.supabase, signedIn.user.id, feedback);
+        } catch {
+          // The student already has their feedback; just note the failure.
+          console.error("Saving the essay check to progress failed");
+        }
+      });
+    }
     return Response.json(feedback);
   } catch {
     // Don't log the error object: student writing must never end up in logs.

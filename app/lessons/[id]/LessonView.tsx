@@ -2,8 +2,9 @@
 
 import { motion, type Variants } from "motion/react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Quiz from "@/components/Quiz";
+import { getPreferredQuizLength, saveQuizResult, type QuizSaveResult } from "@/lib/quiz-actions";
 import type { Lesson, LessonCard } from "../lesson";
 
 // Icons: path data from Lucide (lucide.dev), ISC license. They are decorative,
@@ -56,6 +57,57 @@ export default function LessonView({
   next?: LessonCard;
   quizNext: { href: string; label: string };
 }) {
+  // Signed-in students: the slider starts at their preferred difficulty's
+  // length, and each finished quiz is saved to their progress.
+  const [suggestedCount, setSuggestedCount] = useState<number | null>(null);
+  const [saveState, setSaveState] = useState<"saving" | QuizSaveResult | null>(null);
+
+  useEffect(() => {
+    let current = true;
+    getPreferredQuizLength()
+      .then((length) => {
+        if (current) setSuggestedCount(length);
+      })
+      // Not signed in or offline: the quiz just uses its normal start.
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, []);
+
+  function finishQuiz(result: { score: number; total: number; durationSeconds: number }) {
+    setSaveState("saving");
+    saveQuizResult(lesson.id, result.score, result.total, result.durationSeconds)
+      .then(setSaveState)
+      .catch(() => setSaveState("failed"));
+  }
+
+  // The line under the score: whether the result was saved.
+  const scoreNote =
+    saveState === "saving" ? (
+      <p className="mt-2 text-muted" role="status">
+        Saving to your progress…
+      </p>
+    ) : saveState === "saved" ? (
+      <p className="mt-2 font-bold text-correct-text" role="status">
+        Saved to your progress.{" "}
+        <Link href="/progress" className="text-secondary underline underline-offset-[3px] hover:text-secondary-hover">
+          See My progress
+        </Link>
+      </p>
+    ) : saveState === "signed-out" ? (
+      <p className="mt-2 text-muted" role="status">
+        <Link href="/login" className="font-bold text-secondary underline underline-offset-[3px] hover:text-secondary-hover">
+          Sign in
+        </Link>{" "}
+        to save your quiz results and get a learning path.
+      </p>
+    ) : saveState === "failed" ? (
+      <p className="mt-2 text-hint-text" role="status">
+        We couldn&apos;t save this result. Your score above is still right.
+      </p>
+    ) : null;
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm">
       {/* The gradient line along the top, in the logo's blue and green. */}
@@ -140,7 +192,14 @@ export default function LessonView({
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5">
             {/* The key starts the quiz fresh if the student opens another lesson. */}
-            <Quiz key={lesson.id} questions={lesson.practice} next={quizNext} />
+            <Quiz
+              key={lesson.id}
+              questions={lesson.practice}
+              next={quizNext}
+              suggestedCount={suggestedCount}
+              onFinish={finishQuiz}
+              scoreNote={scoreNote}
+            />
           </div>
         </section>
       </div>
