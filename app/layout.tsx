@@ -73,7 +73,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               {/* Two-tone name like the reference design: "AI" in the logo's
                   dark green (5.4:1 on white). */}
               <span className="sr-only sm:not-sr-only">
-                Wenova <span className="text-secondary">AI</span>
+                {/* The space stays (screen readers say "Wenova AI"); the
+                    negative margin just pulls "AI" a little closer. */}
+                Wenova <span className="-ml-[0.12em] text-secondary">AI</span>
               </span>
             </Link>
             <HeaderNav />
