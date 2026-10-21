@@ -44,7 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bricolage.variable} ${atkinson.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* suppressHydrationWarning: some antivirus programs (e.g. Kaspersky)
+            add their own <script> at the top of <head>, which React would
+            report as a mismatch here. Our script has already run by then. */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col">
         <MotionProvider>

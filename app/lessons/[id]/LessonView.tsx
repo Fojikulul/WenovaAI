@@ -45,12 +45,16 @@ const springIn: Variants = {
 // scrolls on its own; on smaller screens the sides stack.
 export default function LessonView({
   lesson,
+  rulePoints,
   previous,
   next,
+  quizNext,
 }: {
   lesson: Lesson;
+  rulePoints: string[]; // the rule split into sentences (ruleSentences in lesson.ts)
   previous?: LessonCard;
   next?: LessonCard;
+  quizNext: { href: string; label: string };
 }) {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm">
@@ -74,7 +78,20 @@ export default function LessonView({
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
           >
-            <motion.p variants={springIn}>{lesson.rule}</motion.p>
+            {/* The rule as short points, one per sentence. */}
+            <ul className="flex max-w-[65ch] flex-col gap-3">
+              {rulePoints.map((sentence, index) => (
+                <motion.li key={index} variants={springIn} className="flex gap-3">
+                  {/* A small green dot, for decoration only. calc() puts it
+                      in the middle of the first line. */}
+                  <span
+                    aria-hidden="true"
+                    className="mt-[calc(0.8em-0.25rem)] size-2 shrink-0 rounded-full bg-logo-green"
+                  />
+                  <span>{sentence}</span>
+                </motion.li>
+              ))}
+            </ul>
 
             <motion.div variants={springIn}>
               <h3 className="mt-6 text-lg font-semibold">Example</h3>
@@ -123,7 +140,7 @@ export default function LessonView({
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5">
             {/* The key starts the quiz fresh if the student opens another lesson. */}
-            <Quiz key={lesson.id} questions={lesson.practice} />
+            <Quiz key={lesson.id} questions={lesson.practice} next={quizNext} />
           </div>
         </section>
       </div>

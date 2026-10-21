@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroPill from "@/components/HeroPill";
-import { getLesson, getLessonPlace, getLessons } from "../lesson";
+import { getLesson, getLessonPlace, getLessons, ruleSentences } from "../lesson";
+import { getQuizLengths } from "../quiz-lengths";
 import LessonView from "./LessonView";
 
 // Build all 12 lesson pages ahead of time, one per id in data/lessons.json.
@@ -35,6 +36,28 @@ export default function LessonPage({ params }: PageProps<"/lessons/[id]">) {
   );
 }
 
+// A rough time to finish a lesson: 1 minute to read the rule card, plus
+// about 30 seconds for each question, rounded up.
+function minutesToFinish(questionCount: number) {
+  return Math.ceil(1 + questionCount * 0.5);
+}
+
+// "3–10" on screen, "3 to 10" for screen readers, or one number if both are
+// the same.
+function Range({ from, to }: { from: number; to: number }) {
+  if (from === to) return <>{to}</>;
+  return (
+    <>
+      <span aria-hidden="true">
+        {from}–{to}
+      </span>
+      <span className="sr-only">
+        {from} to {to}
+      </span>
+    </>
+  );
+}
+
 async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const lesson = getLesson(id);
@@ -42,6 +65,13 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
   if (!lesson || !place) {
     notFound();
   }
+
+  const lengths = getQuizLengths(lesson.practice.length);
+  // Where the quiz's score screen sends the student next. The last lesson
+  // goes back to the list.
+  const next = place.next
+    ? { href: `/lessons/${place.next.id}`, label: "Next lesson" }
+    : { href: "/lessons", label: "Back to all lessons" };
 
   return (
     <>
@@ -85,11 +115,25 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
             {lesson.title}
           </span>
         </h1>
+        {/* The student picks how many questions before the quiz starts, so
+            this shows the range, e.g. "3–10 questions · about 3–6 min". */}
+        <p className="mt-2 animate-fade-up text-muted [animation-delay:120ms]">
+          <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          about <Range from={minutesToFinish(lengths.min)} to={minutesToFinish(lengths.max)} /> min
+        </p>
       </section>
 
       {/* "relative": paints above the hero's glow, which reaches down behind it. */}
       <div className="relative animate-fade-up [animation-delay:160ms] lg:min-h-0 lg:flex-1">
-        <LessonView lesson={lesson} previous={place.previous} next={place.next} />
+        <LessonView
+          lesson={lesson}
+          rulePoints={ruleSentences(lesson.rule)}
+          previous={place.previous}
+          next={place.next}
+          quizNext={next}
+        />
       </div>
     </>
   );
