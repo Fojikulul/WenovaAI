@@ -4,8 +4,13 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { DifficultyBadge, MasteryBadge } from "@/components/LessonBadges";
 import PillTabs, { type PillTab } from "@/components/PillTabs";
+import { DIFFICULTIES, DIFFICULTY_LABELS, lessonDifficulty, type Difficulty } from "@/lib/learning";
+import type { MasteryLevel } from "@/lib/mastery";
+import { getMyMastery } from "@/lib/quiz-actions";
 import type { LessonCard } from "./lesson";
+import { getQuizLengths } from "./quiz-lengths";
 
 // Icons: path data from Lucide (lucide.dev), ISC license. They are decorative,
 // so screen readers skip them; the words next to each one say the same thing.
@@ -140,7 +145,7 @@ function plural(count: number, word: string) {
 function matches(card: LessonCard, query: string) {
   const q = query.trim().toLowerCase();
   if (q === "") return true;
-  return `${card.title} ${card.summary} ${card.groupTitle}`.toLowerCase().includes(q);
+  return `${card.title} ${card.summary} ${card.groupTitle} ${lessonDifficulty(card.id)}`.toLowerCase().includes(q);
 }
 
 // The lesson list, in the style of melies.co/ai-tools: a toolbar with a
@@ -159,7 +164,24 @@ export default function LessonsBrowser({
   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty | "any">("any");
+  // The signed-in student's mastery per lesson; null when signed out (then
+  // the cards just don't show it).
+  const [mastery, setMastery] = useState<Record<string, MasteryLevel> | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let current = true;
+    getMyMastery()
+      .then((levels) => {
+        if (current) setMastery(levels);
+      })
+      // Signed out or offline: no badges, the list works the same.
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, []);
 
   // "/" jumps to the search box, like on the reference site (but not while
   // the student is typing somewhere).
@@ -177,7 +199,10 @@ export default function LessonsBrowser({
   }, []);
 
   const shown = cards.filter(
-    (card) => (filter === "all" || card.groupId === filter) && matches(card, query),
+    (card) =>
+      (filter === "all" || card.groupId === filter) &&
+      (difficulty === "any" || lessonDifficulty(card.id) === difficulty) &&
+      matches(card, query),
   );
   const sections = groups
     .map((group) => ({ ...group, cards: shown.filter((card) => card.groupId === group.id) }))
@@ -224,15 +249,16 @@ export default function LessonsBrowser({
           </kbd>
         </label>
         <PillTabs tabs={tabs} selected={filter} onSelect={setFilter} idPrefix="lessons" label="Filter lessons" />
-        <motion.button
+        {/* The shuffle arrows spin when the button is hovered. Plain CSS
+            hover (not Motion's whileHover): this button leaves the page, and
+            when the student comes back Next.js shows the page as it was, so
+            a Motion hover would stay stuck "on". CSS hover re-checks itself. */}
+        <button
           type="button"
           onClick={pickOne}
-          whileHover="hover"
-          whileTap={{ scale: 0.97 }}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-primary bg-background px-4 font-bold text-primary transition-colors hover:bg-surface"
+          className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-primary bg-background px-4 font-bold text-primary transition-[background-color,transform] hover:bg-surface active:scale-[0.97]"
         >
-          {/* The shuffle arrows spin when the button is hovered. */}
-          <motion.span variants={{ hover: { rotate: 180 } }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+          <span className="transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-180">
             <Icon>
               <path d="m18 14 4 4-4 4" />
               <path d="m18 2 4 4-4 4" />
@@ -240,9 +266,37 @@ export default function LessonsBrowser({
               <path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" />
               <path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />
             </Icon>
-          </motion.span>
+          </span>
           Pick one for me
-        </motion.button>
+        </button>
+      </div>
+
+      {/* Difficulty filter: a pill springs to the chosen level. */}
+      <div role="group" aria-label="Filter by difficulty" className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="mr-1 font-bold text-muted">Difficulty:</span>
+        {(["any", ...DIFFICULTIES] as const).map((level) => {
+          const selected = difficulty === level;
+          return (
+            <button
+              key={level}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setDifficulty(level)}
+              className={`relative inline-flex min-h-11 items-center rounded-full px-4 font-bold transition-colors ${
+                selected ? "text-heading" : "text-muted hover:text-heading"
+              }`}
+            >
+              {selected && (
+                <motion.span
+                  layoutId="difficulty-pill"
+                  className="absolute inset-0 rounded-full border-2 border-primary bg-background shadow-sm"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative">{level === "any" ? "Any" : DIFFICULTY_LABELS[level]}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Like the reference's "Try a task" line. */}
@@ -270,13 +324,19 @@ export default function LessonsBrowser({
             animate={{ opacity: 1, y: 0 }}
             className="mt-6 rounded-2xl border border-dashed border-border p-8 text-center"
           >
-            <p className="font-bold">No lessons match “{query}”.</p>
+            <p className="font-bold">
+              {query.trim() ? <>No lessons match “{query}”.</> : "No lessons match these filters."}
+            </p>
             <button
               type="button"
-              onClick={() => setQuery("")}
+              onClick={() => {
+                setQuery("");
+                setDifficulty("any");
+                setFilter("all");
+              }}
               className="mt-3 inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-[3px]"
             >
-              Clear the search
+              Clear the filters
             </button>
           </motion.div>
         )}
@@ -325,37 +385,40 @@ export default function LessonsBrowser({
                       exit={{ opacity: 0, scale: 0.92 }}
                       transition={{ type: "spring", stiffness: 300, damping: 26, delay: (position % 3) * 0.06 }}
                     >
-                      <motion.div whileHover="hover" whileTap={{ scale: 0.98 }} variants={{ hover: { y: -4 } }} className="h-full">
+                      {/* Hover lift, arrow and icon tilt are plain CSS hover
+                          (group-hover), not Motion's whileHover: after opening
+                          a lesson and coming back, Next.js restores this page
+                          as it was, and a Motion hover would stay stuck on the
+                          card that was clicked. */}
+                      <div className="h-full">
                         <Link
                           href={`/lessons/${card.id}`}
-                          className="relative flex h-full flex-col rounded-2xl border border-divider bg-background p-5 shadow-sm transition-[border-color,box-shadow] hover:border-primary hover:shadow-md"
+                          className="group relative flex h-full flex-col rounded-2xl border border-divider bg-background p-5 shadow-sm transition-[border-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1 hover:border-primary hover:shadow-md active:scale-[0.98]"
                         >
                           {/* Arrow in the top right corner; it moves up and
                               right when the card is hovered. */}
-                          <motion.span
-                            variants={{ hover: { x: 3, y: -3 } }}
-                            className="absolute top-4 right-4 text-muted"
-                          >
+                          <span className="absolute top-4 right-4 text-muted transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">
                             <Icon size={18}>
                               <path d="M7 7h10v10" />
                               <path d="M7 17 17 7" />
                             </Icon>
-                          </motion.span>
+                          </span>
                           {/* Icon tile for the lesson; it tilts a little on hover. */}
-                          <motion.span
-                            variants={{ hover: { rotate: -8, scale: 1.08 } }}
-                            transition={{ type: "spring", stiffness: 400, damping: 14 }}
-                            className="flex size-12 items-center justify-center rounded-xl bg-tag-bg text-tag-text"
-                          >
+                          <span className="flex size-12 items-center justify-center rounded-xl bg-tag-bg text-tag-text transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-108 group-hover:-rotate-8">
                             <Icon size={26}>{LESSON_ICONS[card.id] ?? BOOK_ICON}</Icon>
-                          </motion.span>
-                          <h3 className="mt-5 text-lg leading-snug font-semibold md:text-xl">{card.title}</h3>
+                          </span>
+                          {/* Difficulty, and mastery for signed-in students. */}
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            <DifficultyBadge difficulty={lessonDifficulty(card.id)} />
+                            {mastery?.[card.id] && <MasteryBadge level={mastery[card.id]} delay={(position % 3) * 0.06 + 0.2} />}
+                          </div>
+                          <h3 className="mt-3 text-lg leading-snug font-semibold md:text-xl">{card.title}</h3>
                           <p className="mt-1 line-clamp-2 text-muted">{card.summary}</p>
                           <p className="mt-auto pt-3 text-base font-bold text-muted">
-                            Lesson {card.number} · {plural(card.questions, "question")}
+                            Lesson {card.number} · {plural(getQuizLengths(card.questions).max, "question")}
                           </p>
                         </Link>
-                      </motion.div>
+                      </div>
                     </motion.li>
                   ))}
                 </AnimatePresence>

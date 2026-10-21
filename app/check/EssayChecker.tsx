@@ -541,13 +541,14 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
           <ul className="mt-1.5 flex flex-wrap gap-2">
             {workOn.map(({ rule, count }) => (
               <li key={rule}>
-                <motion.a
+                {/* CSS hover (not Motion's whileHover): this opens a new
+                    tab, and a Motion hover could stay stuck when the
+                    student comes back. */}
+                <a
                   href={`/lessons/${rule}#practice-title`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tag-bg px-3.5 font-bold text-tag-text transition-colors hover:bg-correct-bg"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tag-bg px-3.5 font-bold text-tag-text transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:bg-correct-bg active:scale-[0.97]"
                 >
                   <span className="underline underline-offset-[3px]">{lessons[rule].title}</span>
                   <span className="rounded-full bg-background px-2 text-base leading-6 font-bold">
@@ -557,7 +558,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                   <span className="sr-only">
                     ({plural(count, "mistake")}, opens in a new tab)
                   </span>
-                </motion.a>
+                </a>
               </li>
             ))}
           </ul>

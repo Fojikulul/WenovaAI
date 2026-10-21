@@ -1,4 +1,5 @@
 import lessons from "@/data/lessons.json";
+import { plainRuleText } from "./rule-text";
 import { MAX_MISTAKES_BY_MODE, type FeedbackMode } from "./limits";
 
 // First version by Claude Code from Vasyl's design rules; edited by the team.
@@ -54,7 +55,7 @@ function practiceFocus(lessonId?: string) {
   const lesson = lessons.find((l) => l.id === lessonId);
   if (!lesson) return "";
   return `## This practice
-The student just studied the lesson "${lesson.title}" (${lesson.id}). Its rule: ${lesson.rule}
+The student just studied the lesson "${lesson.title}" (${lesson.id}). Its rule: ${plainRuleText(lesson.rule)}
 If the student made real mistakes with this rule, list them first, then other big mistakes.
 - Don't look harder for mistakes with this rule than for any other kind of mistake.
 - A sentence that uses this rule correctly stays unmarked. Practicing a rule doesn't mean the student got it wrong.`;

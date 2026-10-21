@@ -5,26 +5,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { PracticeQuestion } from "@/app/lessons/lesson";
 import { getQuizLengths } from "@/app/lessons/quiz-lengths";
-
-// A shuffled copy of a list (Fisher–Yates: every order is equally likely).
-function shuffle<T>(items: T[]): T[] {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-// `count` random questions from the lesson, in random order, each with its
-// options shuffled. Answers are still checked by text, so the order doesn't
-// matter. Only called from button clicks, never while the page is drawn, so
-// the server and the browser always draw the same first screen.
-function pickQuestions(bank: PracticeQuestion[], count: number): PracticeQuestion[] {
-  return shuffle(bank)
-    .slice(0, count)
-    .map((question) => ({ ...question, options: shuffle(question.options) }));
-}
+import { pickFresh, pickQuestions, questionKey, readSeen, saveSeen } from "@/lib/quiz-pick";
 
 // Messages in the feedback. They take turns in this order, so the same one
 // never shows twice in a row.
@@ -92,6 +73,124 @@ function FlameIcon() {
     <Icon size={18}>
       <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
     </Icon>
+  );
+}
+
+// Find-the-mistake questions are written as `Which word is wrong? '<sentence>'`
+// (CLAUDE.md). This splits one into its prompt and sentence, or returns null
+// for any other kind of question.
+function splitMistakeQuestion(text: string) {
+  const match = text.match(/^(Which word is wrong\?)\s*'(.+)'\s*$/);
+  return match ? { prompt: match[1], sentence: match[2] } : null;
+}
+
+// The sentence as chunks, split at spaces, each with its word in the middle
+// and any punctuation around it kept apart: "Listen," → "", "Listen", ",".
+// So "night." can show "night" as a tappable word with the dot after it.
+function sentenceChunks(sentence: string) {
+  return sentence.split(/\s+/).map((chunk) => {
+    const [, before, word, after] = chunk.match(/^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9]*)$/) ?? ["", "", chunk, ""];
+    return { before, word, after };
+  });
+}
+
+// The sentence of a find-the-mistake question, as a highlighted card. The
+// words that are answer options can be tapped right in the sentence (the
+// same as tapping that option below). Before answering they have a dashed
+// outline; afterwards the right word turns green with a check, and a wrong
+// pick turns red and shakes. The option buttons under it stay the way for
+// keyboards and screen readers, so this card is hidden from screen readers
+// (the heading reads the sentence out) and its words skip the Tab order.
+function MistakeSentence({
+  sentence,
+  options,
+  answer,
+  picked,
+  onPick,
+}: {
+  sentence: string;
+  options: string[];
+  answer: string;
+  picked: string | null;
+  onPick?: (word: string) => void;
+}) {
+  const answered = picked !== null;
+  return (
+    <motion.p
+      aria-hidden="true"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 26 }}
+      className="relative mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-2 overflow-hidden rounded-xl border-l-4 border-primary bg-surface px-4 py-3 text-xl leading-snug"
+    >
+      {/* A soft blue-to-green glow behind the sentence, like the hero's. */}
+      <span className="pointer-events-none absolute inset-0 bg-linear-to-r from-primary/10 via-transparent to-logo-green/10" />
+      {sentenceChunks(sentence).map((chunk, index) => {
+        const tappable = options.includes(chunk.word);
+        const isAnswer = answered && chunk.word === answer;
+        const isWrongPick = answered && chunk.word === picked && picked !== answer;
+        let style = "";
+        if (tappable && !answered) {
+          style =
+            "cursor-pointer border-2 border-dashed border-primary bg-background px-2 font-bold text-heading hover:bg-primary/10";
+        } else if (isAnswer) {
+          style = "border-2 border-correct-border bg-correct-bg px-2 font-bold text-correct-text";
+        } else if (isWrongPick) {
+          style =
+            "border-2 border-mistake-line bg-mistake-bg px-2 font-bold text-mistake-text line-through decoration-2";
+        }
+        return (
+          <motion.span
+            key={index}
+            className="relative inline-flex items-center"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 26, delay: 0.1 + index * 0.03 }}
+          >
+            {chunk.before}
+            {tappable ? (
+              <motion.button
+                type="button"
+                tabIndex={-1}
+                onClick={() => onPick?.(chunk.word)}
+                disabled={answered || !onPick}
+                // A tap target at least 44px tall (WCAG / ui-ux guidance).
+                className={`inline-flex min-h-11 items-center gap-1 rounded-lg transition-colors disabled:cursor-default ${style}`}
+                whileHover={answered ? undefined : { y: -2 }}
+                whileTap={answered ? undefined : { scale: 0.94 }}
+                animate={
+                  isWrongPick
+                    ? { x: [0, -6, 6, -4, 4, 0] }
+                    : isAnswer
+                      ? { scale: [1, 1.15, 1] }
+                      : { x: 0, scale: 1 }
+                }
+                transition={{ duration: 0.45 }}
+              >
+                {chunk.word}
+                {isAnswer && (
+                  <svg viewBox="0 0 24 24" className="size-5" fill="none">
+                    <motion.path
+                      d="M20 6 9 17l-5-5"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.35, delay: 0.15 }}
+                    />
+                  </svg>
+                )}
+              </motion.button>
+            ) : (
+              chunk.word
+            )}
+            {chunk.after}
+          </motion.span>
+        );
+      })}
+    </motion.p>
   );
 }
 
@@ -181,12 +280,15 @@ const outlineButton =
 // components/MotionProvider.tsx).
 export default function Quiz({
   questions: bank,
+  lessonId,
   next: nextLesson,
   suggestedCount,
   onFinish,
   scoreNote,
 }: {
   questions: PracticeQuestion[];
+  // Used to remember which questions this device already had (see readSeen).
+  lessonId?: string;
   next: { href: string; label: string };
   suggestedCount?: number | null;
   onFinish?: (result: { score: number; total: number; durationSeconds: number }) => void;
@@ -219,6 +321,9 @@ export default function Quiz({
   const moveFocus = useRef(false);
   // When the current quiz started (Date.now()), for the practice time.
   const startedAt = useRef(0);
+  // Questions already had this round (null until the first quiz starts;
+  // it's read from storage then, never while the page is drawn).
+  const seen = useRef<Set<string> | null>(null);
 
   const picked: string | null = answers[index] ?? null;
   const answered = picked !== null;
@@ -246,23 +351,30 @@ export default function Quiz({
     return <p className="text-muted">This lesson has no practice questions yet.</p>;
   }
 
-  // "Start quiz": the preview question first, then random others.
+  // A new set of questions (unseen ones first), remembered for next time.
+  function newQuestions(first?: PracticeQuestion) {
+    const { chosen, nextSeen } = pickFresh(bank, count, seen.current ?? readSeen(lessonId), first);
+    seen.current = nextSeen;
+    saveSeen(lessonId, nextSeen);
+    return chosen;
+  }
+
+  // "Start quiz": the preview question first (if it's new), then others.
   function start() {
     if (!preview) return;
-    const others = bank.filter((question) => question.question !== preview.question);
     moveFocus.current = true;
     startedAt.current = Date.now();
-    setQuestions([preview, ...pickQuestions(others, count - 1)]);
+    setQuestions(newQuestions(preview));
     setIndex(0);
     setAnswers([]);
     setFinished(false);
   }
 
-  // "Try again": a fresh random set of the same size.
+  // "Try again": a new set of the same size, with questions not seen yet.
   function restart() {
     moveFocus.current = true;
     startedAt.current = Date.now();
-    setQuestions(pickQuestions(bank, count));
+    setQuestions(newQuestions());
     setIndex(0);
     setAnswers([]);
     setFinished(false);
@@ -271,7 +383,10 @@ export default function Quiz({
   // Back to the slider, keeping the last number picked, with a new preview.
   function changeCount() {
     moveFocus.current = true;
-    setPreview(pickQuestions(bank, 1)[0]);
+    // Preview a question this device hasn't had yet, when there is one.
+    const alreadySeen = seen.current ?? readSeen(lessonId);
+    const fresh = bank.filter((question) => !alreadySeen.has(questionKey(question)));
+    setPreview(pickQuestions(fresh.length > 0 ? fresh : bank, 1)[0]);
     setQuestions(null);
     setIndex(0);
     setAnswers([]);
@@ -300,9 +415,24 @@ export default function Quiz({
             <p className="shrink-0 text-muted">Question 1 of {count}</p>
             <div className="h-2 flex-1 rounded-full bg-divider" />
           </div>
-          <p className="mt-4 text-lg leading-relaxed font-semibold md:text-xl">
-            <QuestionText text={preview.question} />
-          </p>
+          {(() => {
+            const previewMistake = splitMistakeQuestion(preview.question);
+            return previewMistake ? (
+              <>
+                <p className="mt-4 text-lg leading-relaxed font-semibold md:text-xl">{previewMistake.prompt}</p>
+                <MistakeSentence
+                  sentence={previewMistake.sentence}
+                  options={preview.options}
+                  answer={preview.answer}
+                  picked={null}
+                />
+              </>
+            ) : (
+              <p className="mt-4 text-lg leading-relaxed font-semibold md:text-xl">
+                <QuestionText text={preview.question} />
+              </p>
+            );
+          })()}
           <div className="mt-4 flex flex-col gap-2.5">
             {preview.options.map((option) => (
               <div
@@ -556,6 +686,7 @@ export default function Quiz({
   }
 
   const questionId = `quiz-question-${index}`;
+  const mistakeQuestion = splitMistakeQuestion(question.question);
   const feedbackId = `quiz-feedback-${index}`;
   const message = isCorrect
     ? CORRECT_MESSAGES[(rightSoFar - 1) % CORRECT_MESSAGES.length]
@@ -596,8 +727,26 @@ export default function Quiz({
             tabIndex={-1}
             className="mt-4 text-lg leading-relaxed font-semibold md:text-xl"
           >
-            <QuestionText text={question.question} />
+            {mistakeQuestion ? (
+              <>
+                {mistakeQuestion.prompt}
+                {/* The card below is for eyes and taps; screen readers get the
+                    sentence here. */}
+                <span className="sr-only"> &ldquo;{mistakeQuestion.sentence}&rdquo;</span>
+              </>
+            ) : (
+              <QuestionText text={question.question} />
+            )}
           </h3>
+          {mistakeQuestion && (
+            <MistakeSentence
+              sentence={mistakeQuestion.sentence}
+              options={question.options}
+              answer={question.answer}
+              picked={picked}
+              onPick={pick}
+            />
+          )}
 
           <div role="group" aria-labelledby={questionId} className="mt-4 flex flex-col gap-2.5">
             {question.options.map((option, position) => {
