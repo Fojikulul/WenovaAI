@@ -221,8 +221,8 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     if (draft !== "") setText(draft);
   }, []);
 
-  async function check(event: FormEvent) {
-    event.preventDefault();
+  async function check(event?: FormEvent) {
+    event?.preventDefault();
     if (checking) return;
     // The button only looks disabled (aria-disabled), so say why in words.
     if (text.trim() === "") {
@@ -737,8 +737,17 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
           {MAX_LENGTH.toLocaleString("en-US")} characters
           {nearLimit && !tooLong && " · Almost at the limit"}
         </p>
-        {/* Outside the <form>, so it names the form it sends. */}
-        <button key="check" type="submit" form="essay-form" aria-disabled={!canCheck} className={primaryButton}>
+        {/* A plain button (not a submit button) that calls check() itself.
+            "Edit my writing" sits in the same spot; with a submit button
+            here, a click on "Edit my writing" could end on this button and
+            send the essay again. */}
+        <button
+          key="check"
+          type="button"
+          onClick={() => check()}
+          aria-disabled={!canCheck}
+          className={primaryButton}
+        >
           {checking ? (
             <>
               <HourglassIcon />

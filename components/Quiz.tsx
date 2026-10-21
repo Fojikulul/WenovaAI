@@ -267,9 +267,9 @@ export default function Quiz({
     return (
       // The preview and the slider card share one grid cell, so the card
       // sits on top of the blurred question and the area is as tall as the
-      // taller of the two. min-h-full + content-center put both in the
-      // middle of the Practice side.
-      <div className="grid min-h-full content-center">
+      // taller of the two. It starts right under "Practice", where the quiz
+      // itself will be.
+      <div className="grid">
         {/* Preview: the quiz's real first question, laid out like the quiz,
             blurred so it can't be read yet. Decoration only: screen readers
             skip it and it can't be clicked or focused (inert). */}
