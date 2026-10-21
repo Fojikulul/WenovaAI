@@ -325,6 +325,70 @@
   }
 }
 
+/* ---------- "How many questions?" slider ---------- */
+
+/* A native range input, restyled: a navy thumb and filled track (blue is
+   for buttons only). The input is 48px tall so it's easy to tap; the track
+   inside it is 8px. --filled (0 to 1) is set in Quiz.tsx; the fill stops
+   at the middle of the thumb, which is 32px wide. Browsers need separate
+   rules for the track and thumb, so each part is written twice. */
+.quiz-range {
+  --thumb: 32px;
+  --fill-end: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--filled));
+  appearance: none;
+  height: 48px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.quiz-range:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.quiz-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--heading) var(--fill-end),
+    var(--border) var(--fill-end)
+  );
+}
+
+.quiz-range::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--border);
+}
+
+.quiz-range::-moz-range-progress {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--heading);
+}
+
+.quiz-range::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((8px - var(--thumb)) / 2);
+  border: 3px solid var(--background);
+  border-radius: 9999px;
+  background: var(--heading);
+  box-shadow: 0 0 0 1px var(--heading);
+}
+
+.quiz-range::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 3px solid var(--background);
+  border-radius: 9999px;
+  background: var(--heading);
+  box-shadow: 0 0 0 1px var(--heading);
+}
+
 /* ---------- Reduced motion ---------- */
 
 /* No movement at all: every element shows its finished state, and the

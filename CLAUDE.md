@@ -116,7 +116,9 @@ Do not change these formats without both teammates agreeing.
   ]
 }
 ```
-- 3-5 practice questions per lesson. `answer` must exactly match one of its `options`.
+- 10 practice questions per lesson, mixing three styles: fill in the blank, choose the correct
+  sentence, and find the mistake. `answer` must exactly match one of its `options`. Options never
+  refer to positions (no "A and B", "none of the above"), because options are shuffled.
 - 1-3 writing prompts per lesson, written by the team
 
 ### Lesson ids
