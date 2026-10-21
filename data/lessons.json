@@ -2,7 +2,7 @@
   {
     "id": "present-simple",
     "title": "Present Simple",
-    "rule": "Use the present simple for **habits, routines, and facts**. I/you/we/they → **base verb** (they work). He/she/it → **verb + -s/-es** (she works, he watches). Questions and negatives → **do/does + base verb** (does she work, she doesn't work). __After does or doesn't, the verb has no -s.__",
+    "rule": "Use the present simple for __habits, routines, and facts__. I/you/we/they → **base verb** (they work). He/she/it → **verb + -s/-es** (she works, he watches). Questions and negatives → **do/does + base verb** (does she work, she doesn't work). __After does or doesn't, the verb has no -s.__",
     "example": "My sister works at a hospital. She doesn't drive, so she takes the bus every morning.",
     "mistake": {
       "wrong": "He go to the library every Saturday.",
@@ -214,7 +214,7 @@
   {
     "id": "present-continuous",
     "title": "Present Continuous",
-    "rule": "Use **am/is/are + verb-ing** for actions happening **now or around now** (she is reading, I'm working from home this week). __Don't forget am/is/are.__ State verbs like know, want, like, and need __stay in the present simple__ (I know, not I am knowing).",
+    "rule": "Use **am/is/are + verb-ing** for actions happening __now or around now__ (she is reading, I'm working from home this week). __Don't forget am/is/are.__ State verbs like know, want, like, and need __stay in the present simple__ (I know, not I am knowing).",
     "example": "I'm writing to you because our team is working on a new project this month.",
     "mistake": {
       "wrong": "She working on her essay right now.",
@@ -426,7 +426,7 @@
   {
     "id": "past-simple",
     "title": "Past Simple",
-    "rule": "Use the past simple for **finished actions at a finished time** (yesterday, last year, in 2019). Example: I lived in Texas in 2019 (I don't live there now). Regular verbs **add -ed** (walk → walked); irregular verbs change (go → went, buy → bought). Questions and negatives → **did/didn't + base verb** (did you go, I didn't go). __If it started in the past and is still true now, use the present perfect instead__ (I have lived here since 2020).",
+    "rule": "Use the past simple for __finished actions at a finished time__ (yesterday, last year, in 2019). Example: I lived in Texas in 2019 (I don't live there now). Regular verbs add **-ed** (walk → walked); irregular verbs change (go → went, buy → bought). Questions and negatives → **did/didn't + base verb** (did you go, I didn't go). __If it started in the past and is still true now, use the present perfect instead__ (I have lived here since 2020).",
     "example": "Last summer I visited my cousins in Toronto. We didn't stay long, but we saw a lot of the city.",
     "mistake": {
       "wrong": "I didn't went to class yesterday.",
@@ -638,7 +638,7 @@
   {
     "id": "past-continuous",
     "title": "Past Continuous",
-    "rule": "Use **was/were + verb-ing** for an action **in progress** at a moment in the past (at 8 p.m., I was reading). The short action that interrupts it uses the **past simple** (I was reading when the phone rang). Use **while + a full sentence** and **during + a noun** (while I was eating, during dinner).",
+    "rule": "Use **was/were + verb-ing** for an action __in progress__ at a moment in the past (at 8 p.m., I was reading). The short action that interrupts it uses the __past simple__ (I was reading when the phone rang). Use **while + a full sentence** and **during + a noun** (while I was eating, during dinner).",
     "example": "I was cooking dinner when my phone rang.",
     "mistake": {
       "wrong": "While I walked home, it was starting to rain.",
@@ -850,7 +850,7 @@
   {
     "id": "present-perfect",
     "title": "Present Perfect",
-    "rule": "Use **have/has + past participle** to connect the past to **now**. Use it for experiences (have you ever been to Paris), for situations that are still true (I have lived here for two years), and for recent actions (she has just left, I haven't eaten yet). Use **for + a length of time** and **since + a starting point** (for two years, since 2021). __Don't use it with a finished time__ like yesterday or last week; use the past simple for those.",
+    "rule": "Use **have/has + past participle** to connect the past to __now__. Use it for experiences (have you ever been to Paris), for situations that are still true (I have lived here for two years), and for recent actions (she has just left, I haven't eaten yet). Use **for + a length of time** and **since + a starting point** (for two years, since 2021). __Don't use it with a finished time__ like yesterday or last week; use the past simple for those.",
     "example": "I have lived in Chicago since 2021, and I've already made some good friends here.",
     "mistake": {
       "wrong": "I have seen that movie last week.",
@@ -1062,7 +1062,7 @@
   {
     "id": "past-perfect",
     "title": "Past Perfect",
-    "rule": "Use **had + past participle** for the action that happened __first__, before another past action (when I arrived, the movie had started). If you tell events in the order they happened, the **past simple** is enough (I ate, then I left).",
+    "rule": "Use **had + past participle** for the action that happened __first__, before another past action (when I arrived, the movie had started). If you tell events in the order they happened, the __past simple__ is enough (I ate, then I left).",
     "example": "When I arrived at the station, the train had already left.",
     "mistake": {
       "wrong": "Yesterday I had gone to the store and bought milk.",
@@ -1274,7 +1274,7 @@
   {
     "id": "future",
     "title": "Talking About the Future",
-    "rule": "Use **will + base verb** for predictions, promises, and quick decisions (I'll help you). Use **be going to + base verb** for plans and for what you can see coming (look at those clouds: it's going to rain). Use the **present continuous** for fixed plans (we're meeting at 5). After when, if, before, after, and as soon as, __use the present simple, not will__ (when I get home).",
+    "rule": "Use **will + base verb** for predictions, promises, and quick decisions (I'll help you). Use **be going to + base verb** for plans and for what you can see coming (look at those clouds: it's going to rain). Use the __present continuous__ for fixed plans (we're meeting at 5). After when, if, before, after, and as soon as, __use the present simple, not will__ (when I get home).",
     "example": "I'm going to apply for the job next week. I'll call you as soon as I hear back.",
     "mistake": {
       "wrong": "I will call you when I will arrive.",
@@ -1486,7 +1486,7 @@
   {
     "id": "articles",
     "title": "Articles: A, An, The",
-    "rule": "Use **a/an** for one thing you mention for the first time (I saw a dog). Choose __by sound, not by letter__: a before a consonant sound, an before a vowel sound (a university, an hour). Use **the** when the reader knows which one (the dog I saw, the moon). Use **no article** with plural or uncountable nouns in general (dogs are friendly, music is fun).",
+    "rule": "Use **a/an** for one thing you mention for the first time (I saw a dog). Choose __by sound, not by letter__: a before a consonant sound, an before a vowel sound (a university, an hour). Use **the** when the reader knows which one (the dog I saw, the moon). Use __no article__ with plural or uncountable nouns in general (dogs are friendly, music is fun).",
     "example": "I bought a laptop last week. The laptop is fast, but computers are expensive these days.",
     "mistake": {
       "wrong": "My brother is engineer.",
@@ -1910,7 +1910,7 @@
   {
     "id": "subject-verb-agreement",
     "title": "Subject-Verb Agreement",
-    "rule": "The verb must **match its subject**: one → singular verb, more than one → plural verb (the student writes, the students write). __Find the real subject__, even if other words come between (the books on the shelf are old). **Everyone, each, every, and nobody are singular.** Two subjects joined by **and** usually take a plural verb. Use **there is** with one thing and **there are** with more.",
+    "rule": "The verb must __match its subject__: one → singular verb, more than one → plural verb (the student writes, the students write). __Find the real subject__, even if other words come between (the books on the shelf are old). **Everyone**, **each**, **every**, and **nobody** are __singular__. Two subjects joined by **and** usually take a plural verb. Use **there is** with one thing and **there are** with more.",
     "example": "The list of new words is on the board, and each student has a copy.",
     "mistake": {
       "wrong": "One of my friends live in Seattle.",
@@ -2122,7 +2122,7 @@
   {
     "id": "plurals",
     "title": "Plural Nouns",
-    "rule": "**Most nouns add -s** (book → books). After s, ss, sh, ch, x, and z, **add -es** (box → boxes, watch → watches). Consonant + y → **-ies** (city → cities), but vowel + y just adds -s (day → days). Some plurals are **irregular** (child → children, person → people, man → men). __Information, advice, furniture, equipment, and homework have no plural.__",
+    "rule": "Most nouns add **-s** (book → books). After s, ss, sh, ch, x, and z, add **-es** (box → boxes, watch → watches). Consonant + y → **-ies** (city → cities), but vowel + y just adds -s (day → days). Some plurals are __irregular__ (child → children, person → people, man → men). __Information, advice, furniture, equipment, and homework have no plural.__",
     "example": "The children asked for more information about the two new libraries.",
     "mistake": {
       "wrong": "Can you give me some advices?",
@@ -2334,7 +2334,7 @@
   {
     "id": "question-word-order",
     "title": "Question Word Order",
-    "rule": "In questions, use **question word + helping verb + subject + main verb** (where do you live, what are you doing). If there's no helping verb, **add do, does, or did** (where did she go). In indirect questions after 'Can you tell me' or 'Do you know', __use normal order with no do/does/did__ (can you tell me where he lives).",
+    "rule": "In questions, use **question word + helping verb + subject + main verb** (where do you live, what are you doing). If there's no helping verb, add **do**, **does**, or **did** (where did she go). In indirect questions after 'Can you tell me' or 'Do you know', __use normal order with no do/does/did__ (can you tell me where he lives).",
     "example": "Where do you work? Can you tell me where the office is?",
     "mistake": {
       "wrong": "Why you didn't call me?",
