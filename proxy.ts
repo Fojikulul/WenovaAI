@@ -2,13 +2,25 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
-// Runs before each page request (Next.js 16 calls middleware "proxy"). Its
-// only job is to refresh the student's login session and pass the new
-// cookies on, so pages always see a valid session. It never blocks a page:
-// each account page checks the session itself.
+// Runs before each page request (Next.js 16 calls middleware "proxy"). It
+// refreshes the student's login session and passes the new cookies on, so
+// pages always see a valid session. It never blocks a page: each account
+// page checks the session itself.
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (!isSupabaseConfigured) return response;
+
+  // A sign-in code that landed somewhere else: Supabase sends students to
+  // the Site URL (the home page) when the return address isn't in its
+  // Redirect URLs list. Pass the code on to /auth/confirm so the sign-in
+  // still finishes.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && request.nextUrl.pathname !== "/auth/confirm") {
+    const confirm = new URL("/auth/confirm", request.url);
+    confirm.searchParams.set("code", code);
+    confirm.searchParams.set("next", "/progress");
+    return NextResponse.redirect(confirm);
+  }
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
