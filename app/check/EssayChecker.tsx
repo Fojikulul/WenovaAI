@@ -719,7 +719,10 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
             ? `${plural(mistakes.length, "thing")} to fix${applied.size > 0 ? ` · ${applied.size} fixed` : ""}`
             : ""}
         </p>
-        <button type="button" onClick={editAgain} className={secondaryButton}>
+        {/* The keys make React build a new button here instead of reusing
+            "Check my writing" (same spot). Reused, the click would finish on
+            a submit button and send the essay again right away. */}
+        <button key="edit" type="button" onClick={editAgain} className={secondaryButton}>
           <PencilIcon />
           Edit my writing
         </button>
@@ -735,7 +738,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
           {nearLimit && !tooLong && " · Almost at the limit"}
         </p>
         {/* Outside the <form>, so it names the form it sends. */}
-        <button type="submit" form="essay-form" aria-disabled={!canCheck} className={primaryButton}>
+        <button key="check" type="submit" form="essay-form" aria-disabled={!canCheck} className={primaryButton}>
           {checking ? (
             <>
               <HourglassIcon />

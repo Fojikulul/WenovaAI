@@ -193,6 +193,11 @@ export default function Quiz({
   // score screen uses it to show which ones were right.
   const [answers, setAnswers] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
+  // The question shown blurred behind the slider; the quiz starts with it.
+  // At first it's the lesson's first question as written (shuffling while
+  // the page is drawn would make the server's and the browser's first
+  // screen differ); "Change number of questions" picks a random one.
+  const [preview, setPreview] = useState<PracticeQuestion | undefined>(bank[0]);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -221,13 +226,23 @@ export default function Quiz({
     nextRef.current?.scrollIntoView({ block: "nearest" });
   }, [answered]);
 
-  if (bank.length === 0) {
+  if (bank.length === 0 || !preview) {
     return <p className="text-muted">This lesson has no practice questions yet.</p>;
   }
 
-  // A fresh random set, starting at the first question. Used by "Start quiz"
-  // and "Try again".
+  // "Start quiz": the preview question first, then random others.
   function start() {
+    if (!preview) return;
+    const others = bank.filter((question) => question.question !== preview.question);
+    moveFocus.current = true;
+    setQuestions([preview, ...pickQuestions(others, count - 1)]);
+    setIndex(0);
+    setAnswers([]);
+    setFinished(false);
+  }
+
+  // "Try again": a fresh random set of the same size.
+  function restart() {
     moveFocus.current = true;
     setQuestions(pickQuestions(bank, count));
     setIndex(0);
@@ -235,9 +250,10 @@ export default function Quiz({
     setFinished(false);
   }
 
-  // Back to the slider, keeping the last number picked.
+  // Back to the slider, keeping the last number picked, with a new preview.
   function changeCount() {
     moveFocus.current = true;
+    setPreview(pickQuestions(bank, 1)[0]);
     setQuestions(null);
     setIndex(0);
     setAnswers([]);
@@ -249,11 +265,43 @@ export default function Quiz({
   if (questions === null) {
     const canPick = lengths.min < lengths.max;
     return (
+      // The preview and the slider card share one grid cell, so the card
+      // sits on top of the blurred question and the area is as tall as the
+      // taller of the two. min-h-full + content-center put both in the
+      // middle of the Practice side.
+      <div className="grid min-h-full content-center">
+        {/* Preview: the quiz's real first question, laid out like the quiz,
+            blurred so it can't be read yet. Decoration only: screen readers
+            skip it and it can't be clicked or focused (inert). */}
+        <div
+          aria-hidden="true"
+          inert
+          className="pointer-events-none [grid-area:1/1] opacity-70 blur-[6px] select-none"
+        >
+          <div className="flex items-center gap-3">
+            <p className="shrink-0 text-muted">Question 1 of {count}</p>
+            <div className="h-2 flex-1 rounded-full bg-divider" />
+          </div>
+          <p className="mt-4 text-lg leading-relaxed font-semibold md:text-xl">
+            <QuestionText text={preview.question} />
+          </p>
+          <div className="mt-4 flex flex-col gap-2.5">
+            {preview.options.map((option) => (
+              <div
+                key={option}
+                className="flex min-h-12 items-center rounded-lg border-2 border-border bg-background px-4 py-2.5 text-lg"
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </div>
+
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 24 }}
-        className="rounded-xl bg-surface p-5"
+        className="z-10 w-full max-w-md self-center justify-self-center [grid-area:1/1] rounded-xl border border-divider bg-background/90 p-5 shadow-lg backdrop-blur-sm"
       >
         {canPick ? (
           <>
@@ -311,6 +359,7 @@ export default function Quiz({
           </Icon>
         </motion.button>
       </motion.div>
+      </div>
     );
   }
 
@@ -411,7 +460,7 @@ export default function Quiz({
             </Link>
             <motion.button
               type="button"
-              onClick={start}
+              onClick={restart}
               whileTap={{ scale: 0.97 }}
               className={outlineButton}
             >
@@ -505,13 +554,14 @@ export default function Quiz({
         </div>
       </div>
 
-      {/* Each question slides in from the right, and the old one slides out
+      {/* The first question comes into focus (it was the blurred preview);
+          each next one slides in from the right, and the old one slides out
           to the left. */}
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={index === 0 ? { opacity: 0.6, filter: "blur(6px)" } : { opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
           exit={{ opacity: 0, x: -40 }}
           transition={{ type: "spring", stiffness: 320, damping: 30 }}
         >
