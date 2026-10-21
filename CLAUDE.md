@@ -129,10 +129,18 @@ Do not change these formats without both teammates agreeing.
   ]
 }
 ```
-- 10 practice questions per lesson, mixing three styles: fill in the blank, choose the correct
-  sentence, and find the mistake. `answer` must exactly match one of its `options`. Options never
-  refer to positions (no "A and B", "none of the above"), because options are shuffled.
+- 20 practice questions per lesson (Vasyl 2026-10-21; questions 11-20 drafted by Claude Code for
+  team review), mixing three styles: fill in the blank, choose the correct sentence, and find
+  the mistake. Each quiz picks 3-10 of them at random. `answer` must exactly match one of its
+  `options`. Options never refer to positions (no "A and B", "none of the above"), because
+  options are shuffled.
+- Find-the-mistake questions are written exactly as `Which word is wrong? '<sentence>'`, with
+  exactly one mistake in the sentence, and every option is a whole word from that sentence
+  (same spelling and capitals), so students can tap the word in the sentence itself.
 - 1-3 writing prompts per lesson, written by the team
+- `rule` may mark the most important parts: `**text**` is shown bold with a highlight,
+  `__text__` underlined (lib/rule-text.ts). Marks never cross a sentence. Code that shows or
+  sends the rule as plain text uses `plainRuleText()`.
 
 ### Lesson ids
 present-simple, present-continuous, past-simple, past-continuous, present-perfect,
@@ -181,6 +189,9 @@ plurals, question-word-order
 - Validate Claude's JSON on the server; if it's invalid, return a friendly error instead of crashing
 - Don't store student writing on our server or log it anywhere. The Essay Checker may keep the
   current draft in the browser's sessionStorage (this tab only, deleted when the tab closes).
+  The quiz remembers which questions this device already had per lesson (localStorage,
+  question texts only), so a retake brings new ones first; the cookie notice and theme are
+  remembered there too. Keep `app/cookies/` true.
 - Personal info: only with an optional account (ages 13+, Vasyl 2026-10-21). Then we store the
   email (Supabase Auth; with "Continue with Google", Supabase also keeps the Google name and
   picture, which we never use), an optional display name, level, difficulty and weekly goal, and per

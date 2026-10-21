@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import HeroBackdrop from "@/components/HeroBackdrop";
 import HeroPill from "@/components/HeroPill";
+import { DifficultyBadge } from "@/components/LessonBadges";
+import { lessonDifficulty } from "@/lib/learning";
 import { getLesson, getLessonPlace, getLessons, ruleSentences } from "../lesson";
 import { getQuizLengths } from "../quiz-lengths";
 import LessonView from "./LessonView";
@@ -117,11 +119,14 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
         </h1>
         {/* The student picks how many questions before the quiz starts, so
             this shows the range, e.g. "3–10 questions · about 3–6 min". */}
-        <p className="mt-2 animate-fade-up text-muted [animation-delay:120ms]">
+        <p className="mt-2 flex animate-fade-up flex-wrap items-center justify-center gap-x-2 gap-y-1 text-muted [animation-delay:120ms]">
+          <DifficultyBadge difficulty={lessonDifficulty(lesson.id)} />
+          <span>
           <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
           <span aria-hidden="true"> · </span>
           <span className="sr-only">, </span>
           about <Range from={minutesToFinish(lengths.min)} to={minutesToFinish(lengths.max)} /> min
+          </span>
         </p>
       </section>
 

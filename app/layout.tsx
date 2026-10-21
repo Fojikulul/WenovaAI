@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import AccountButton from "@/components/AccountButton";
+import CookieNotice from "@/components/CookieNotice";
 import HeaderNav, { MobileMenu } from "@/components/HeaderNav";
 import MotionProvider from "@/components/MotionProvider";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -128,6 +129,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </li>
                 <li>
                   <Link
+                    href="/cookies"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    Cookies
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/terms"
                     className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
                   >
@@ -138,6 +147,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </nav>
           </div>
         </footer>
+        <CookieNotice />
         </MotionProvider>
       </body>
     </html>

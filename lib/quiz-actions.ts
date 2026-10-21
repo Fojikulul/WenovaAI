@@ -1,8 +1,9 @@
 "use server";
 
-import { getLesson } from "@/app/lessons/lesson";
+import { getLesson, getLessons } from "@/app/lessons/lesson";
 import { QUIZ_LENGTH_BY_DIFFICULTY } from "./learning";
-import { getProfile, recordQuiz } from "./progress";
+import { masteryByLesson, type MasteryLevel } from "./mastery";
+import { getActivity, getProfile, recordQuiz } from "./progress";
 import { getSignedIn } from "./supabase/server";
 
 // Server actions the quiz calls. Everything from the browser is checked
@@ -51,4 +52,18 @@ export async function getPreferredQuizLength(): Promise<number | null> {
   if (!signedIn) return null;
   const profile = await getProfile(signedIn.supabase, signedIn.user.id);
   return profile ? QUIZ_LENGTH_BY_DIFFICULTY[profile.preferred_difficulty] : null;
+}
+
+// The signed-in student's mastery level for every lesson, for the badges on
+// the lesson list and lesson pages. null when signed out or on an error.
+export async function getMyMastery(): Promise<Record<string, MasteryLevel> | null> {
+  const signedIn = await getSignedIn();
+  if (!signedIn) return null;
+  const activity = await getActivity(signedIn.supabase);
+  if (!activity) return null;
+  const mastery = masteryByLesson(
+    getLessons().map((lesson) => lesson.id),
+    activity,
+  );
+  return Object.fromEntries(Object.entries(mastery).map(([id, entry]) => [id, entry.level]));
 }

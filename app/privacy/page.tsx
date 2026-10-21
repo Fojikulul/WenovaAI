@@ -22,7 +22,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           Your current draft is kept only in your browser tab (sessionStorage) and is deleted when you
-          close the tab. Your light or dark theme choice is kept on your device.
+          close the tab. Your light or dark theme choice, and which quiz questions you&apos;ve
+          already had (so a retake gives new ones), are kept on your device.
         </li>
         <li>We don&apos;t use ads, analytics or tracking cookies.</li>
       </ul>
@@ -61,7 +62,11 @@ export default function PrivacyPage() {
       <h2>Cookies</h2>
       <p>
         When you sign in, we use cookies only to keep you signed in. Without an account, Wenova sets
-        no cookies.
+        no cookies. The full list is on the{" "}
+        <Link href="/cookies" className="font-bold text-secondary underline underline-offset-[3px]">
+          Cookies
+        </Link>{" "}
+        page.
       </p>
 
       <h2>Your choices</h2>

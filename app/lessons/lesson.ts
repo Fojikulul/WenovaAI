@@ -1,4 +1,5 @@
 import lessonsData from "@/data/lessons.json";
+import { plainRuleText } from "@/lib/rule-text";
 
 // One multiple-choice question. `answer` must be exactly one of `options`.
 export type PracticeQuestion = {
@@ -134,12 +135,14 @@ const ABBREVIATIONS = ["e.g.", "i.e.", "mr.", "mrs.", "ms.", "dr.", "vs.", "a.m.
 // Splits a rule into sentences, so the lesson page can show it as a list.
 // A sentence ends at ".", "!" or "?" followed by a space and then a capital
 // letter or a quote, unless the word before is one of the abbreviations.
+// Emphasis marks (** and __, see lib/rule-text.ts) around the end or start of
+// a sentence are allowed, e.g. "...verb.__ **State verbs...".
 export function ruleSentences(rule: string): string[] {
   const sentences: string[] = [];
   let start = 0;
-  for (const match of rule.matchAll(/[.!?](?=\s+["'‘“A-Z])/g)) {
-    const end = match.index + 1;
-    const lastWord = rule.slice(start, end).trim().split(/\s+/).pop() ?? "";
+  for (const match of rule.matchAll(/[.!?][*_]*(?=\s+[*_]*["'‘“A-Z])/g)) {
+    const end = match.index + match[0].length;
+    const lastWord = plainRuleText(rule.slice(start, end)).trim().split(/\s+/).pop() ?? "";
     // "(e.g." counts as "e.g.", so strip a bracket or quote at the start.
     if (ABBREVIATIONS.includes(lastWord.replace(/^["'‘“(]+/, "").toLowerCase())) continue;
     sentences.push(rule.slice(start, end).trim());
@@ -152,5 +155,5 @@ export function ruleSentences(rule: string): string[] {
 // The first sentence of a rule, for the short rule on the lesson list. The
 // full rule stays on the lesson page.
 export function firstSentence(text: string): string {
-  return ruleSentences(text)[0] ?? text;
+  return plainRuleText(ruleSentences(text)[0] ?? text);
 }
