@@ -29,6 +29,9 @@ const atkinson = Atkinson_Hyperlegible_Next({
 export const metadata: Metadata = {
   title: "Wenova",
   description: "A friendly writing coach for students learning English.",
+  // Proves to Google Search Console that we own wenova-ai.vercel.app (needed
+  // for the Google sign-in branding). Public by design, not a secret.
+  verification: { google: "OOxVxNw_k-211RKB1gFALeVcObIDJi_J7LHxDnLVMXA" },
 };
 
 // Runs before the page is drawn: uses the saved theme, or the device's
