@@ -22,6 +22,8 @@ Built by a two-person student team for the Congressional App Challenge 2026
 
 ## Stack
 - Next.js (App Router) + TypeScript + Tailwind CSS
+- Animations: Motion (`motion`, motion.dev) for React animations, plus a few CSS keyframes in
+  `globals.css`. Added 2026-10-20 at Vasyl's request.
 - Claude API via `@anthropic-ai/sdk`, model `claude-sonnet-5-5`, called ONLY from server routes
 - Hosted on Vercel (auto-deploys from `main`, pull requests get preview links)
 - Supabase accounts are a stretch goal. Do not add Supabase unless asked.
@@ -147,15 +149,18 @@ plurals, question-word-order
 - Minimalist, lots of whitespace. Palette: white background, blue as the main accent
   (buttons only), green as the secondary color (rule tags, links) and for correct answers
   (always with a check icon)
+- Light and dark theme: a moon/sun button in the header switches them (saved on the device;
+  the first visit follows the device setting). Dark colors are in `globals.css` and every
+  pair passes WCAG AA. Reference design: humanizemax.ai (home, checker, lesson page) and
+  melies.co/ai-tools (lesson list).
+- Fonts: Bricolage Grotesque for headings (the reference design's heading font), Atkinson
+  Hyperlegible Next for body text. Both load through `next/font`; no other fonts.
 - Mobile-first: base font 16px or larger, high contrast, big tap targets
-- No extra pages, popups, animations, or features unless asked. Exceptions: quiz feedback
-  may animate (all in `components/Quiz.css`). The feedback bar slides up; a correct
-  answer pops, its check draws in with a small particle burst, and streak and progress
-  segments pop; a wrong answer shakes gently, its X draws in, and the right answer glows
-  once (never red, never shaming). On the score screen the score counts up, with a bigger
-  celebration for a perfect score. Each animation is CSS-only, about 600ms or less, and
-  never blocks input. Section arrows on the lesson list may rotate. With reduced motion on,
-  all of these show the final result instantly without moving.
+- No extra pages, popups, or features unless asked. Animations are wanted (Vasyl,
+  2026-10-20): entrances, hover/tap feedback, sliding pills, the checker's fix panel and quiz
+  questions sliding in, grade and progress fills, and the floating stickers on the hero. Every
+  animation must respect reduced motion: Motion via `MotionConfig reducedMotion="user"`
+  (`components/MotionProvider.tsx`), CSS via the rule at the end of `globals.css`.
 - Friendly loading and error states everywhere
 
 ## Engineering rules

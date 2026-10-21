@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
-import Quiz from "@/components/Quiz";
-import { getLesson, getLessonPosition, getLessons, ruleSentences } from "../lesson";
+import { Suspense } from "react";
+import HeroBackdrop from "@/components/HeroBackdrop";
+import HeroPill from "@/components/HeroPill";
+import { getLesson, getLessonPlace, getLessons, ruleSentences } from "../lesson";
 import { getQuizLengths } from "../quiz-lengths";
+import LessonView from "./LessonView";
 
 // Build all 12 lesson pages ahead of time, one per id in data/lessons.json.
 export function generateStaticParams() {
@@ -19,36 +21,15 @@ export async function generateMetadata({
   return { title: lesson ? `${lesson.title} - Wenova` : "Lesson not found - Wenova" };
 }
 
-// Icons: path data from Lucide (lucide.dev), ISC license. They are decorative,
-// so screen readers skip them; the word next to each one says the same thing.
-function Icon({ children }: { children: ReactNode }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      className="shrink-0"
-    >
-      {children}
-    </svg>
-  );
-}
-
-// One lesson. This project uses Cache Components, so a lesson id that isn't
-// one of the 12 above is only known when someone visits. Reading it inside
-// <Suspense> lets Next.js show "Loading lesson…" while it checks the id.
+// One lesson, in the same style as the home page: a short hero, then one
+// card with the rule and the quiz. From 1024px up it fills the window, so
+// the page doesn't scroll. This project uses Cache Components, so a lesson
+// id that isn't one of the 12 is only known when someone visits; reading it
+// inside <Suspense> lets Next.js show "Loading lesson…" while it checks.
 export default function LessonPage({ params }: PageProps<"/lessons/[id]">) {
   return (
-    <div className="mx-auto w-full max-w-[720px] px-4 py-12 md:px-6 md:py-16">
-      <Suspense fallback={<p className="text-muted">Loading lesson…</p>}>
+    <div className="mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height))] lg:min-h-[40rem]">
+      <Suspense fallback={<p className="py-12 text-center text-muted">Loading lesson…</p>}>
         <LessonContent params={params} />
       </Suspense>
     </div>
@@ -80,146 +61,80 @@ function Range({ from, to }: { from: number; to: number }) {
 async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const lesson = getLesson(id);
-  if (!lesson) {
+  const place = getLessonPlace(id);
+  if (!lesson || !place) {
     notFound();
   }
 
-  const position = getLessonPosition(lesson.id);
   const lengths = getQuizLengths(lesson.practice.length);
-  // Where to go after this lesson. The last lesson goes back to the list.
-  const next = position?.next
-    ? { href: `/lessons/${position.next.id}`, label: "Next lesson" }
+  // Where the quiz's score screen sends the student next. The last lesson
+  // goes back to the list.
+  const next = place.next
+    ? { href: `/lessons/${place.next.id}`, label: "Next lesson" }
     : { href: "/lessons", label: "Back to all lessons" };
 
   return (
     <>
-      <Link
-        href="/lessons"
-        className="inline-flex min-h-11 items-center gap-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
-      >
-        <Icon>
-          <path d="m12 19-7-7 7-7" />
-          <path d="M19 12H5" />
-        </Icon>
-        All lessons
-      </Link>
-
-      {/* Header: where this lesson is in the list, its title, and its size. */}
-      {position && (
-        <p className="mt-6 font-bold text-muted">
-          {position.groupTitle}
+      <section aria-labelledby="lesson-title" className="relative isolate shrink-0 py-4 text-center md:py-5">
+        <HeroBackdrop />
+        {/* Back to the list, at the top left of the hero. */}
+        <Link
+          href="/lessons"
+          className="mb-2 inline-flex min-h-11 items-center gap-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover lg:absolute lg:top-4 lg:left-0 lg:mb-0"
+        >
+          {/* Arrow path data from Lucide (lucide.dev), ISC license. Decorative. */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="m12 19-7-7 7-7" />
+            <path d="M19 12H5" />
+          </svg>
+          All lessons
+        </Link>
+        <div>
+          <HeroPill>
+            Lesson {place.card.number} of {place.total} · {place.card.groupTitle}
+          </HeroPill>
+        </div>
+        <h1
+          id="lesson-title"
+          className="mt-3 animate-fade-up text-[2.25rem] leading-[1.1] font-semibold tracking-tight [animation-delay:80ms] md:text-[2.75rem]"
+        >
+          {/* Navy to green (both pass 4.5:1 on white), from the logo. */}
+          <span className="bg-linear-to-r from-heading to-secondary bg-clip-text pb-1 text-transparent">
+            {lesson.title}
+          </span>
+        </h1>
+        {/* The student picks how many questions before the quiz starts, so
+            this shows the range, e.g. "3–10 questions · about 3–6 min". */}
+        <p className="mt-2 animate-fade-up text-muted [animation-delay:120ms]">
+          <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
           <span aria-hidden="true"> · </span>
           <span className="sr-only">, </span>
-          Lesson {position.number} of {position.total}
+          about <Range from={minutesToFinish(lengths.min)} to={minutesToFinish(lengths.max)} /> min
         </p>
-      )}
-      <h1 className="mt-1 text-[1.75rem] leading-tight font-bold md:text-4xl">
-        {lesson.title}
-      </h1>
-      {/* The student picks how many questions before the quiz starts, so
-          this shows the range, e.g. "3–10 questions · about 3–6 min". */}
-      <p className="mt-2 text-muted">
-        <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        about <Range from={minutesToFinish(lengths.min)} to={minutesToFinish(lengths.max)} /> min
-      </p>
-
-      {/* Rule card: the rule as short points, one example, and a common
-          mistake fixed. */}
-      <section
-        aria-labelledby="rule-title"
-        className="mt-8 rounded-xl border border-divider bg-background p-6 md:p-8"
-      >
-        <h2 id="rule-title" className="text-[1.375rem] leading-snug font-semibold md:text-[1.75rem]">
-          The rule
-        </h2>
-        {/* One point per sentence. max-w-[65ch] keeps lines short enough
-            to read easily on big screens. */}
-        <ul className="mt-4 flex max-w-[65ch] flex-col gap-3">
-          {ruleSentences(lesson.rule).map((sentence, index) => (
-            <li key={index} className="flex gap-3">
-              {/* A small green dot, for decoration only. calc() puts it in
-                  the middle of the first line. */}
-              <span
-                aria-hidden="true"
-                className="mt-[calc(0.8em-0.25rem)] size-2 shrink-0 rounded-full bg-logo-green"
-              />
-              <span>{sentence}</span>
-            </li>
-          ))}
-        </ul>
-
-        <h3 className="mt-8 text-lg font-semibold md:text-xl">Example</h3>
-        <p className="mt-3 rounded-lg border-l-4 border-logo-green bg-surface px-4 py-3 text-lg">
-          {lesson.example}
-        </p>
-
-        <h3 className="mt-8 text-lg font-semibold md:text-xl">Common mistake</h3>
-        {/* Stacked on phones, side by side from tablet size up. */}
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <div className="rounded-lg bg-mistake-bg px-4 py-3">
-            <p className="flex items-center gap-2 font-bold text-mistake-text">
-              <Icon>
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </Icon>
-              Wrong
-            </p>
-            <p className="mt-1 text-lg underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4">
-              {lesson.mistake.wrong}
-            </p>
-          </div>
-          <div className="rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3">
-            <p className="flex items-center gap-2 font-bold text-correct-text">
-              <Icon>
-                <path d="M20 6 9 17l-5-5" />
-              </Icon>
-              Right
-            </p>
-            <p className="mt-1 text-lg">{lesson.mistake.right}</p>
-          </div>
-        </div>
       </section>
 
-      <section aria-labelledby="practice-title" className="mt-12">
-        <h2
-          id="practice-title"
-          className="text-[1.375rem] leading-snug font-semibold md:text-[1.75rem]"
-        >
-          Practice
-        </h2>
-        <p className="mt-2 text-muted">Pick the right answer for each question.</p>
-        {/* The key starts the quiz fresh if the student opens another lesson. */}
-        <Quiz key={lesson.id} questions={lesson.practice} next={next} />
-      </section>
-
-      {/* Link to the next lesson (or back to the list after the last one),
-          for students who skip the quiz. */}
-      <nav aria-label="Next lesson" className="mt-12 border-t border-divider pt-6">
-        <Link
-          href={next.href}
-          className="inline-flex min-h-11 items-center gap-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
-        >
-          {position?.next ? (
-            <>
-              Next lesson: {position.next.title}
-              <Icon>
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </Icon>
-            </>
-          ) : (
-            <>
-              <Icon>
-                <path d="m12 19-7-7 7-7" />
-                <path d="M19 12H5" />
-              </Icon>
-              {next.label}
-            </>
-          )}
-        </Link>
-      </nav>
+      {/* "relative": paints above the hero's glow, which reaches down behind it. */}
+      <div className="relative animate-fade-up [animation-delay:160ms] lg:min-h-0 lg:flex-1">
+        <LessonView
+          lesson={lesson}
+          rulePoints={ruleSentences(lesson.rule)}
+          previous={place.previous}
+          next={place.next}
+          quizNext={next}
+        />
+      </div>
     </>
   );
 }

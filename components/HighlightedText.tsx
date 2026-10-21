@@ -99,10 +99,11 @@ export default function HighlightedText({
           const look = isFixed
             ? "bg-correct-bg decoration-correct-border decoration-solid"
             : "bg-mistake-bg decoration-mistake-line decoration-wavy";
+          // Opening a mistake also gives it one short pulse.
           const ring = isSelected
             ? isFixed
               ? "ring-2 ring-correct-border"
-              : "ring-2 ring-mistake-line"
+              : "ring-2 ring-mistake-line animate-pulse-ring"
             : "";
 
           parts.push(

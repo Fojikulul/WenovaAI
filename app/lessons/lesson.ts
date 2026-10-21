@@ -86,26 +86,45 @@ export function getLessonGroups(): LessonGroup[] {
   return groups;
 }
 
-// Where a lesson is in the list: its number (1-12, the same numbers the list
-// page shows), its section, and the lesson after it (none for the last one).
-export type LessonPosition = {
-  number: number;
-  total: number;
+// One lesson as a card on the lesson list: only what the card shows, so the
+// browser gets a small list instead of every question.
+export type LessonCard = {
+  id: string;
+  number: number; // 1-12, in list order across the sections
+  title: string;
+  summary: string; // the rule's first sentence
+  questions: number;
+  groupId: string;
   groupTitle: string;
-  next: Lesson | undefined;
 };
 
-export function getLessonPosition(id: string): LessonPosition | undefined {
-  const ordered = getLessonGroups().flatMap((group) =>
-    group.lessons.map((lesson) => ({ lesson, groupTitle: group.title })),
+// All lessons in list order, numbered across the sections.
+export function getLessonCards(): LessonCard[] {
+  let number = 0;
+  return getLessonGroups().flatMap((group) =>
+    group.lessons.map((lesson) => ({
+      id: lesson.id,
+      number: ++number,
+      title: lesson.title,
+      summary: firstSentence(lesson.rule),
+      questions: lesson.practice.length,
+      groupId: group.id,
+      groupTitle: group.title,
+    })),
   );
-  const index = ordered.findIndex((item) => item.lesson.id === id);
+}
+
+// Where a lesson sits in the list: its number, its section, and the lessons
+// before and after it (for "Previous lesson" / "Next lesson").
+export function getLessonPlace(id: string) {
+  const cards = getLessonCards();
+  const index = cards.findIndex((card) => card.id === id);
   if (index === -1) return undefined;
   return {
-    number: index + 1,
-    total: ordered.length,
-    groupTitle: ordered[index].groupTitle,
-    next: ordered[index + 1]?.lesson,
+    card: cards[index],
+    total: cards.length,
+    previous: cards[index - 1],
+    next: cards[index + 1],
   };
 }
 

@@ -1,17 +1,10 @@
 "use client";
 
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react";
 import Link from "next/link";
-import {
-  Fragment,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { PracticeQuestion } from "@/app/lessons/lesson";
 import { getQuizLengths } from "@/app/lessons/quiz-lengths";
-import "./Quiz.css";
 
 // A shuffled copy of a list (Fisher–Yates: every order is equally likely).
 function shuffle<T>(items: T[]): T[] {
@@ -33,8 +26,8 @@ function pickQuestions(bank: PracticeQuestion[], count: number): PracticeQuestio
     .map((question) => ({ ...question, options: shuffle(question.options) }));
 }
 
-// Messages in the feedback bar. They take turns in this order, so the same
-// one never shows twice in a row.
+// Messages in the feedback. They take turns in this order, so the same one
+// never shows twice in a row.
 const CORRECT_MESSAGES = ["You got it!", "Nice!", "Great job!", "Perfect!"];
 const WRONG_MESSAGES = ["Not quite!", "Almost!", "Good try!", "Keep going!"];
 
@@ -56,12 +49,12 @@ function scoreMessage(score: number, total: number) {
 
 // Icons: path data from Lucide (lucide.dev), ISC license. They are decorative,
 // so screen readers skip them; the word next to each one says the same thing.
-function Icon({ children }: { children: ReactNode }) {
+function Icon({ children, size = 20 }: { children: ReactNode; size?: number }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -77,11 +70,10 @@ function Icon({ children }: { children: ReactNode }) {
   );
 }
 
-// pathLength="1" lets Quiz.css draw the lines like a pen stroke.
 function CheckIcon() {
   return (
     <Icon>
-      <path pathLength={1} d="M20 6 9 17l-5-5" />
+      <path d="M20 6 9 17l-5-5" />
     </Icon>
   );
 }
@@ -89,34 +81,17 @@ function CheckIcon() {
 function XIcon() {
   return (
     <Icon>
-      <path pathLength={1} d="M18 6 6 18" />
-      <path pathLength={1} d="m6 6 12 12" />
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
     </Icon>
   );
 }
 
 function FlameIcon() {
   return (
-    <Icon>
+    <Icon size={18}>
       <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
     </Icon>
-  );
-}
-
-// Small dots that fly out from the middle of their parent and fade, for
-// correct answers. Decoration only: screen readers skip it, clicks pass
-// through, and with reduced motion on it isn't shown.
-function Burst({ dots, big = false, delay }: { dots: number; big?: boolean; delay?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`quiz-burst ${big ? "quiz-burst-big" : ""}`}
-      style={delay ? ({ "--burst-delay": delay } as CSSProperties) : undefined}
-    >
-      {Array.from({ length: dots }, (_, i) => (
-        <span key={i} style={{ "--angle": `${(360 / dots) * i}deg` } as CSSProperties} />
-      ))}
-    </span>
   );
 }
 
@@ -168,6 +143,19 @@ function FilledQuestion({ text, answer }: { text: string; answer: string }) {
   );
 }
 
+// The final score counts up from 0 (decoration: screen readers get the
+// sentence instead).
+function CountUp({ to }: { to: number }) {
+  const value = useMotionValue(0);
+  const rounded = useTransform(value, (v) => Math.round(v));
+  useEffect(() => {
+    // Never longer than 0.8s, even for a 10-question quiz.
+    const controls = animate(value, to, { duration: Math.min(0.3 + to * 0.06, 0.8), ease: "easeOut" });
+    return () => controls.stop();
+  }, [value, to]);
+  return <motion.span>{rounded}</motion.span>;
+}
+
 const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover";
 
@@ -180,8 +168,13 @@ const outlineButton =
 // `questions` is every question in the lesson; each quiz uses a random set.
 // `next` is where the score screen's main button goes: the next lesson, or
 // back to the list after the last lesson.
-// The animations live in Quiz.css. They only decorate: the quiz works
-// the same with them switched off (reduced motion).
+//
+// Motion (motion.dev): a progress bar fills as questions are answered; each
+// question slides in; a right answer pops and a wrong one shakes; the
+// feedback springs up under the options, inside the quiz; the final score
+// counts up, its check mark draws itself, and the review rows slide in. With
+// "reduce motion" on, the movement is switched off (see
+// components/MotionProvider.tsx).
 export default function Quiz({
   questions: bank,
   next: nextLesson,
@@ -200,11 +193,13 @@ export default function Quiz({
   // score screen uses it to show which ones were right.
   const [answers, setAnswers] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
-  const [barHeight, setBarHeight] = useState(0);
+  // The question shown blurred behind the slider; the quiz starts with it.
+  // At first it's the lesson's first question as written (shuffling while
+  // the page is drawn would make the server's and the browser's first
+  // screen differ); "Change number of questions" picks a random one.
+  const [preview, setPreview] = useState<PracticeQuestion | undefined>(bank[0]);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const optionsRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
   const moveFocus = useRef(false);
@@ -222,41 +217,32 @@ export default function Quiz({
     }
   }, [index, finished, questions]);
 
-  // When the feedback bar opens, move focus to its "Next question" button.
-  // The button is linked to the feedback text (aria-describedby), so screen
-  // readers read the button and the feedback together.
+  // When the feedback appears, move focus to its "Next question" button and
+  // make sure it's in view. The button is linked to the feedback text
+  // (aria-describedby), so screen readers read them together.
   useEffect(() => {
-    if (answered) nextRef.current?.focus();
+    if (!answered) return;
+    nextRef.current?.focus({ preventScroll: true });
+    nextRef.current?.scrollIntoView({ block: "nearest" });
   }, [answered]);
 
-  // Measure the feedback bar, so the same amount of empty space can be added
-  // under the quiz. That way the bar never hides the question or options.
-  useEffect(() => {
-    const bar = barRef.current;
-    if (!bar) return;
-    const observer = new ResizeObserver(() => setBarHeight(bar.offsetHeight));
-    observer.observe(bar);
-    return () => observer.disconnect();
-  }, [answered]);
-
-  // If the options end up behind the bar, scroll up just enough to show them.
-  useEffect(() => {
-    const options = optionsRef.current;
-    if (!answered || barHeight === 0 || !options) return;
-    const hidden = options.getBoundingClientRect().bottom - (window.innerHeight - barHeight) + 16;
-    if (hidden > 0) {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      window.scrollBy({ top: hidden, behavior: reduceMotion ? "auto" : "smooth" });
-    }
-  }, [answered, barHeight]);
-
-  if (bank.length === 0) {
-    return <p className="mt-6 text-muted">This lesson has no practice questions yet.</p>;
+  if (bank.length === 0 || !preview) {
+    return <p className="text-muted">This lesson has no practice questions yet.</p>;
   }
 
-  // A fresh random set, starting at the first question. Used by "Start quiz"
-  // and "Try again".
+  // "Start quiz": the preview question first, then random others.
   function start() {
+    if (!preview) return;
+    const others = bank.filter((question) => question.question !== preview.question);
+    moveFocus.current = true;
+    setQuestions([preview, ...pickQuestions(others, count - 1)]);
+    setIndex(0);
+    setAnswers([]);
+    setFinished(false);
+  }
+
+  // "Try again": a fresh random set of the same size.
+  function restart() {
     moveFocus.current = true;
     setQuestions(pickQuestions(bank, count));
     setIndex(0);
@@ -264,9 +250,10 @@ export default function Quiz({
     setFinished(false);
   }
 
-  // Back to the slider, keeping the last number picked.
+  // Back to the slider, keeping the last number picked, with a new preview.
   function changeCount() {
     moveFocus.current = true;
+    setPreview(pickQuestions(bank, 1)[0]);
     setQuestions(null);
     setIndex(0);
     setAnswers([]);
@@ -277,21 +264,66 @@ export default function Quiz({
   // lesson there's nothing to pick, so it only shows the number.
   if (questions === null) {
     const canPick = lengths.min < lengths.max;
-    // How far along the track the slider is (0 to 1), for the navy fill.
-    const filled = canPick ? (count - lengths.min) / (lengths.max - lengths.min) : 1;
     return (
-      <div className="mt-6 rounded-xl border border-divider bg-background p-6">
+      // The preview and the slider card share one grid cell, so the card
+      // sits on top of the blurred question and the area is as tall as the
+      // taller of the two. It starts right under "Practice", where the quiz
+      // itself will be.
+      <div className="grid">
+        {/* Preview: the quiz's real first question, laid out like the quiz,
+            blurred so it can't be read yet. Decoration only: screen readers
+            skip it and it can't be clicked or focused (inert). */}
+        <div
+          aria-hidden="true"
+          inert
+          className="pointer-events-none [grid-area:1/1] opacity-90 blur-[5px] select-none"
+        >
+          <div className="flex items-center gap-3">
+            <p className="shrink-0 text-muted">Question 1 of {count}</p>
+            <div className="h-2 flex-1 rounded-full bg-divider" />
+          </div>
+          <p className="mt-4 text-lg leading-relaxed font-semibold md:text-xl">
+            <QuestionText text={preview.question} />
+          </p>
+          <div className="mt-4 flex flex-col gap-2.5">
+            {preview.options.map((option) => (
+              <div
+                key={option}
+                className="flex min-h-12 items-center rounded-lg border-2 border-border bg-background px-4 py-2.5 text-lg"
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 24 }}
+        className="z-10 mx-4 self-center [grid-area:1/1] sm:mx-8 rounded-xl border border-divider bg-background/90 p-5 shadow-lg backdrop-blur-sm"
+      >
         {canPick ? (
           <>
             <div className="flex items-baseline justify-between gap-4">
               <label htmlFor="quiz-count" className="text-lg font-semibold md:text-xl">
                 How many questions?
               </label>
-              {/* The slider already tells screen readers the number. */}
-              <span aria-hidden="true" className="text-4xl font-bold text-heading tabular-nums">
+              {/* The slider already tells screen readers the number. The
+                  number pops each time it changes. */}
+              <motion.span
+                key={count}
+                aria-hidden="true"
+                initial={{ scale: 0.7, opacity: 0.4 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                className="font-heading text-4xl font-bold text-heading tabular-nums"
+              >
                 {count}
-              </span>
+              </motion.span>
             </div>
+            {/* A native slider (keyboard and screen-reader friendly), in the
+                main blue. h-12 keeps it a big tap target. */}
             <input
               ref={sliderRef}
               id="quiz-count"
@@ -302,8 +334,7 @@ export default function Quiz({
               value={count}
               onChange={(event) => setCount(Number(event.target.value))}
               aria-valuetext={`${count} questions`}
-              className="quiz-range mt-2 w-full"
-              style={{ "--filled": filled } as CSSProperties}
+              className="mt-1 h-12 w-full cursor-pointer accent-primary"
             />
             <div aria-hidden="true" className="flex justify-between text-muted tabular-nums">
               <span>{lengths.min}</span>
@@ -315,9 +346,19 @@ export default function Quiz({
             {lengths.max} question{lengths.max === 1 ? "" : "s"}
           </p>
         )}
-        <button type="button" onClick={start} className={`mt-6 w-full sm:w-auto ${primaryButton}`}>
+        <motion.button
+          type="button"
+          onClick={start}
+          whileTap={{ scale: 0.97 }}
+          className={`mt-5 w-full sm:w-auto ${primaryButton}`}
+        >
           Start quiz
-        </button>
+          <Icon>
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </Icon>
+        </motion.button>
+      </motion.div>
       </div>
     );
   }
@@ -325,6 +366,8 @@ export default function Quiz({
   const question = questions[index];
   const isCorrect = picked === question.answer;
   const isLast = index === questions.length - 1;
+  // How far through the quiz: answered questions out of all of them.
+  const progress = answers.length / questions.length;
 
   // Right or wrong for each answered question, for the messages and streak.
   const results = answers.map((answer, i) => answer === questions[i].answer);
@@ -352,91 +395,122 @@ export default function Quiz({
     const score = rightSoFar;
     const perfect = score === questions.length;
     const isLastLesson = nextLesson.href === "/lessons";
-    // The count-up takes 150ms per point, but never more than 600ms (a
-    // lesson can have up to 10 questions).
-    const countTime = Math.min(score * 150, 600);
-    // The review rows fade in 40ms apart, closer together for long lessons,
-    // so the last row is done within 600ms (150ms wait + 200ms of steps +
-    // 250ms fade).
-    const rowStep = Math.min(40, 200 / Math.max(questions.length - 1, 1));
     return (
-      <div
-        className="quiz quiz-rise mt-6 rounded-xl border border-divider bg-background p-6 md:p-8"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 22 }}
       >
-        {/* Screen readers read the hidden sentence, not the counting number. */}
-        <h3
-          ref={headingRef}
-          tabIndex={-1}
-          className="flex flex-wrap items-baseline gap-x-2"
-        >
-          <span className="sr-only">
-            {score} of {questions.length} questions right
-          </span>
-          <span aria-hidden="true" className="relative text-5xl font-bold tabular-nums">
-            <span
-              className={perfect ? "quiz-count-perfect" : "quiz-count"}
-              style={{ "--score": score, "--count-time": `${countTime}ms` } as CSSProperties}
-            />
-            {perfect && <Burst dots={16} big delay={`${countTime + 100}ms`} />}
-          </span>
-          <span aria-hidden="true" className="text-2xl font-semibold text-muted">
-            of {questions.length}
-          </span>
-          <span aria-hidden="true" className="w-full text-lg font-semibold md:text-xl">
-            questions right
-          </span>
-        </h3>
-        <p className="mt-2">{scoreMessage(score, questions.length)}</p>
-
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Link href={nextLesson.href} className={primaryButton}>
-            {isLastLesson && (
-              <Icon>
-                <path d="m12 19-7-7 7-7" />
-                <path d="M19 12H5" />
-              </Icon>
-            )}
-            {nextLesson.label}
-            {!isLastLesson && (
-              <Icon>
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </Icon>
-            )}
-          </Link>
-          <button type="button" onClick={start} className={outlineButton}>
-            <Icon>
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </Icon>
-            Try again
-          </button>
-        </div>
-        {/* Styled like the other text links. It's a button because it
-            changes the quiz, not the page. */}
-        {lengths.min < lengths.max && (
-          <button
-            type="button"
-            onClick={changeCount}
-            className="mt-3 inline-flex min-h-11 items-center font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+        <div className="flex flex-col items-center py-4 text-center">
+          {/* The check mark draws itself inside a green circle, which pops a
+              little more for a perfect score. */}
+          <motion.span
+            initial={{ scale: 0.6 }}
+            animate={{ scale: perfect ? [0.6, 1.15, 1] : 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex size-16 items-center justify-center rounded-full bg-correct-bg text-correct-text"
           >
-            Change number of questions
-          </button>
-        )}
+            <svg viewBox="0 0 24 24" className="size-8" aria-hidden="true">
+              <motion.path
+                d="M20 6 9 17l-5-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              />
+            </svg>
+          </motion.span>
+          <h3
+            ref={headingRef}
+            tabIndex={-1}
+            className="mt-4 text-lg font-semibold md:text-xl"
+          >
+            <span className="sr-only">
+              {score} of {questions.length} questions right
+            </span>
+            <span aria-hidden="true">
+              You got{" "}
+              <span className="text-correct-text">
+                <CountUp to={score} />
+              </span>{" "}
+              of {questions.length} right
+            </span>
+          </h3>
+          <p className="mt-2">{scoreMessage(score, questions.length)}</p>
+
+          <div className="mt-6 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Link href={nextLesson.href} className={primaryButton}>
+              {isLastLesson && (
+                <Icon>
+                  <path d="m12 19-7-7 7-7" />
+                  <path d="M19 12H5" />
+                </Icon>
+              )}
+              {nextLesson.label}
+              {!isLastLesson && (
+                <Icon>
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </Icon>
+              )}
+            </Link>
+            <motion.button
+              type="button"
+              onClick={restart}
+              whileTap={{ scale: 0.97 }}
+              className={outlineButton}
+            >
+              <Icon>
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </Icon>
+              Try again
+            </motion.button>
+          </div>
+          {/* Styled like the other text links. It's a button because it
+              changes the quiz, not the page. */}
+          {lengths.min < lengths.max && (
+            <button
+              type="button"
+              onClick={changeCount}
+              className="mt-3 inline-flex min-h-11 items-center font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+            >
+              Change number of questions
+            </button>
+          )}
+        </div>
 
         {/* Review: every question with the right answer filled in. A check
-            means the student got it; an X shows what they picked instead. */}
-        <h4 className="mt-10 font-heading text-lg font-semibold text-heading md:text-xl">
+            means the student got it; an X shows what they picked instead.
+            The rows slide in one after another. */}
+        <h4 className="mt-6 font-heading text-lg font-semibold text-heading md:text-xl">
           Your answers
         </h4>
-        <ol className="mt-2" style={{ "--row-step": `${rowStep}ms` } as CSSProperties}>
+        <motion.ol
+          className="mt-2"
+          initial="hidden"
+          animate="show"
+          variants={{
+            show: {
+              transition: {
+                delayChildren: 0.3,
+                // Closer together for long quizzes, so the last row is in by about 0.6s.
+                staggerChildren: Math.min(0.06, 0.3 / Math.max(questions.length - 1, 1)),
+              },
+            },
+          }}
+        >
           {questions.map((q, i) => {
             const correct = results[i];
             return (
-              <li
+              <motion.li
                 key={i}
-                className="quiz-row flex gap-3 border-b border-divider py-4 last:border-b-0"
-                style={{ "--row": i } as CSSProperties}
+                variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                className="flex gap-3 border-b border-divider py-3 last:border-b-0"
               >
                 <span className={`mt-1 ${correct ? "text-correct-text" : "text-hint-text"}`}>
                   {correct ? <CheckIcon /> : <XIcon />}
@@ -446,15 +520,13 @@ export default function Quiz({
                     <span className="sr-only">{correct ? "Correct: " : "Not quite: "}</span>
                     <FilledQuestion text={q.question} answer={q.answer} />
                   </p>
-                  {!correct && (
-                    <p className="mt-1 text-muted">Your answer: {answers[i]}</p>
-                  )}
+                  {!correct && <p className="mt-1 text-muted">Your answer: {answers[i]}</p>}
                 </div>
-              </li>
+              </motion.li>
             );
           })}
-        </ol>
-      </div>
+        </motion.ol>
+      </motion.div>
     );
   }
 
@@ -465,164 +537,154 @@ export default function Quiz({
     : WRONG_MESSAGES[(wrongSoFar - 1) % WRONG_MESSAGES.length];
 
   return (
-    <div className="quiz">
-      <div className="mt-6 rounded-xl border border-divider bg-background p-6">
-        <p className="text-muted">
+    <div>
+      {/* Progress: "Question 2 of 4" and a bar that fills as questions are
+          answered (it grows with scaleX, which animates smoothly). */}
+      <div className="flex items-center gap-3">
+        <p className="shrink-0 text-muted">
           Question {index + 1} of {questions.length}
         </p>
-        {/* Progress bar: one piece per question, filled in navy once it's
-            answered. The text above says the same, so screen readers skip it.
-            The piece for the question just answered sweeps in, and puffs up
-            if the answer was right. */}
-        <div aria-hidden="true" className="mt-2 flex gap-1.5">
-          {questions.map((q, i) => {
-            const justAnswered = answered && i === index;
-            return (
-              <span
-                key={i}
-                className={`relative h-2 flex-1 overflow-hidden rounded-full bg-divider ${
-                  justAnswered && isCorrect ? "quiz-segment-pop" : ""
-                }`}
-              >
-                {i < answers.length && (
-                  <span
-                    className={`absolute inset-0 rounded-full bg-heading ${
-                      justAnswered ? "quiz-fill" : ""
-                    }`}
-                  />
-                )}
-              </span>
-            );
-          })}
-        </div>
-        <h3
-          id={questionId}
-          ref={headingRef}
-          tabIndex={-1}
-          className="mt-2 text-lg leading-relaxed font-semibold md:text-xl"
-        >
-          <QuestionText text={question.question} />
-        </h3>
-
-        <div
-          ref={optionsRef}
-          role="group"
-          aria-labelledby={questionId}
-          className="mt-6 flex flex-col gap-3"
-        >
-          {question.options.map((option) => {
-            const showCorrect = answered && option === question.answer;
-            const showWrong = answered && option === picked && !isCorrect;
-
-            // Right pick: pops. Wrong pick: shakes gently. The right answer
-            // after a wrong pick: one soft glow, so the student sees it.
-            let style = "border-border bg-background text-text hover:border-primary";
-            let motion = "";
-            if (showCorrect) {
-              style = "border-correct-border bg-correct-bg text-correct-text font-bold";
-              motion = isCorrect ? "quiz-pop" : "quiz-glow";
-            } else if (showWrong) {
-              style = "border-hint-border bg-hint-bg text-text";
-              motion = "quiz-shake";
-            } else if (answered) {
-              style = "border-divider bg-background text-muted";
-            }
-
-            return (
-              <button
-                // The question number in the key gives each question fresh
-                // buttons, so an animation never carries over.
-                key={`${index}-${option}`}
-                type="button"
-                onClick={() => pick(option)}
-                // aria-disabled (not disabled) keeps the button focusable, so
-                // keyboard focus isn't lost after answering.
-                aria-disabled={answered}
-                className={`flex min-h-12 w-full items-center gap-3 rounded-lg border-2 px-4 py-3 text-left text-lg transition-colors aria-disabled:cursor-default ${style} ${motion}`}
-              >
-                <span className="flex-1">{option}</span>
-                {showCorrect && (
-                  <span className="flex items-center gap-1 text-base">
-                    {/* Only the student's own right pick draws in and bursts. */}
-                    <span className={`relative ${isCorrect ? "quiz-draw-check" : ""}`}>
-                      <CheckIcon />
-                      {isCorrect && <Burst dots={8} />}
-                    </span>
-                    Correct
-                  </span>
-                )}
-                {showWrong && (
-                  <span className="flex items-center gap-1 text-base font-bold text-hint-text">
-                    <span className="quiz-draw-x">
-                      <XIcon />
-                    </span>
-                    Your answer
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div aria-hidden="true" className="h-2 flex-1 overflow-hidden rounded-full bg-divider">
+          <motion.div
+            className="h-full origin-left rounded-full bg-linear-to-r from-primary to-logo-green"
+            initial={false}
+            animate={{ scaleX: progress }}
+            transition={{ type: "spring", stiffness: 200, damping: 26 }}
+          />
         </div>
       </div>
 
-      {/* Empty space as tall as the feedback bar, so the page can scroll the
-          question and options above it. */}
-      <div aria-hidden="true" style={{ height: answered ? barHeight : 0 }} />
-
-      {/* Feedback bar: fixed to the bottom of the screen. It slides up with a
-          slight overshoot when right, and calmly when wrong. With reduced
-          motion on, it just appears. */}
-      {answered && (
-        <div
-          ref={barRef}
-          className={`fixed inset-x-0 bottom-0 z-10 border-t-4 ${
-            isCorrect
-              ? "quiz-bar-spring border-correct-border bg-correct-bg"
-              : "quiz-bar-calm border-hint-border bg-hint-bg"
-          }`}
+      {/* The first question comes into focus (it was the blurred preview);
+          each next one slides in from the right, and the old one slides out
+          to the left. */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={index === 0 ? { opacity: 0.6, filter: "blur(6px)" } : { opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ type: "spring", stiffness: 320, damping: 30 }}
         >
-          <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:flex-row md:items-end md:px-6">
-            <div id={feedbackId} className="flex-1">
-              {isCorrect ? (
-                <>
-                  <p className="flex items-center gap-2 text-lg font-bold text-correct-text">
-                    <CheckIcon />
-                    {message}
-                  </p>
-                  {streak >= 2 && (
-                    <p
-                      className="quiz-chip mt-2 inline-flex items-center gap-1.5 rounded-full border-2 border-correct-border bg-background px-3 py-0.5 font-bold text-correct-text"
-                    >
-                      <FlameIcon />
-                      {streak} in a row!
-                    </p>
+          <h3
+            id={questionId}
+            ref={headingRef}
+            tabIndex={-1}
+            className="mt-4 text-lg leading-relaxed font-semibold md:text-xl"
+          >
+            <QuestionText text={question.question} />
+          </h3>
+
+          <div role="group" aria-labelledby={questionId} className="mt-4 flex flex-col gap-2.5">
+            {question.options.map((option, position) => {
+              const showCorrect = answered && option === question.answer;
+              const showWrong = answered && option === picked && !isCorrect;
+
+              let style = "border-border bg-background text-text hover:border-primary";
+              if (showCorrect) style = "border-correct-border bg-correct-bg text-correct-text font-bold";
+              else if (showWrong) style = "border-mistake-line bg-mistake-bg text-text";
+              else if (answered) style = "border-divider bg-background text-muted";
+
+              return (
+                <motion.button
+                  key={option}
+                  type="button"
+                  onClick={() => pick(option)}
+                  // aria-disabled (not disabled) keeps the button focusable, so
+                  // keyboard focus isn't lost after answering.
+                  aria-disabled={answered}
+                  // Options spring in one after another; afterwards the right
+                  // answer pops and a wrong pick shakes.
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={
+                    showWrong
+                      ? { opacity: 1, y: 0, x: [0, -8, 8, -6, 6, -3, 0] }
+                      : showCorrect
+                        ? { opacity: 1, y: 0, scale: [1, 1.04, 1] }
+                        : { opacity: 1, y: 0 }
+                  }
+                  transition={{ duration: 0.4, delay: answered ? 0 : position * 0.05 }}
+                  whileHover={answered ? undefined : { x: 4 }}
+                  whileTap={answered ? undefined : { scale: 0.98 }}
+                  className={`flex min-h-12 w-full items-center gap-3 rounded-lg border-2 px-4 py-2.5 text-left text-lg transition-colors aria-disabled:cursor-default ${style}`}
+                >
+                  <span className="flex-1">{option}</span>
+                  {showCorrect && (
+                    <span className="flex items-center gap-1 text-base">
+                      <CheckIcon />
+                      Correct
+                    </span>
                   )}
-                </>
-              ) : (
-                <>
-                  <p className="flex items-center gap-2 text-lg font-bold text-hint-text">
-                    <XIcon />
-                    {message}
-                  </p>
-                  <p className="mt-1 font-bold text-text">
-                    The answer is &ldquo;{question.answer}&rdquo;.
-                  </p>
-                </>
-              )}
-              <p className="mt-1 text-text">{question.explanation}</p>
-            </div>
-            <button
-              ref={nextRef}
-              type="button"
-              onClick={next}
-              aria-describedby={feedbackId}
-              className={`w-full md:w-auto ${primaryButton}`}
-            >
-              {isLast ? "See my score" : "Next question"}
-            </button>
+                  {showWrong && (
+                    <span className="flex items-center gap-1 text-base font-bold text-mistake-text">
+                      <XIcon />
+                      Your answer
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
-        </div>
-      )}
+
+          {/* The feedback springs up under the options. */}
+          <AnimatePresence>
+            {answered && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                className={`mt-4 flex flex-col gap-3 rounded-xl border-2 p-4 md:flex-row md:items-end ${
+                  isCorrect ? "border-correct-border bg-correct-bg" : "border-hint-border bg-hint-bg"
+                }`}
+              >
+                <div id={feedbackId} className="flex-1">
+                  {isCorrect ? (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <p className="flex items-center gap-2 text-lg font-bold text-correct-text">
+                        <CheckIcon />
+                        {message}
+                      </p>
+                      {/* Streak chip: pops in from 2 right answers in a row. */}
+                      {streak >= 2 && (
+                        <motion.p
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 18, delay: 0.15 }}
+                          className="inline-flex items-center gap-1.5 rounded-full border-2 border-correct-border bg-background px-3 py-0.5 font-bold text-correct-text"
+                        >
+                          <FlameIcon />
+                          {streak} in a row!
+                        </motion.p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="flex items-center gap-2 text-lg font-bold text-hint-text">
+                        <XIcon />
+                        {message}
+                      </p>
+                      <p className="mt-1 font-bold text-text">
+                        The answer is &ldquo;{question.answer}&rdquo;.
+                      </p>
+                    </>
+                  )}
+                  <p className="mt-1 text-text">{question.explanation}</p>
+                </div>
+                <motion.button
+                  ref={nextRef}
+                  type="button"
+                  onClick={next}
+                  aria-describedby={feedbackId}
+                  whileTap={{ scale: 0.97 }}
+                  className={`w-full md:w-auto ${primaryButton}`}
+                >
+                  {isLast ? "See my score" : "Next question"}
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
