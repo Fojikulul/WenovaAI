@@ -68,9 +68,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Image
                 src="/logo.png"
                 alt=""
-                width={208}
-                height={199}
+                width={176}
+                height={168}
                 loading="eager"
+                // Served as the original PNG: the image optimizer's lossy
+                // re-save made the see-through bottom edge look rough at this
+                // small size. The file is saved at 3x its header size, so it
+                // stays sharp and small (about 45 KB).
+                unoptimized
                 className="h-11 w-auto sm:-my-1 sm:h-14"
               />
               {/* On phones there is only room for the logo; the name stays
