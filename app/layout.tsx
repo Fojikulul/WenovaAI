@@ -56,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="mx-auto grid w-full max-w-[1240px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 md:px-6">
             <Link
               href="/"
-              className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start rounded-lg font-heading text-2xl font-bold text-heading"
+              className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start rounded-lg font-heading text-2xl font-bold text-heading sm:text-[1.75rem] lg:text-[2rem]"
             >
               {/* The logo is above the fold, so it loads right away. Its text
                   is the word next to it, so screen readers skip the image. */}
