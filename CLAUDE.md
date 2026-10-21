@@ -26,7 +26,12 @@ Built by a two-person student team for the Congressional App Challenge 2026
   `globals.css`. Added 2026-10-20 at Vasyl's request.
 - Claude API via `@anthropic-ai/sdk`, model `claude-sonnet-5-5`, called ONLY from server routes
 - Hosted on Vercel (auto-deploys from `main`, pull requests get preview links)
-- Supabase accounts are a stretch goal. Do not add Supabase unless asked.
+- Supabase (free plan) for optional accounts, added 2026-10-21 at Vasyl's request: email +
+  password sign-in, My progress, Settings, learning path. Packages `@supabase/supabase-js` and
+  `@supabase/ssr`; only the publishable key is used (never the secret/service-role key).
+  Without `NEXT_PUBLIC_SUPABASE_*` in `.env.local`, accounts are off and everything else works.
+  Setup: `docs/SUPABASE_SETUP.md`; tables and Row Level Security:
+  `supabase/migrations/`.
 - No API key yet: if `ANTHROPIC_API_KEY` is missing, `/api/feedback` returns realistic mock
   data in the exact contract format, so the whole UI works without a key.
 
@@ -46,6 +51,12 @@ Built by a two-person student team for the Congressional App Challenge 2026
 - `components/` - UI components (HighlightedText, MistakeFix, RuleTag, LessonCard, Quiz,
   WritingPractice, GradeCard)
 - `lib/` - server helpers (Claude client, feedback prompt, JSON validation, mock data)
+- Accounts: `app/login/`, `app/auth/confirm/`, `app/progress/`, `app/settings/`, `proxy.ts`
+  (refreshes the login session), `lib/supabase/`, `lib/progress.ts` (database reads/writes),
+  `lib/learning-path.ts` (recommendation rules), `lib/learning.ts` (levels, difficulty,
+  proposed lesson difficulty), `lib/quiz-actions.ts` (saves quiz results)
+- `app/privacy/`, `app/terms/` - Privacy Policy and Terms of Use (update them whenever what we
+  store changes)
 - `data/lessons.json` - grammar lessons and writing prompts (written by the team)
 - `AI_LOG.md` - log of AI assistance (required for the CAC disclosure)
 
@@ -168,9 +179,14 @@ plurals, question-word-order
 - Keep changes small and focused on one feature or issue
 - Never expose `ANTHROPIC_API_KEY` to the client. Never commit `.env*` files. The repo is PUBLIC.
 - Validate Claude's JSON on the server; if it's invalid, return a friendly error instead of crashing
-- Don't store student writing on our server or log it anywhere, and don't collect personal info.
-  The Essay Checker may keep the current draft in the browser's sessionStorage (this tab only,
-  deleted when the tab closes).
+- Don't store student writing on our server or log it anywhere. The Essay Checker may keep the
+  current draft in the browser's sessionStorage (this tab only, deleted when the tab closes).
+- Personal info: only with an optional account (ages 13+, Vasyl 2026-10-21). Then we store the
+  email (Supabase Auth; with "Continue with Google", Supabase also keeps the Google name and
+  picture, which we never use), an optional display name, level, difficulty and weekly goal, and per
+  essay check only mistake counts per lesson id and the grade, never text. Quiz results:
+  lesson, score, time. Nothing else. Every table has Row Level Security (own rows only), and
+  user ids always come from the session, never from the browser. Keep `app/privacy/` true.
 - Don't add new dependencies without asking
 - Check multiple-choice answers and interactive fixes in code, not with AI
 
@@ -191,6 +207,9 @@ plurals, question-word-order
 
 ## Team ownership
 - Brain (owner: Vasyl): `app/api/`, `lib/` - feedback route, prompt, validation
+- Accounts and progress (owner: Vasyl): `app/login/`, `app/progress/`, `app/settings/`,
+  `lib/supabase/`, `supabase/`. Johnny agreed (2026-10-21) to the small quiz hooks in `Quiz.tsx`
+  and `LessonView.tsx` that save results.
 - Design foundation (owner: Vasyl): `globals.css`, root layout, home page
 - Check page (owner: Vasyl): `app/check/` - HighlightedText, MistakeFix, RuleTag, GradeCard
 - Lessons (owner: Johnny): `app/lessons/` - LessonCard, Quiz, WritingPractice.

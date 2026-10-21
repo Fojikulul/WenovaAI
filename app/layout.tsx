@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import HeaderNav from "@/components/HeaderNav";
+import { Suspense } from "react";
+import AccountButton from "@/components/AccountButton";
+import HeaderNav, { MobileMenu } from "@/components/HeaderNav";
 import MotionProvider from "@/components/MotionProvider";
 import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
@@ -89,7 +91,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </span>
             </Link>
             <HeaderNav />
-            <div className="justify-self-end">
+            {/* Right: the phone menu, the account button (it reads the login
+                cookie, so it waits in <Suspense> and the rest of the header
+                draws right away), and the theme switch. */}
+            <div className="flex items-center gap-2 justify-self-end">
+              <MobileMenu />
+              <Suspense fallback={null}>
+                <AccountButton />
+              </Suspense>
               <ThemeToggle />
             </div>
           </div>
@@ -97,6 +106,35 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* overflow-x-clip: the hero's full-width backdrop can never make
             the page scroll sideways. */}
         <main className="flex-1 overflow-x-clip">{children}</main>
+        {/* Slim footer on every page with the legal links. Exactly
+            --footer-height tall from 1024px up, which the screen-filling
+            pages (checker, lesson) leave room for, so they still don't
+            scroll. */}
+        <footer className="border-t border-divider text-muted">
+          <div className="mx-auto flex min-h-11 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-6 px-4 md:px-6 lg:h-11">
+            <p>Wenova AI</p>
+            <nav aria-label="Legal">
+              <ul className="flex gap-5">
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    Terms of Use
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </footer>
         </MotionProvider>
       </body>
     </html>

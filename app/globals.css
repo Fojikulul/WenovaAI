@@ -40,6 +40,7 @@
      above and below + 1px line). The checker screen fills the rest of the
      window, so update this if the header changes. */
   --header-height: 65px;
+  --footer-height: 45px; /* the slim footer with the legal links (app/layout.tsx) */
 
   color-scheme: light;
 }

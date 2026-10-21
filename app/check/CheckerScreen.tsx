@@ -25,7 +25,7 @@ export default function CheckerScreen() {
     // from 1024px up the card becomes the window's full height and the page
     // scrolls down to it (EssayChecker does the scrolling). The hero stays
     // above it, so the student can always scroll back up.
-    <div className="group/screen mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height))] lg:min-h-[40rem] lg:has-[[data-status=results]]:h-auto">
+    <div className="group/screen mx-auto flex w-full max-w-[1240px] flex-col px-4 pb-4 md:px-6 lg:h-[calc(100dvh-var(--header-height)-var(--footer-height))] lg:min-h-[40rem] lg:has-[[data-status=results]]:h-auto">
       <section
         aria-labelledby="hero-title"
         // On short windows (820px tall or less) the hero is more compact, so
