@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import Quiz from "@/components/Quiz";
 import { getLesson, getLessonPosition, getLessons, ruleSentences } from "../lesson";
+import { getQuizLengths } from "../quiz-lengths";
 
 // Build all 12 lesson pages ahead of time, one per id in data/lessons.json.
 export function generateStaticParams() {
@@ -60,8 +61,20 @@ function minutesToFinish(questionCount: number) {
   return Math.ceil(1 + questionCount * 0.5);
 }
 
-function plural(count: number, word: string) {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
+// "3–10" on screen, "3 to 10" for screen readers, or one number if both are
+// the same.
+function Range({ from, to }: { from: number; to: number }) {
+  if (from === to) return <>{to}</>;
+  return (
+    <>
+      <span aria-hidden="true">
+        {from}–{to}
+      </span>
+      <span className="sr-only">
+        {from} to {to}
+      </span>
+    </>
+  );
 }
 
 async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
@@ -72,6 +85,7 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
   }
 
   const position = getLessonPosition(lesson.id);
+  const lengths = getQuizLengths(lesson.practice.length);
   // Where to go after this lesson. The last lesson goes back to the list.
   const next = position?.next
     ? { href: `/lessons/${position.next.id}`, label: "Next lesson" }
@@ -102,11 +116,13 @@ async function LessonContent({ params }: { params: Promise<{ id: string }> }) {
       <h1 className="mt-1 text-[1.75rem] leading-tight font-bold md:text-4xl">
         {lesson.title}
       </h1>
+      {/* The student picks how many questions before the quiz starts, so
+          this shows the range, e.g. "3–10 questions · about 3–6 min". */}
       <p className="mt-2 text-muted">
-        {plural(lesson.practice.length, "question")}
+        <Range from={lengths.min} to={lengths.max} /> question{lengths.max === 1 ? "" : "s"}
         <span aria-hidden="true"> · </span>
         <span className="sr-only">, </span>
-        about {minutesToFinish(lesson.practice.length)} min
+        about <Range from={minutesToFinish(lengths.min)} to={minutesToFinish(lengths.max)} /> min
       </p>
 
       {/* Rule card: the rule as short points, one example, and a common

@@ -10,7 +10,28 @@ import {
   type ReactNode,
 } from "react";
 import type { PracticeQuestion } from "@/app/lessons/lesson";
+import { getQuizLengths } from "@/app/lessons/quiz-lengths";
 import "./Quiz.css";
+
+// A shuffled copy of a list (Fisher–Yates: every order is equally likely).
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// `count` random questions from the lesson, in random order, each with its
+// options shuffled. Answers are still checked by text, so the order doesn't
+// matter. Only called from button clicks, never while the page is drawn, so
+// the server and the browser always draw the same first screen.
+function pickQuestions(bank: PracticeQuestion[], count: number): PracticeQuestion[] {
+  return shuffle(bank)
+    .slice(0, count)
+    .map((question) => ({ ...question, options: shuffle(question.options) }));
+}
 
 // Messages in the feedback bar. They take turns in this order, so the same
 // one never shows twice in a row.
@@ -153,19 +174,27 @@ const primaryButton =
 const outlineButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-6 py-3 font-bold text-primary transition-colors hover:bg-surface";
 
-// Multiple-choice quiz: one question at a time. Answers are checked here in
-// code by comparing the picked option with `answer` (no AI call).
+// Multiple-choice quiz: first the student picks how many questions, then
+// answers them one at a time. Answers are checked here in code by comparing
+// the picked option with `answer` (no AI call).
+// `questions` is every question in the lesson; each quiz uses a random set.
 // `next` is where the score screen's main button goes: the next lesson, or
 // back to the list after the last lesson.
 // The animations live in Quiz.css. They only decorate: the quiz works
 // the same with them switched off (reduced motion).
 export default function Quiz({
-  questions,
+  questions: bank,
   next: nextLesson,
 }: {
   questions: PracticeQuestion[];
   next: { href: string; label: string };
 }) {
+  const lengths = getQuizLengths(bank.length);
+  // How many questions the slider is set to.
+  const [count, setCount] = useState(lengths.start);
+  // The questions for this quiz, or null while the student is still picking
+  // how many.
+  const [questions, setQuestions] = useState<PracticeQuestion[] | null>(null);
   const [index, setIndex] = useState(0);
   // The option the student picked for each question so far, in order. The
   // score screen uses it to show which ones were right.
@@ -177,19 +206,21 @@ export default function Quiz({
   const optionsRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
   const moveFocus = useRef(false);
 
   const picked: string | null = answers[index] ?? null;
   const answered = picked !== null;
 
-  // After "Next question" or "Try again", move keyboard focus to the new
-  // question (or the score), so keyboard and screen reader users start there.
+  // After "Start quiz", "Next question" or "Try again", move keyboard focus
+  // to the new question (or the score), so keyboard and screen reader users
+  // start there. After "Change number of questions", focus the slider.
   useEffect(() => {
     if (moveFocus.current) {
-      headingRef.current?.focus();
+      (headingRef.current ?? sliderRef.current)?.focus();
       moveFocus.current = false;
     }
-  }, [index, finished]);
+  }, [index, finished, questions]);
 
   // When the feedback bar opens, move focus to its "Next question" button.
   // The button is linked to the feedback text (aria-describedby), so screen
@@ -219,8 +250,76 @@ export default function Quiz({
     }
   }, [answered, barHeight]);
 
-  if (questions.length === 0) {
+  if (bank.length === 0) {
     return <p className="mt-6 text-muted">This lesson has no practice questions yet.</p>;
+  }
+
+  // A fresh random set, starting at the first question. Used by "Start quiz"
+  // and "Try again".
+  function start() {
+    moveFocus.current = true;
+    setQuestions(pickQuestions(bank, count));
+    setIndex(0);
+    setAnswers([]);
+    setFinished(false);
+  }
+
+  // Back to the slider, keeping the last number picked.
+  function changeCount() {
+    moveFocus.current = true;
+    setQuestions(null);
+    setIndex(0);
+    setAnswers([]);
+    setFinished(false);
+  }
+
+  // First screen: how many questions. With 3 or fewer questions in the
+  // lesson there's nothing to pick, so it only shows the number.
+  if (questions === null) {
+    const canPick = lengths.min < lengths.max;
+    // How far along the track the slider is (0 to 1), for the navy fill.
+    const filled = canPick ? (count - lengths.min) / (lengths.max - lengths.min) : 1;
+    return (
+      <div className="mt-6 rounded-xl border border-divider bg-background p-6">
+        {canPick ? (
+          <>
+            <div className="flex items-baseline justify-between gap-4">
+              <label htmlFor="quiz-count" className="text-lg font-semibold md:text-xl">
+                How many questions?
+              </label>
+              {/* The slider already tells screen readers the number. */}
+              <span aria-hidden="true" className="text-4xl font-bold text-heading tabular-nums">
+                {count}
+              </span>
+            </div>
+            <input
+              ref={sliderRef}
+              id="quiz-count"
+              type="range"
+              min={lengths.min}
+              max={lengths.max}
+              step={1}
+              value={count}
+              onChange={(event) => setCount(Number(event.target.value))}
+              aria-valuetext={`${count} questions`}
+              className="quiz-range mt-2 w-full"
+              style={{ "--filled": filled } as CSSProperties}
+            />
+            <div aria-hidden="true" className="flex justify-between text-muted tabular-nums">
+              <span>{lengths.min}</span>
+              <span>{lengths.max}</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-lg font-semibold md:text-xl">
+            {lengths.max} question{lengths.max === 1 ? "" : "s"}
+          </p>
+        )}
+        <button type="button" onClick={start} className={`mt-6 w-full sm:w-auto ${primaryButton}`}>
+          Start quiz
+        </button>
+      </div>
+    );
   }
 
   const question = questions[index];
@@ -247,13 +346,6 @@ export default function Quiz({
     } else {
       setIndex(index + 1);
     }
-  }
-
-  function tryAgain() {
-    moveFocus.current = true;
-    setIndex(0);
-    setAnswers([]);
-    setFinished(false);
   }
 
   if (finished) {
@@ -312,7 +404,7 @@ export default function Quiz({
               </Icon>
             )}
           </Link>
-          <button type="button" onClick={tryAgain} className={outlineButton}>
+          <button type="button" onClick={start} className={outlineButton}>
             <Icon>
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
@@ -320,6 +412,17 @@ export default function Quiz({
             Try again
           </button>
         </div>
+        {/* Styled like the other text links. It's a button because it
+            changes the quiz, not the page. */}
+        {lengths.min < lengths.max && (
+          <button
+            type="button"
+            onClick={changeCount}
+            className="mt-3 inline-flex min-h-11 items-center font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover"
+          >
+            Change number of questions
+          </button>
+        )}
 
         {/* Review: every question with the right answer filled in. A check
             means the student got it; an X shows what they picked instead. */}
