@@ -36,6 +36,14 @@
   --hint-text: #b54708;
   --hint-border: #dc6803;
 
+  /* The sheet of paper behind the hero headline (components/HeroHeadline.tsx):
+     cream, with faint ruled lines. Decoration only; the text on it is
+     --heading (12:1), --secondary (5.1:1) and --muted (7.3:1). */
+  --paper: #fffdf6;
+  --paper-line: #f0e7d3;
+  --paper-edge: #e8dcc2;
+  --paper-fold: #efe4cc;
+
   /* Height of the header in app/layout.tsx from 1024px up (48px logo + 8px
      above and below + 1px line). The checker screen fills the rest of the
      window, so update this if the header changes. */
@@ -80,6 +88,11 @@
   --hint-text: #fdb022;
   --hint-border: #f79009;
 
+  --paper: #111a2b;
+  --paper-line: #1c2638;
+  --paper-edge: #26324a;
+  --paper-fold: #1f2a3d;
+
   color-scheme: dark;
 }
 
@@ -114,6 +127,10 @@
   --color-hint-bg: var(--hint-bg);
   --color-hint-text: var(--hint-text);
   --color-hint-border: var(--hint-border);
+
+  --color-paper: var(--paper);
+  --color-paper-edge: var(--paper-edge);
+  --color-paper-fold: var(--paper-fold);
 
   /* The font variables are set by next/font in app/layout.tsx. */
   --font-sans: var(--font-atkinson), system-ui, sans-serif;
@@ -208,6 +225,61 @@
     linear-gradient(to right, var(--divider) 1px, transparent 1px),
     linear-gradient(to bottom, var(--divider) 1px, transparent 1px);
   background-size: 44px 44px;
+}
+
+/* Ruled lines on the hero's sheet of paper, 2.5rem apart, like the lines on
+   the logo's paper. */
+.hero-paper {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(2.5rem - 1px),
+    var(--paper-line) calc(2.5rem - 1px) 2.5rem
+  );
+  background-position: 0 1.25rem;
+}
+
+/* The hero headline before JavaScript starts its typing
+   (components/HeroHeadline.tsx): a caret blinks at the start of line 1, so
+   the paper never looks empty. If the typing hasn't started 1.5s after the
+   page appears (a slow phone), the finished headline shows instead: the
+   letters and check appear, the "i" of "English" gets its size, and the
+   caret goes away. JavaScript removes these classes when it takes over. */
+.hero-caret-wait {
+  animation:
+    hero-blink 1s step-end infinite,
+    hero-hide 0s 1.5s forwards;
+}
+
+.hero-fallback {
+  animation: hero-show 0s 1.5s forwards;
+}
+
+.hero-fallback-i {
+  animation: hero-show-i 0s 1.5s forwards;
+}
+
+@keyframes hero-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-show {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-show-i {
+  to {
+    font-size: 1em;
+  }
 }
 
 /* Base styles live in the "base" layer, so Tailwind classes can still

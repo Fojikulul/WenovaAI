@@ -1,5 +1,6 @@
 import { getLessons } from "@/app/lessons/lesson";
 import HeroBackdrop from "@/components/HeroBackdrop";
+import HeroHeadline from "@/components/HeroHeadline";
 import HeroPill from "@/components/HeroPill";
 import MistakeStickers from "@/components/MistakeStickers";
 import EssayChecker from "./EssayChecker";
@@ -43,20 +44,9 @@ export default function CheckerScreen() {
             is my English correct?
           </span>
         </HeroPill>
-        <h1
-          id="hero-title"
-          // Weight 600 with slightly tight letters, like the reference headline.
-          className="mt-4 animate-fade-up text-[2.25rem] leading-[1.1] font-semibold tracking-tight [animation-delay:80ms] md:text-5xl lg:text-[3.5rem] [@media(max-height:820px)]:mt-3 lg:[@media(max-height:820px)]:text-[2.75rem]"
-        >
-          Write better English
-          {/* Navy to green (both pass 4.5:1 on white), from the logo. */}
-          <span className="block bg-linear-to-r from-heading to-secondary bg-clip-text pb-1 text-transparent">
-            one fix at a time
-          </span>
-        </h1>
-        <p className="mx-auto mt-3 max-w-xl animate-fade-up text-muted [animation-delay:160ms]">
-          Paste your essay, fix your mistakes, and practice the rules.
-        </p>
+        {/* The headline and the line under it, typed out once on a sheet of
+            paper (a mini demo of the checker). */}
+        <HeroHeadline />
       </section>
 
       {/* "relative": paints above the hero's glow, which reaches down behind it. */}
