@@ -4,14 +4,14 @@ import { motion } from "motion/react";
 
 // The hourglass shown while the writing is being checked. Sand drains from
 // the top bulb into the bottom one, then the hourglass flips over and it
-// starts again (2s a turn). After the flip the full bulb is on top again, so
+// starts again (1.2s a turn). After the flip the full bulb is on top again, so
 // jumping back to the start is invisible and the loop is seamless.
 // Decorative: the "Checking your writing…" text next to it says the same.
 // With "reduce motion" on, Motion skips the flip and the sand (they are
 // transforms; see components/MotionProvider.tsx), so it just stands still.
 // Frame path data from Lucide's hourglass (lucide.dev), ISC license.
 
-const TURN = { duration: 2, repeat: Infinity, ease: "easeInOut" as const };
+const TURN = { duration: 1.2, repeat: Infinity, ease: "easeInOut" as const };
 
 export default function LoadingHourglass({ size = 24 }: { size?: number }) {
   return (
