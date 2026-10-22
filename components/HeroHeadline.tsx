@@ -174,7 +174,10 @@ export default function HeroHeadline() {
     Array.from({ length: to - from }, (_, i) => render(from + i));
 
   return (
-    <div className="relative mx-auto w-fit max-w-full">
+    // mb: the paper reaches 20px below the subtitle, so this keeps a 20px gap to
+    // the checker card, the same as above the paper (h1's mt-10 minus 20px).
+    // The hero's own padding is smaller on short screens, so the margin grows.
+    <div className="relative mx-auto mb-3 w-fit max-w-full [@media(max-height:820px)]:mb-6">
       {/* The sheet of paper: behind the text, a little wider than it. Its
           size comes from the finished headline, so it never changes while the
           text types. The top and bottom insets differ so the letters look
@@ -193,7 +196,7 @@ export default function HeroHeadline() {
         // Weight 600 with slightly tight letters, like the reference headline.
         // A little smaller on phones under 400px, so "Write better English"
         // and its check still fit on one line.
-        className="mt-8 text-[2rem] min-[400px]:text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] [@media(max-height:820px)]:mt-7 lg:[@media(max-height:820px)]:text-[2.75rem]"
+        className="mt-10 text-[2rem] min-[400px]:text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] lg:[@media(max-height:820px)]:text-[2.75rem]"
       >
         {/* One string: Chrome drops a lone space between two text parts here. */}
         <span className="sr-only">{`${LINE_1} ${LINE_2}`}</span>
