@@ -106,6 +106,17 @@ function timeline(): [number, Partial<Frame>][] {
   return steps;
 }
 
+// The color of letter `k` of line 2: the heading color at the start, fully
+// green by the end of "fix" (about 42% of the line), then green to the end,
+// so the green part stands out. A gradient across the line (bg-clip-text)
+// can't be used: it paints through letters that aren't typed yet. Both end
+// colors pass 4.5:1, so every mix between them does too.
+const FULL_GREEN_AT = 0.42;
+function fadeColor(k: number) {
+  const green = Math.min(1, (k + 0.5) / LINE_2.length / FULL_GREEN_AT);
+  return `color-mix(in oklab, var(--secondary) ${Math.round(green * 100)}%, var(--heading))`;
+}
+
 export default function HeroHeadline() {
   const reduce = useReducedMotion();
   const [frame, setFrame] = useState(START);
@@ -217,20 +228,20 @@ export default function HeroHeadline() {
             {caretAt(1, TYPO_LENGTH)}
             <FixedCheck state={frame.check} waiting={waiting} />
           </span>
-          {/* Line 2 fades from the heading color into green, like the lesson
-              list's heading (both colors pass 4.5:1), reaching full green by
-              the middle so the green part stands out. pb-1 keeps the
-              descenders inside the gradient. */}
+          {/* Line 2 fades from the heading color into green, letter by letter
+              (see fadeColor), so letters not typed yet still stay hidden. */}
           <span className="block pb-1">
-          <span className="bg-linear-to-r from-heading from-5% via-secondary via-55% to-secondary bg-clip-text text-transparent">
             {range(0, LINE_2.length, (k) => [
               caretAt(2, k),
-              <span key={k} className={k < frame.typed2 ? undefined : waiting}>
+              <span
+                key={k}
+                className={k < frame.typed2 ? undefined : waiting}
+                style={{ color: fadeColor(k) }}
+              >
                 {LINE_2[k]}
               </span>,
             ])}
             {caretAt(2, LINE_2.length)}
-          </span>
           </span>
           </span>
         </span>
@@ -256,8 +267,7 @@ export default function HeroHeadline() {
 function Caret({ line, started, blink, out }: { line: 1 | 2; started: boolean; blink: boolean; out: boolean }) {
   const bar = "absolute top-[0.08em] bottom-[0.02em] -left-[0.035em] w-[0.07em] rounded-full bg-current";
   return (
-    // Line 2's text is transparent (its gradient shows through the letters),
-    // so the caret gets the green there instead of "current".
+    // On line 2 the caret is green, like the end of the line.
     <span className={`relative ${line === 2 ? "text-secondary" : ""}`}>
       {started ? (
         <motion.span
