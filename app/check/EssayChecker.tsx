@@ -10,12 +10,12 @@ import {
   ClipboardIcon,
   ExternalLinkIcon,
   FileTextIcon,
-  HourglassIcon,
   PencilIcon,
   UndoIcon,
   UploadIcon,
   XIcon,
 } from "@/components/icons";
+import LoadingHourglass from "@/components/LoadingHourglass";
 import MistakeFix, { type LessonInfo } from "@/components/MistakeFix";
 import RuleTag from "@/components/RuleTag";
 import { MAX_TEXT_LENGTH_BY_MODE } from "@/lib/limits";
@@ -661,7 +661,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
 
       {checking && (
         <div aria-hidden="true" className="flex flex-1 flex-col">
-          <CenteredState icon={<HourglassIcon size={32} />} title="Checking your writing…" />
+          <CenteredState icon={<LoadingHourglass size={32} />} title="Checking your writing…" />
         </div>
       )}
 
@@ -751,7 +751,7 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
         >
           {checking ? (
             <>
-              <HourglassIcon />
+              <LoadingHourglass />
               Checking your writing…
             </>
           ) : (
