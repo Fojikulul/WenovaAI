@@ -37,12 +37,12 @@
   --hint-border: #dc6803;
 
   /* The sheet of paper behind the hero headline (components/HeroHeadline.tsx):
-     cream, with faint ruled lines. Decoration only; the text on it is
+     white, with faint ruled lines. Decoration only; the text on it is
      --heading (12:1), --secondary (5.1:1) and --muted (7.3:1). */
-  --paper: #fffdf6;
-  --paper-line: #f0e7d3;
-  --paper-edge: #e8dcc2;
-  --paper-fold: #efe4cc;
+  --paper: #ffffff; /* white, not cream (Vasyl, 2026-10-22) */
+  --paper-line: #eef2f7;
+  --paper-edge: #e2e8f0;
+  --paper-fold: #eaeff5;
 
   /* Height of the header in app/layout.tsx from 1024px up (48px logo + 8px
      above and below + 1px line). The checker screen fills the rest of the

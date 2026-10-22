@@ -130,7 +130,7 @@ export default function HeroHeadline() {
   // The caret, when it is at position `at` of `line`.
   const caretAt = (line: 1 | 2, at: number) =>
     frame.caret?.line === line && frame.caret.at === at ? (
-      <Caret key="caret" started={frame.started} blink={frame.blink} out={frame.caretOut} />
+      <Caret key="caret" line={line} started={frame.started} blink={frame.blink} out={frame.caretOut} />
     ) : null;
 
   // Line 1, letter by letter. Index `k` is in LINE_1; the caret's position
@@ -164,11 +164,14 @@ export default function HeroHeadline() {
 
   return (
     <div className="relative mx-auto w-fit max-w-full">
-      {/* The sheet of paper: behind the text, a little wider than it, so the
-          hero keeps its height. See .hero-paper in globals.css. */}
+      {/* The sheet of paper: behind the text, a little wider than it. Its
+          size comes from the finished headline, so it never changes while the
+          text types. The top and bottom insets differ so the letters look
+          centered (the headline's line box has empty space above the
+          capitals). See .hero-paper in globals.css. */}
       <div
         aria-hidden="true"
-        className="hero-paper pointer-events-none absolute -inset-x-2 -top-2 -bottom-3 -z-5 animate-fade-up rounded-2xl border border-paper-edge bg-paper/85 shadow-sm [animation-delay:80ms] md:-inset-x-10 lg:-inset-x-14"
+        className="hero-paper pointer-events-none absolute -inset-x-4 -top-5 -bottom-5 -z-5 animate-fade-up rounded-2xl border border-paper-edge bg-paper/85 shadow-sm [animation-delay:80ms] md:-inset-x-7 lg:-inset-x-9"
       >
         {/* The folded corner, like the logo's paper. */}
         <span className="absolute bottom-0 left-0 size-6 bg-paper-fold [clip-path:polygon(0_0,100%_0,100%_100%)]" />
@@ -179,22 +182,33 @@ export default function HeroHeadline() {
         // Weight 600 with slightly tight letters, like the reference headline.
         // A little smaller on phones under 400px, so "Write better English"
         // and its check still fit on one line.
-        className="mt-4 text-[2rem] min-[400px]:text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] [@media(max-height:820px)]:mt-3 lg:[@media(max-height:820px)]:text-[2.75rem]"
+        className="mt-8 text-[2rem] min-[400px]:text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] [@media(max-height:820px)]:mt-7 lg:[@media(max-height:820px)]:text-[2.75rem]"
       >
         {/* One string: Chrome drops a lone space between two text parts here. */}
         <span className="sr-only">{`${LINE_1} ${LINE_2}`}</span>
-        <span aria-hidden="true">
+        {/* Two layers in one grid cell: an invisible copy of the finished
+            headline sets the size (so the paper never grows while the "i" is
+            added), and the typing runs on top of it. */}
+        <span aria-hidden="true" className="grid">
+          <span className="invisible [grid-area:1/1]">
+            <span className="whitespace-nowrap">
+              {LINE_1}
+              <FixedCheck state="shown" waiting="" />
+            </span>
+            <span className="block pb-1">{LINE_2}</span>
+          </span>
+          <span className="[grid-area:1/1]">
           {range(0, WORD_START, letter1)}
           {/* The word and its check never go onto different lines. */}
           <span className="whitespace-nowrap">
             {/* "Englsh": the checker's mistake highlight (HighlightedText),
-                which fades out when the word is fixed. On the cream paper the
+                which fades out when the word is fixed. On the white paper the
                 light theme's pink is too faint, so the background is stronger
                 here; the dark theme uses the checker's color. */}
             <span
               className={`rounded-[0.12em] underline decoration-wavy decoration-2 underline-offset-[0.14em] transition-colors duration-150 [text-decoration-skip-ink:none] md:decoration-[3px] ${
                 frame.highlight
-                  ? "bg-mistake-line/20 decoration-mistake-line [[data-theme=dark]_&]:bg-mistake-bg"
+                  ? "bg-mistake-line/20 text-heading decoration-mistake-line [[data-theme=dark]_&]:bg-mistake-bg"
                   : "decoration-transparent"
               }`}
             >
@@ -203,8 +217,12 @@ export default function HeroHeadline() {
             {caretAt(1, TYPO_LENGTH)}
             <FixedCheck state={frame.check} waiting={waiting} />
           </span>
-          {/* Line 2 in the green accent color. */}
-          <span className="block pb-1 text-secondary">
+          {/* Line 2 fades from the heading color into green, like the lesson
+              list's heading (both colors pass 4.5:1), reaching full green by
+              the middle so the green part stands out. pb-1 keeps the
+              descenders inside the gradient. */}
+          <span className="block pb-1">
+          <span className="bg-linear-to-r from-heading from-5% via-secondary via-55% to-secondary bg-clip-text text-transparent">
             {range(0, LINE_2.length, (k) => [
               caretAt(2, k),
               <span key={k} className={k < frame.typed2 ? undefined : waiting}>
@@ -212,6 +230,8 @@ export default function HeroHeadline() {
               </span>,
             ])}
             {caretAt(2, LINE_2.length)}
+          </span>
+          </span>
           </span>
         </span>
       </h1>
@@ -233,10 +253,12 @@ export default function HeroHeadline() {
 // The typing caret: a thin bar in the text color. Its span has no width and
 // isn't a block, so it never moves the letters or changes where lines wrap.
 // Until JavaScript starts it blinks with CSS (.hero-caret-wait).
-function Caret({ started, blink, out }: { started: boolean; blink: boolean; out: boolean }) {
+function Caret({ line, started, blink, out }: { line: 1 | 2; started: boolean; blink: boolean; out: boolean }) {
   const bar = "absolute top-[0.08em] bottom-[0.02em] -left-[0.035em] w-[0.07em] rounded-full bg-current";
   return (
-    <span className="relative">
+    // Line 2's text is transparent (its gradient shows through the letters),
+    // so the caret gets the green there instead of "current".
+    <span className={`relative ${line === 2 ? "text-secondary" : ""}`}>
       {started ? (
         <motion.span
           className={bar}
@@ -256,7 +278,9 @@ function Caret({ started, blink, out }: { started: boolean; blink: boolean; out:
 // during the typing; when the typing is skipped it is simply there.
 function FixedCheck({ state, waiting }: { state: Frame["check"]; waiting: string }) {
   const look =
-    "ml-[0.12em] inline-flex size-[0.55em] items-center justify-center rounded-full bg-correct-bg align-middle text-correct-text [&>svg]:size-[70%]";
+    // inline-block (no text inside) sits its bottom on the baseline, so the
+    // 0.66em circle is centered at about 0.35em: the middle of the capitals.
+    "relative ml-[0.14em] inline-block size-[0.66em] rounded-full bg-correct-bg align-[0.02em] text-correct-text [&>svg]:absolute [&>svg]:inset-0 [&>svg]:m-auto [&>svg]:size-[70%]";
   if (state === "pop") {
     return (
       <motion.span
