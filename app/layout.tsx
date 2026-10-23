@@ -78,8 +78,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="border-t border-divider text-muted">
           <div className="mx-auto flex min-h-11 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-6 px-4 md:px-6 lg:h-11">
             <p>Wenova AI</p>
-            <nav aria-label="Legal">
-              <ul className="flex gap-5">
+            {/* The links wrap onto a second line on narrow phones. */}
+            <nav aria-label="Footer">
+              <ul className="flex flex-wrap gap-x-5">
+                <li>
+                  <Link
+                    href="/about"
+                    className="inline-flex min-h-11 items-center underline underline-offset-[3px] transition-colors hover:text-heading"
+                  >
+                    About us
+                  </Link>
+                </li>
                 <li>
                   <Link
                     href="/privacy"
