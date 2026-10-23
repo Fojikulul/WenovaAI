@@ -10,8 +10,9 @@ It has two main parts:
 2. **Essay Checker** - the student pastes a full essay. The AI highlights grammar mistakes,
    tags each one with a lesson, lets them fix it interactively, and gives the essay a grade.
 
-Built by a two-person student team for the Congressional App Challenge 2026
-(deadline: Monday Oct 26, 12:00 PM ET). A polished, working core beats extra features.
+Built by a three-person student team (Johnny, Vasyl, Vincent) for the Congressional App
+Challenge 2026 (deadline: Monday Oct 26, 12:00 PM ET). A polished, working core beats extra
+features.
 
 ## Priorities (build in this order)
 1. **Essay Checker**: paste text -> highlighted mistakes -> tap to fix -> link to lesson -> grade
@@ -55,13 +56,15 @@ Built by a two-person student team for the Congressional App Challenge 2026
   (refreshes the login session), `lib/supabase/`, `lib/progress.ts` (database reads/writes),
   `lib/learning-path.ts` (recommendation rules), `lib/learning.ts` (levels, difficulty,
   proposed lesson difficulty), `lib/quiz-actions.ts` (saves quiz results)
+- `app/about/` - About page: the team's story and promise (team-written text; change the words
+  only with the team's OK). Linked from the footer.
 - `app/privacy/`, `app/terms/` - Privacy Policy and Terms of Use (update them whenever what we
   store changes)
 - `data/lessons.json` - grammar lessons and writing prompts (written by the team)
 - `AI_LOG.md` - log of AI assistance (required for the CAC disclosure)
 
 ## Data contracts
-Do not change these formats without both teammates agreeing.
+Do not change these formats without the whole team agreeing.
 
 ### Request to /api/feedback
 ```json

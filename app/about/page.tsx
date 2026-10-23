@@ -106,7 +106,7 @@ export default function AboutPage() {
             <h2 className={heading}>Our promise</h2>
             <p className="text-xl leading-relaxed font-semibold text-heading md:text-2xl">
               Here, you will never be ignored, never be made to feel small, and never have to figure
-              out English alone. And your writing is never saved.
+              out English alone. And your writing is never saved on our servers.
             </p>
           </div>
         </Reveal>
