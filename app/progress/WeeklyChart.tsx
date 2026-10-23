@@ -4,10 +4,8 @@ import { motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { lastSevenDays } from "@/lib/progress-summary";
 
-// True once the page runs in the browser. The server doesn't know the
-// student's time zone, so the days are only worked out in the browser
-// (the server draws an empty frame of the same size).
 const subscribe = () => () => {};
+// Days depend on the viewer's time zone, so the chart renders client-only.
 function useInBrowser() {
   return useSyncExternalStore(
     subscribe,
@@ -16,8 +14,6 @@ function useInBrowser() {
   );
 }
 
-// Activities (essay checks and quizzes) per day for the last 7 days, as
-// bars that grow up. Screen readers get the same numbers as a list.
 export default function WeeklyChart({ timestamps }: { timestamps: string[] }) {
   const inBrowser = useInBrowser();
   const days = inBrowser ? lastSevenDays(timestamps.map((created_at) => ({ created_at }))) : [];

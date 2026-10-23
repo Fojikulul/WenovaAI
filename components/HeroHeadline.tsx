@@ -4,39 +4,13 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { CheckIcon } from "./icons";
 
-// The hero's headline and the line under it, on a sheet of paper. When the
-// page loads, the headline types itself once like a mini demo of the
-// checker: "Write better Englsh" gets the checker's mistake highlight, the
-// caret goes back and fixes it to "English", a green check pops in, then
-// "one fix at a time" is typed (about 3.3s). The line under it shows from the
-// start, so the page counts as loaded right away.
-//
-// Nothing below it ever moves: every letter and the check are in the page
-// from the start, just invisible until they appear, and the caret takes no
-// space. Screen readers read the real headline (the sr-only span).
-//
-// Before JavaScript starts, a CSS caret blinks at the start of line 1. If
-// the typing hasn't started 1.5s after the page appears (a slow phone), CSS
-// shows the finished headline instead, and the typing is skipped (see
-// .hero-fallback in globals.css). With "reduce motion" on, or without
-// JavaScript, the finished headline shows at once.
-//
-// Owner: Johnny. Placed in app/check/CheckerScreen.tsx (Vasyl OK'd it).
-
 const LINE_1 = "Write better English";
 const LINE_2 = "one fix at a time";
-// The typo leaves out the "i" of "English" (index 17 in LINE_1), so it
-// reads "Write better Englsh" (19 letters).
 const MISSING = 17;
 const TYPO_LENGTH = LINE_1.length - 1;
-// Where "English" starts in LINE_1.
 const WORD_START = 13;
-// If JavaScript starts later than this after the first paint, skip the
-// typing: the CSS fallback shows the finished headline at 1.5s anyway.
 const SKIP_AFTER = 1400;
 
-// How far the animation has got. The caret is after `at` letters of its
-// line, counted in the typo for line 1 (so 17 is between "l" and "s").
 type Frame = {
   started: boolean; // JavaScript has taken over from the CSS caret and fallback
   typed1: number; // letters of "Write better Englsh" typed
@@ -49,9 +23,6 @@ type Frame = {
   caretOut: boolean; // the caret fades out
 };
 
-// Server HTML and the first frame in the browser: nothing typed yet, and the
-// CSS caret blinks at the start of line 1. (With "reduce motion" on, the
-// motion-reduce: classes make this same frame look finished.)
 const START: Frame = {
   started: false,
   typed1: 0,
@@ -64,7 +35,6 @@ const START: Frame = {
   caretOut: false,
 };
 
-// The finished headline, when the typing is skipped.
 const FINISHED: Frame = {
   ...START,
   started: true,
@@ -75,26 +45,18 @@ const FINISHED: Frame = {
   check: "shown",
 };
 
-// The timeline: at each time (ms after JavaScript starts), these parts of
-// the frame change.
 function timeline(): [number, Partial<Frame>][] {
   const steps: [number, Partial<Frame>][] = [[0, { started: true }]];
-  // Type "Write better Englsh", 42ms a letter, from 0.15s to about 0.9s.
   for (let i = 1; i <= TYPO_LENGTH; i++) {
     steps.push([150 + (i - 1) * 42, { typed1: i, caret: { line: 1, at: i } }]);
   }
   steps.push(
-    // A short pause, then the mistake highlight, like in the checker.
     [1050, { highlight: true }],
-    // The caret steps back two letters, to between "l" and "s".
     [1250, { caret: { line: 1, at: MISSING + 1 } }],
     [1350, { caret: { line: 1, at: MISSING } }],
-    // The "i" goes in (just before the caret) and the highlight fades out.
     [1450, { fixed: true, highlight: false }],
-    // The green check pops in; the caret jumps to line 2.
     [1600, { check: "pop", caret: { line: 2, at: 0 } }],
   );
-  // Type "one fix at a time", 41ms a letter, from 1.75s to about 2.4s.
   for (let i = 1; i <= LINE_2.length; i++) {
     steps.push([1750 + (i - 1) * 41, { typed2: i, caret: { line: 2, at: i } }]);
   }
@@ -112,7 +74,6 @@ export default function HeroHeadline() {
 
   useEffect(() => {
     if (reduce) return;
-    // How long the page has been on screen (from its first paint).
     const firstPaint = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? 0;
     const late = performance.now() - firstPaint > SKIP_AFTER;
     const steps: [number, Partial<Frame>][] = late ? [[0, FINISHED]] : timeline();
@@ -122,25 +83,15 @@ export default function HeroHeadline() {
     return () => timers.forEach(clearTimeout);
   }, [reduce]);
 
-  // Classes for something not typed yet. "motion-reduce:" shows it anyway
-  // with "reduce motion" on; "hero-wait" is for the <noscript> rule below;
-  // "hero-fallback" (until JavaScript starts) shows it after 1.5s.
   const waiting = `hero-wait opacity-0 motion-reduce:opacity-100 ${frame.started ? "" : "hero-fallback"}`;
 
-  // The caret, when it is at position `at` of `line`.
   const caretAt = (line: 1 | 2, at: number) =>
     frame.caret?.line === line && frame.caret.at === at ? (
       <Caret key="caret" line={line} started={frame.started} blink={frame.blink} out={frame.caretOut} />
     ) : null;
 
-  // Line 1, letter by letter. Index `k` is in LINE_1; the caret's position
-  // is counted in the typo, so after the missing "i" it is one less.
   const letter1 = (k: number) => {
     if (k === MISSING) {
-      // The "i" isn't in the line until the fix, so "Englsh" has no gap.
-      // Before JavaScript starts it has no size instead (CSS can bring that
-      // back for the fallback); after, it is left out completely, so it
-      // counts as appearing, not as moving (layout shift).
       const hidden = frame.started
         ? "hidden"
         : "hero-wait-i hero-fallback-i text-[0px] motion-reduce:text-[1em]";
@@ -163,35 +114,19 @@ export default function HeroHeadline() {
     Array.from({ length: to - from }, (_, i) => render(from + i));
 
   return (
-    // mb: the paper reaches 20px below the subtitle, so this keeps a 20px gap to
-    // the checker card, the same as above the paper (h1's mt-10 minus 20px).
-    // The hero's own padding is smaller on short screens, so the margin grows.
     <div className="relative mx-auto mb-3 w-fit max-w-full [@media(max-height:820px)]:mb-6">
-      {/* The sheet of paper: behind the text, a little wider than it. Its
-          size comes from the finished headline, so it never changes while the
-          text types. The top and bottom insets differ so the letters look
-          centered (the headline's line box has empty space above the
-          capitals). See .hero-paper in globals.css. */}
       <div
         aria-hidden="true"
         className="hero-paper pointer-events-none absolute -inset-x-4 -top-5 -bottom-5 -z-5 animate-fade-up rounded-2xl border border-paper-edge bg-paper/85 shadow-sm [animation-delay:80ms] md:-inset-x-7 lg:-inset-x-9"
       >
-        {/* The folded corner, like the logo's paper. */}
         <span className="absolute bottom-0 left-0 size-6 bg-paper-fold [clip-path:polygon(0_0,100%_0,100%_100%)]" />
       </div>
 
       <h1
         id="hero-title"
-        // Weight 600 with slightly tight letters, like the reference headline.
-        // A little smaller on phones under 400px, so "Write better English"
-        // and its check still fit on one line.
         className="mt-10 text-[2rem] min-[400px]:text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.5rem] lg:[@media(max-height:820px)]:text-[2.75rem]"
       >
-        {/* One string: Chrome drops a lone space between two text parts here. */}
         <span className="sr-only">{`${LINE_1} ${LINE_2}`}</span>
-        {/* Two layers in one grid cell: an invisible copy of the finished
-            headline sets the size (so the paper never grows while the "i" is
-            added), and the typing runs on top of it. */}
         <span aria-hidden="true" className="grid">
           <span className="invisible [grid-area:1/1]">
             <span className="whitespace-nowrap">
@@ -202,12 +137,7 @@ export default function HeroHeadline() {
           </span>
           <span className="[grid-area:1/1]">
           {range(0, WORD_START, letter1)}
-          {/* The word and its check never go onto different lines. */}
           <span className="whitespace-nowrap">
-            {/* "Englsh": the checker's mistake highlight (HighlightedText),
-                which fades out when the word is fixed. On the white paper the
-                light theme's pink is too faint, so the background is stronger
-                here; the dark theme uses the checker's color. */}
             <span
               className={`rounded-[0.12em] underline decoration-wavy decoration-2 underline-offset-[0.14em] transition-colors duration-150 [text-decoration-skip-ink:none] md:decoration-[3px] ${
                 frame.highlight
@@ -220,8 +150,6 @@ export default function HeroHeadline() {
             {caretAt(1, TYPO_LENGTH)}
             <FixedCheck state={frame.check} waiting={waiting} />
           </span>
-          {/* Line 2 in the solid green accent color (Johnny, 2026-10-22: no
-              navy-to-green fade here, unlike the other pages' titles). */}
           <span className="block pb-1 text-secondary">
             {range(0, LINE_2.length, (k) => [
               caretAt(2, k),
@@ -239,7 +167,6 @@ export default function HeroHeadline() {
         Paste your essay, fix your mistakes, and practice the rules.
       </p>
 
-      {/* Without JavaScript nothing would type, so show the finished text. */}
       <noscript>
         <style>
           {".hero-wait{opacity:1!important}.hero-wait-i{font-size:1em!important}.hero-caret-wait{display:none!important}"}
@@ -249,13 +176,9 @@ export default function HeroHeadline() {
   );
 }
 
-// The typing caret: a thin bar in the text color. Its span has no width and
-// isn't a block, so it never moves the letters or changes where lines wrap.
-// Until JavaScript starts it blinks with CSS (.hero-caret-wait).
 function Caret({ line, started, blink, out }: { line: 1 | 2; started: boolean; blink: boolean; out: boolean }) {
   const bar = "absolute top-[0.08em] bottom-[0.02em] -left-[0.035em] w-[0.07em] rounded-full bg-current";
   return (
-    // On line 2 the caret is green, like the line.
     <span className={`relative ${line === 2 ? "text-secondary" : ""}`}>
       {started ? (
         <motion.span
@@ -271,13 +194,8 @@ function Caret({ line, started, blink, out }: { line: 1 | 2; started: boolean; b
   );
 }
 
-// The green check after "English". Its space is kept from the start (it is
-// just invisible), so it never pushes the text when it appears. It pops in
-// during the typing; when the typing is skipped it is simply there.
 function FixedCheck({ state, waiting }: { state: Frame["check"]; waiting: string }) {
   const look =
-    // inline-block (no text inside) sits its bottom on the baseline, so the
-    // 0.66em circle is centered at about 0.35em: the middle of the capitals.
     "relative ml-[0.14em] inline-block size-[0.66em] rounded-full bg-correct-bg align-[0.02em] text-correct-text [&>svg]:absolute [&>svg]:inset-0 [&>svg]:m-auto [&>svg]:size-[70%]";
   if (state === "pop") {
     return (

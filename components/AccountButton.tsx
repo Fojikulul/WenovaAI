@@ -6,10 +6,6 @@ import { getSignedIn } from "@/lib/supabase/server";
 const base =
   "flex min-h-11 items-center justify-center rounded-lg font-bold whitespace-nowrap transition-colors";
 
-// The account button in the header: "Sign in" when signed out, or the
-// student's initial (linking to Settings) when signed in. Hidden when
-// accounts aren't set up. Reads the session cookie, so the header shows it
-// inside <Suspense> (see app/layout.tsx).
 export default async function AccountButton() {
   if (!isSupabaseConfigured) return null;
   const signedIn = await getSignedIn();

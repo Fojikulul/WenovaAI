@@ -28,9 +28,7 @@ export default function SettingsForm({
   memberSince: string;
 }) {
   const [state, saveAction, saving] = useActionState<SettingsState, FormData>(saveSettings, {});
-  // Difficulty is controlled so its explanation can follow the choice.
   const [difficulty, setDifficulty] = useState<Difficulty>(profile.preferred_difficulty);
-  // Bumped by Cancel, so the form's fields go back to the saved values.
   const [formKey, setFormKey] = useState(0);
   const [dirty, setDirty] = useState(false);
 
@@ -184,14 +182,11 @@ export default function SettingsForm({
   );
 }
 
-// Account info, sign out, and the two delete options (each asks first).
 function AccountCard({ email, memberSince }: { email: string; memberSince: string }) {
   const [confirming, setConfirming] = useState<"data" | "account" | null>(null);
   const [notice, setNotice] = useState<{ error: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // Runs a delete after "Yes, delete". Deleting the account signs out and
-  // leaves the page, so only "delete my progress" ends with a message here.
   function run(action: () => Promise<SettingsState>, doneText: string) {
     startTransition(async () => {
       const result = await action();

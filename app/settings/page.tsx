@@ -8,7 +8,6 @@ import SettingsForm from "./SettingsForm";
 
 export const metadata: Metadata = { title: "Settings - Wenova" };
 
-// Profile, learning preferences and account. Needs an account.
 export default function SettingsPage() {
   return (
     <AccountPage title="Settings" intro="Your profile, how hard practice should be, and your account.">

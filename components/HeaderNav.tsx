@@ -5,18 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-// The places in the app. The Essay Checker lives on the home page (and at
-// /check), so "Check my essay" is the current page on both. Settings is
-// reached from the account button next to the theme switch.
 const LINKS = [
   { href: "/", label: "Check my essay", isCurrent: (path: string) => path === "/" || path === "/check" },
   { href: "/lessons", label: "Lessons", isCurrent: (path: string) => path.startsWith("/lessons") },
   { href: "/progress", label: "My progress", isCurrent: (path: string) => path.startsWith("/progress") },
 ];
 
-// Header navigation for tablets and up. The current page is marked for
-// screen readers (aria-current) and on screen with a green bar under the
-// words, so it never depends on color alone.
 export default function HeaderNav() {
   const pathname = usePathname();
 
@@ -50,8 +44,6 @@ export default function HeaderNav() {
   );
 }
 
-// Phones: a "Menu" button that opens the same links in a panel under the
-// header. Escape or picking a link closes it.
 export function MobileMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

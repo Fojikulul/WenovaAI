@@ -1,7 +1,5 @@
 import Link from "next/link";
 
-// Shown when the lesson id in the URL isn't in data/lessons.json
-// (the lesson page calls notFound()). It replaces the "Loading lesson…" text.
 export default function LessonNotFound() {
   return (
     <div className="mx-auto w-full max-w-[720px] px-4 py-12 md:px-6 md:py-16">

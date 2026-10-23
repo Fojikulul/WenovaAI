@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import type { Mistake } from "@/lib/validate-feedback";
 import { CheckIcon } from "./icons";
 
-// A mistake plus where it is in the student's text.
 export type LocatedMistake = Mistake & {
   start: number; // index of the first character in the text
   end: number; // index just after the last character
@@ -10,10 +9,6 @@ export type LocatedMistake = Mistake & {
   rank: number; // 0 = most important, the order the server sent them in
 };
 
-// Finds each mistake's "original" in the text and sorts them in text order.
-// The server already keeps only mistakes found exactly once that don't
-// overlap; this is a second check, so a slip shows one fewer highlight
-// instead of a broken one.
 export function locateMistakes(text: string, mistakes: Mistake[]): LocatedMistake[] {
   const found: Omit<LocatedMistake, "number">[] = [];
   mistakes.forEach((mistake, rank) => {
@@ -28,8 +23,6 @@ export function locateMistakes(text: string, mistakes: Mistake[]): LocatedMistak
     .map((mistake, index) => ({ ...mistake, number: index + 1 }));
 }
 
-// The text with the applied fixes put in (`applied` holds indexes in
-// `mistakes`). The original text is never changed, so Undo always works.
 export function withFixes(text: string, mistakes: LocatedMistake[], applied: ReadonlySet<number>) {
   let result = "";
   let position = 0;
@@ -41,8 +34,6 @@ export function withFixes(text: string, mistakes: LocatedMistake[], applied: Rea
   return result + text.slice(position);
 }
 
-// Splits the text into paragraphs at line breaks. A line break inside a
-// mistake doesn't split, so every mistake stays in one paragraph.
 function paragraphRanges(text: string, mistakes: LocatedMistake[]) {
   const ranges: { start: number; end: number }[] = [];
   let start = 0;
@@ -54,14 +45,9 @@ function paragraphRanges(text: string, mistakes: LocatedMistake[]) {
     start = breakEnd;
   }
   ranges.push({ start, end: text.length });
-  // Lines with only spaces would be empty paragraphs, so they are left out.
   return ranges.filter((range) => text.slice(range.start, range.end).trim() !== "");
 }
 
-// The student's essay with each mistake highlighted in their own words
-// (MASTER.md "Mistake Highlight"). Each highlight is a button. A fixed mistake
-// shows the fix in green with a check icon. `panel` (the fix panel) is shown
-// under the paragraph with the selected mistake.
 export default function HighlightedText({
   text,
   mistakes,
@@ -94,12 +80,9 @@ export default function HighlightedText({
           const isFixed = applied.has(index);
           if (isSelected) hasSelected = true;
 
-          // Fixed: green background, solid underline, check icon.
-          // Not fixed: the mistake highlight. Open: plus an outline.
           const look = isFixed
             ? "bg-correct-bg decoration-correct-border decoration-solid"
             : "bg-mistake-bg decoration-mistake-line decoration-wavy";
-          // Opening a mistake also gives it one short pulse.
           const ring = isSelected
             ? isFixed
               ? "ring-2 ring-correct-border"
@@ -134,7 +117,6 @@ export default function HighlightedText({
 
         return (
           <div key={range.start}>
-            {/* pre-wrap keeps the student's spaces exactly as they typed them. */}
             <p className="whitespace-pre-wrap">{parts}</p>
             {hasSelected && panel}
           </div>

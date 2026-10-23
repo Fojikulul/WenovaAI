@@ -5,10 +5,6 @@ import { useEffect } from "react";
 import { GRADE_AREA_LABELS as AREAS, overallScore } from "@/lib/grade";
 import type { Grade } from "@/lib/validate-feedback";
 
-
-// The ring around the overall score: it fills to score / 5 and the number
-// counts up from 0. Decoration around the number; screen readers get the
-// plain text instead.
 function ScoreRing({ score }: { score: number }) {
   const count = useMotionValue(0);
   const shown = useTransform(count, (value) => value.toFixed(1));
@@ -45,10 +41,6 @@ function ScoreRing({ score }: { score: number }) {
   );
 }
 
-// Essay grade, shown at the top of the feedback so it's the first thing a
-// student sees: the overall score in a ring, then the four areas (1-5) with
-// small bars. Only shown when the essay has a grade (not null), and always
-// called a practice estimate.
 export default function GradeCard({ grade }: { grade: Grade }) {
   const overall = overallScore(grade);
 
@@ -60,16 +52,10 @@ export default function GradeCard({ grade }: { grade: Grade }) {
           Practice estimate <span className="font-normal text-muted">· not an official grade</span>
         </h3>
         <p className="sr-only">{overall.toFixed(1)} out of 5 overall.</p>
-        {/* One column: two columns cut off "Organization" in the narrow
-            feedback side. */}
         <ul className="mt-1 grid grid-cols-1 gap-y-0.5">
           {AREAS.map((area, index) => (
             <li key={area.key} className="flex items-center gap-2">
               <span className="min-w-0 flex-1 text-base">{area.label}</span>
-              {/* Five bars, one filled per point, growing in one after
-                  another. Decoration: the number says the same thing, so on
-                  the narrowest phones (where "Organization" would touch
-                  them) they're left out. */}
               <span aria-hidden="true" className="hidden shrink-0 gap-0.5 min-[400px]:flex">
                 {[1, 2, 3, 4, 5].map((point) => (
                   <span key={point} className="h-1.5 w-3 overflow-hidden rounded-full bg-divider">

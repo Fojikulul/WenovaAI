@@ -4,7 +4,6 @@ import { ContactLine, LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = { title: "Terms of Use - Wenova" };
 
-// Plain-language terms of use for a free student project.
 export default function TermsPage() {
   return (
     <LegalPage title="Terms of Use" updated="October 21, 2026">

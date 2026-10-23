@@ -6,8 +6,6 @@ import { MASTERY_LABELS, MASTERY_STEPS, type MasteryLevel } from "@/lib/mastery"
 
 const BARS: Record<Difficulty, number> = { beginner: 1, intermediate: 2, advanced: 3 };
 
-// A lesson's difficulty: the word plus 1-3 signal bars, so it never relies
-// on color alone. Stays on one line.
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
   return (
     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-tag-bg px-2.5 py-0.5 text-sm font-bold whitespace-nowrap text-tag-text">
@@ -33,8 +31,6 @@ const MASTERY_STYLE: Record<MasteryLevel, string> = {
   mastered: "bg-linear-to-r from-primary to-secondary text-on-primary",
 };
 
-// A lesson's mastery level: the word plus a 4-step meter. It pops in when it
-// first appears (e.g. after the student's progress loads).
 export function MasteryBadge({ level, delay = 0 }: { level: MasteryLevel; delay?: number }) {
   const steps = MASTERY_STEPS[level];
   return (

@@ -4,8 +4,7 @@ import { ContactLine, LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = { title: "Privacy Policy - Wenova" };
 
-// Plain-language privacy policy. It must match what the code really does
-// (CLAUDE.md engineering rules); update it whenever that changes.
+// Must match what the app actually stores.
 export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy" updated="October 21, 2026">

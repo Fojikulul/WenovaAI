@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
-// Remembered on this device once the student presses OK.
 const STORAGE_KEY = "wenova-cookie-notice";
 const CHANGED = "wenova-cookie-notice-change";
 
@@ -21,17 +20,10 @@ function seenNotice() {
   try {
     return localStorage.getItem(STORAGE_KEY) === "ok";
   } catch {
-    // Storage blocked: don't keep showing a notice that can't be dismissed
-    // for good.
     return true;
   }
 }
 
-// A small first-visit notice: Wenova only uses cookies that keep you signed
-// in (no tracking), so there's nothing to accept or reject; the notice just
-// says so and links to /cookies. It sits in the bottom-left corner (phones:
-// along the bottom), away from the main buttons, and slides up. The server
-// draws nothing (it can't see localStorage), so the page never jumps.
 export default function CookieNotice() {
   const seen = useSyncExternalStore(subscribe, seenNotice, () => true);
 
@@ -39,7 +31,6 @@ export default function CookieNotice() {
     try {
       localStorage.setItem(STORAGE_KEY, "ok");
     } catch {
-      // Storage blocked: it hides for this page view only.
     }
     window.dispatchEvent(new Event(CHANGED));
   }

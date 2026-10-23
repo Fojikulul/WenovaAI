@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 
 // Icons for the Essay Checker: path data from Lucide (lucide.dev), ISC license.
-// They are decorative, so screen readers skip them; the words next to each one
-// say the same thing.
-// size: width and height in pixels. 20 next to text; 16 in small buttons;
-// bigger in empty states.
 type IconProps = { size?: number };
 
 function Icon({ children, size = 20 }: { children: ReactNode; size?: number }) {

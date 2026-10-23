@@ -11,7 +11,6 @@ import { getMyMastery, getPreferredQuizLength, saveQuizResult, type QuizSaveResu
 import type { Lesson, LessonCard } from "../lesson";
 
 // Icons: path data from Lucide (lucide.dev), ISC license. They are decorative,
-// so screen readers skip them; the word next to each one says the same thing.
 function Icon({ children }: { children: ReactNode }) {
   return (
     <svg
@@ -37,16 +36,11 @@ const paneTitle = "text-lg leading-snug font-semibold md:text-xl";
 const navLink =
   "inline-flex min-h-11 items-center gap-2 rounded-lg px-2 font-bold text-secondary underline underline-offset-[3px] transition-colors hover:text-secondary-hover";
 
-// Each part of the rule card springs up into place, one after another.
 const springIn: Variants = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
 };
 
-// One lesson as one card, like the Essay Checker: the rule on the left, the
-// quiz on the right, and a bottom bar to move to the previous or next
-// lesson. From 1024px up it fills the window under the hero and each side
-// scrolls on its own; on smaller screens the sides stack.
 export default function LessonView({
   lesson,
   rulePoints,
@@ -60,12 +54,8 @@ export default function LessonView({
   next?: LessonCard;
   quizNext: { href: string; label: string };
 }) {
-  // Signed-in students: the slider starts at their preferred difficulty's
-  // length, and each finished quiz is saved to their progress.
   const [suggestedCount, setSuggestedCount] = useState<number | null>(null);
   const [saveState, setSaveState] = useState<"saving" | QuizSaveResult | null>(null);
-  // This lesson's mastery level (signed in only), and the level it just
-  // moved up to after a quiz, for the "Level up!" moment.
   const [mastery, setMastery] = useState<MasteryLevel | null>(null);
   const [levelUp, setLevelUp] = useState<MasteryLevel | null>(null);
 
@@ -75,7 +65,6 @@ export default function LessonView({
       .then((length) => {
         if (current) setSuggestedCount(length);
       })
-      // Not signed in or offline: the quiz just uses its normal start.
       .catch(() => {});
     getMyMastery()
       .then((levels) => {
@@ -94,7 +83,6 @@ export default function LessonView({
       .then(async (state) => {
         setSaveState(state);
         if (state !== "saved") return;
-        // Read the level again; if it went up, celebrate it.
         const level = (await getMyMastery())?.[lesson.id] ?? null;
         if (level && mastery && MASTERY_STEPS[level] > MASTERY_STEPS[mastery]) setLevelUp(level);
         setMastery(level);
@@ -102,7 +90,6 @@ export default function LessonView({
       .catch(() => setSaveState("failed"));
   }
 
-  // The line under the score: whether the result was saved.
   const scoreNote =
     saveState === "saving" ? (
       <p className="mt-2 text-muted" role="status">
@@ -142,11 +129,9 @@ export default function LessonView({
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm">
-      {/* The gradient line along the top, in the logo's blue and green. */}
       <div aria-hidden="true" className="h-1 shrink-0 bg-linear-to-r from-primary to-logo-green" />
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-2">
-        {/* Left: the rule, an example, and a common mistake fixed. */}
         <section
           aria-labelledby="rule-title"
           className="flex min-h-0 flex-col border-b border-divider lg:border-r lg:border-b-0"
@@ -162,12 +147,9 @@ export default function LessonView({
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
           >
-            {/* The rule as short points, one per sentence. */}
             <ul className="flex max-w-[65ch] flex-col gap-3">
               {rulePoints.map((sentence, index) => (
                 <motion.li key={index} variants={springIn} className="flex gap-3">
-                  {/* A small green dot, for decoration only. calc() puts it
-                      in the middle of the first line. */}
                   <span
                     aria-hidden="true"
                     className="mt-[calc(0.8em-0.25rem)] size-2 shrink-0 rounded-full bg-logo-green"
@@ -216,15 +198,11 @@ export default function LessonView({
           </motion.div>
         </section>
 
-        {/* Right: the quiz. The id "practice-title" is what other pages link
-            to ("Practice this rule"). */}
         <section aria-labelledby="practice-title" className="flex min-h-0 flex-col">
           <div className="flex min-h-14 shrink-0 items-center px-4 md:px-5">
             <h2 id="practice-title" className={paneTitle}>
               Practice
             </h2>
-            {/* This lesson's mastery level, for signed-in students. The key
-                makes it pop again when the level changes. */}
             {mastery && (
               <span className="ml-auto">
                 <span className="sr-only">Your mastery: </span>
@@ -233,7 +211,6 @@ export default function LessonView({
             )}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 md:px-5">
-            {/* The key starts the quiz fresh if the student opens another lesson. */}
             <Quiz
               key={lesson.id}
               questions={lesson.practice}
@@ -247,7 +224,6 @@ export default function LessonView({
         </section>
       </div>
 
-      {/* Bottom bar: move through the lessons in order. */}
       <nav
         aria-label="Other lessons"
         className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-divider bg-surface px-3 py-2 md:px-4"

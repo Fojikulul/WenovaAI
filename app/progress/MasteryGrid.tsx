@@ -8,9 +8,6 @@ import { MASTERY_NEXT_STEP, type LessonMastery } from "@/lib/mastery";
 
 export type MasteryRow = { id: string; title: string } & LessonMastery;
 
-// Every lesson with its mastery level, best quiz score and what it takes to
-// reach the next level. The cards spring in one after another as they
-// scroll into view.
 export default function MasteryGrid({ rows }: { rows: MasteryRow[] }) {
   return (
     <motion.ul
@@ -28,8 +25,7 @@ export default function MasteryGrid({ rows }: { rows: MasteryRow[] }) {
             show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 26 } },
           }}
         >
-          {/* CSS hover, not Motion's whileHover, so the lift can't stay stuck
-              after opening a lesson and coming back. */}
+          {/* CSS hover: Motion whileHover stays stuck after back navigation. */}
           <div className="h-full">
             <Link
               href={`/lessons/${row.id}#practice-title`}

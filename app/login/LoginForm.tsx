@@ -14,9 +14,6 @@ const TABS = [
   { id: "signup", label: "Create account" },
 ];
 
-// Sign in and create account, as two tabs in one card. The forms are sent to
-// server actions (./actions.ts); passwords never touch our own code beyond
-// being passed on to Supabase.
 export default function LoginForm({ next, startMode }: { next: string; startMode: Mode }) {
   const [mode, setMode] = useState<Mode>(startMode);
   const [signInState, signInAction, signingIn] = useActionState<AuthState, FormData>(signIn, {});
@@ -41,8 +38,6 @@ export default function LoginForm({ next, startMode }: { next: string; startMode
 
   return (
     <div>
-      {/* Continue with Google. A first Google sign-in creates the account,
-          so the line under it asks for the same 13+ agreement as sign-up. */}
       <form action={googleAction}>
         <input type="hidden" name="next" value={next} />
         <button
@@ -72,7 +67,6 @@ export default function LoginForm({ next, startMode }: { next: string; startMode
         )}
       </form>
 
-      {/* "or use email" divider */}
       <div className="my-6 flex items-center gap-3 text-muted" aria-hidden="true">
         <span className="h-px flex-1 bg-divider" />
         or use email
@@ -204,8 +198,6 @@ export default function LoginForm({ next, startMode }: { next: string; startMode
   );
 }
 
-// Google's "G" logo, as Google's sign-in branding guidelines ask for on
-// "Continue with Google" buttons. Decorative: the button text says it.
 function GoogleLogo() {
   return (
     <svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48" className="shrink-0">

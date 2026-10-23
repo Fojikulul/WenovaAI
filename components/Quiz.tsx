@@ -7,12 +7,9 @@ import type { PracticeQuestion } from "@/app/lessons/lesson";
 import { getQuizLengths } from "@/app/lessons/quiz-lengths";
 import { pickFresh, pickQuestions, questionKey, readSeen, saveSeen } from "@/lib/quiz-pick";
 
-// Messages in the feedback. They take turns in this order, so the same one
-// never shows twice in a row.
 const CORRECT_MESSAGES = ["You got it!", "Nice!", "Great job!", "Perfect!"];
 const WRONG_MESSAGES = ["Not quite!", "Almost!", "Good try!", "Keep going!"];
 
-// Messages on the score screen, chosen by the team.
 const SCORE_MESSAGES = {
   perfect: "Perfect! You know this rule.", // every answer right
   most: "So close! Just a few to fix.", // 75% or more right
@@ -20,7 +17,6 @@ const SCORE_MESSAGES = {
   low: "Every mistake helps you learn. Try again!", // under 50% right
 };
 
-// Lessons can have up to 10 questions, so the message is picked by percentage.
 function scoreMessage(score: number, total: number) {
   if (score === total) return SCORE_MESSAGES.perfect;
   if (score / total >= 0.75) return SCORE_MESSAGES.most;
@@ -29,7 +25,6 @@ function scoreMessage(score: number, total: number) {
 }
 
 // Icons: path data from Lucide (lucide.dev), ISC license. They are decorative,
-// so screen readers skip them; the word next to each one says the same thing.
 function Icon({ children, size = 20 }: { children: ReactNode; size?: number }) {
   return (
     <svg
@@ -76,17 +71,11 @@ function FlameIcon() {
   );
 }
 
-// Find-the-mistake questions are written as `Which word is wrong? '<sentence>'`
-// (CLAUDE.md). This splits one into its prompt and sentence, or returns null
-// for any other kind of question.
 function splitMistakeQuestion(text: string) {
   const match = text.match(/^(Which word is wrong\?)\s*'(.+)'\s*$/);
   return match ? { prompt: match[1], sentence: match[2] } : null;
 }
 
-// The sentence as chunks, split at spaces, each with its word in the middle
-// and any punctuation around it kept apart: "Listen," → "", "Listen", ",".
-// So "night." can show "night" as a tappable word with the dot after it.
 function sentenceChunks(sentence: string) {
   return sentence.split(/\s+/).map((chunk) => {
     const [, before, word, after] = chunk.match(/^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9]*)$/) ?? ["", "", chunk, ""];
@@ -94,13 +83,6 @@ function sentenceChunks(sentence: string) {
   });
 }
 
-// The sentence of a find-the-mistake question, as a highlighted card. The
-// words that are answer options can be tapped right in the sentence (the
-// same as tapping that option below). Before answering they have a dashed
-// outline; afterwards the right word turns green with a check, and a wrong
-// pick turns red and shakes. The option buttons under it stay the way for
-// keyboards and screen readers, so this card is hidden from screen readers
-// (the heading reads the sentence out) and its words skip the Tab order.
 function MistakeSentence({
   sentence,
   options,
@@ -123,7 +105,6 @@ function MistakeSentence({
       transition={{ type: "spring", stiffness: 300, damping: 26 }}
       className="relative mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-2 overflow-hidden rounded-xl border-l-4 border-primary bg-surface px-4 py-3 text-xl leading-snug"
     >
-      {/* A soft blue-to-green glow behind the sentence, like the hero's. */}
       <span className="pointer-events-none absolute inset-0 bg-linear-to-r from-primary/10 via-transparent to-logo-green/10" />
       {sentenceChunks(sentence).map((chunk, index) => {
         const tappable = options.includes(chunk.word);
@@ -154,7 +135,6 @@ function MistakeSentence({
                 tabIndex={-1}
                 onClick={() => onPick?.(chunk.word)}
                 disabled={answered || !onPick}
-                // A tap target at least 44px tall (WCAG / ui-ux guidance).
                 className={`inline-flex min-h-11 items-center gap-1 rounded-lg transition-colors disabled:cursor-default ${style}`}
                 whileHover={answered ? undefined : { y: -2 }}
                 whileTap={answered ? undefined : { scale: 0.94 }}
@@ -194,7 +174,6 @@ function MistakeSentence({
   );
 }
 
-// Shows "___" in a question as a line, and screen readers say "blank".
 function QuestionText({ text }: { text: string }) {
   const parts = text.split("___");
   return (
@@ -217,9 +196,6 @@ function QuestionText({ text }: { text: string }) {
   );
 }
 
-// For the score review: the question with the right answer in the blank,
-// e.g. "Water boils at 100 degrees Celsius." A question with no blank
-// shows the answer on its own line.
 function FilledQuestion({ text, answer }: { text: string; answer: string }) {
   const parts = text.split("___");
   if (parts.length === 1) {
@@ -242,13 +218,10 @@ function FilledQuestion({ text, answer }: { text: string; answer: string }) {
   );
 }
 
-// The final score counts up from 0 (decoration: screen readers get the
-// sentence instead).
 function CountUp({ to }: { to: number }) {
   const value = useMotionValue(0);
   const rounded = useTransform(value, (v) => Math.round(v));
   useEffect(() => {
-    // Never longer than 0.8s, even for a 10-question quiz.
     const controls = animate(value, to, { duration: Math.min(0.3 + to * 0.06, 0.8), ease: "easeOut" });
     return () => controls.stop();
   }, [value, to]);
@@ -261,23 +234,6 @@ const primaryButton =
 const outlineButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-6 py-3 font-bold text-primary transition-colors hover:bg-surface";
 
-// Multiple-choice quiz: first the student picks how many questions, then
-// answers them one at a time. Answers are checked here in code by comparing
-// the picked option with `answer` (no AI call).
-// `questions` is every question in the lesson; each quiz uses a random set.
-// `next` is where the score screen's main button goes: the next lesson, or
-// back to the list after the last lesson.
-// Optional, for signed-in students: `suggestedCount` is where the slider
-// starts (from their preferred difficulty) until they move it; `onFinish`
-// is called once when the score screen opens, to save the result; and
-// `scoreNote` is shown under the score message (e.g. "Saved to your progress").
-//
-// Motion (motion.dev): a progress bar fills as questions are answered; each
-// question slides in; a right answer pops and a wrong one shakes; the
-// feedback springs up under the options, inside the quiz; the final score
-// counts up, its check mark draws itself, and the review rows slide in. With
-// "reduce motion" on, the movement is switched off (see
-// components/MotionProvider.tsx).
 export default function Quiz({
   questions: bank,
   lessonId,
@@ -287,7 +243,6 @@ export default function Quiz({
   scoreNote,
 }: {
   questions: PracticeQuestion[];
-  // Used to remember which questions this device already had (see readSeen).
   lessonId?: string;
   next: { href: string; label: string };
   suggestedCount?: number | null;
@@ -295,42 +250,26 @@ export default function Quiz({
   scoreNote?: ReactNode;
 }) {
   const lengths = getQuizLengths(bank.length);
-  // How many questions the slider is set to: the student's own pick, or the
-  // suggested number, or the default start.
   const [pickedCount, setCount] = useState<number | null>(null);
   const count =
     pickedCount ??
     (suggestedCount ? Math.min(lengths.max, Math.max(lengths.min, suggestedCount)) : lengths.start);
-  // The questions for this quiz, or null while the student is still picking
-  // how many.
   const [questions, setQuestions] = useState<PracticeQuestion[] | null>(null);
   const [index, setIndex] = useState(0);
-  // The option the student picked for each question so far, in order. The
-  // score screen uses it to show which ones were right.
   const [answers, setAnswers] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
-  // The question shown blurred behind the slider; the quiz starts with it.
-  // At first it's the lesson's first question as written (shuffling while
-  // the page is drawn would make the server's and the browser's first
-  // screen differ); "Change number of questions" picks a random one.
   const [preview, setPreview] = useState<PracticeQuestion | undefined>(bank[0]);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
   const moveFocus = useRef(false);
-  // When the current quiz started (Date.now()), for the practice time.
   const startedAt = useRef(0);
-  // Questions already had this round (null until the first quiz starts;
-  // it's read from storage then, never while the page is drawn).
   const seen = useRef<Set<string> | null>(null);
 
   const picked: string | null = answers[index] ?? null;
   const answered = picked !== null;
 
-  // After "Start quiz", "Next question" or "Try again", move keyboard focus
-  // to the new question (or the score), so keyboard and screen reader users
-  // start there. After "Change number of questions", focus the slider.
   useEffect(() => {
     if (moveFocus.current) {
       (headingRef.current ?? sliderRef.current)?.focus();
@@ -338,9 +277,6 @@ export default function Quiz({
     }
   }, [index, finished, questions]);
 
-  // When the feedback appears, move focus to its "Next question" button and
-  // make sure it's in view. The button is linked to the feedback text
-  // (aria-describedby), so screen readers read them together.
   useEffect(() => {
     if (!answered) return;
     nextRef.current?.focus({ preventScroll: true });
@@ -351,7 +287,6 @@ export default function Quiz({
     return <p className="text-muted">This lesson has no practice questions yet.</p>;
   }
 
-  // A new set of questions (unseen ones first), remembered for next time.
   function newQuestions(first?: PracticeQuestion) {
     const { chosen, nextSeen } = pickFresh(bank, count, seen.current ?? readSeen(lessonId), first);
     seen.current = nextSeen;
@@ -359,7 +294,6 @@ export default function Quiz({
     return chosen;
   }
 
-  // "Start quiz": the preview question first (if it's new), then others.
   function start() {
     if (!preview) return;
     moveFocus.current = true;
@@ -370,7 +304,6 @@ export default function Quiz({
     setFinished(false);
   }
 
-  // "Try again": a new set of the same size, with questions not seen yet.
   function restart() {
     moveFocus.current = true;
     startedAt.current = Date.now();
@@ -380,10 +313,8 @@ export default function Quiz({
     setFinished(false);
   }
 
-  // Back to the slider, keeping the last number picked, with a new preview.
   function changeCount() {
     moveFocus.current = true;
-    // Preview a question this device hasn't had yet, when there is one.
     const alreadySeen = seen.current ?? readSeen(lessonId);
     const fresh = bank.filter((question) => !alreadySeen.has(questionKey(question)));
     setPreview(pickQuestions(fresh.length > 0 ? fresh : bank, 1)[0]);
@@ -393,19 +324,10 @@ export default function Quiz({
     setFinished(false);
   }
 
-  // First screen: how many questions. With 3 or fewer questions in the
-  // lesson there's nothing to pick, so it only shows the number.
   if (questions === null) {
     const canPick = lengths.min < lengths.max;
     return (
-      // The preview and the slider card share one grid cell, so the card
-      // sits on top of the blurred question and the area is as tall as the
-      // taller of the two. It starts right under "Practice", where the quiz
-      // itself will be.
       <div className="grid">
-        {/* Preview: the quiz's real first question, laid out like the quiz,
-            blurred so it can't be read yet. Decoration only: screen readers
-            skip it and it can't be clicked or focused (inert). */}
         <div
           aria-hidden="true"
           inert
@@ -457,8 +379,6 @@ export default function Quiz({
               <label htmlFor="quiz-count" className="text-lg font-semibold md:text-xl">
                 How many questions?
               </label>
-              {/* The slider already tells screen readers the number. The
-                  number pops each time it changes. */}
               <motion.span
                 key={count}
                 aria-hidden="true"
@@ -470,8 +390,6 @@ export default function Quiz({
                 {count}
               </motion.span>
             </div>
-            {/* A native slider (keyboard and screen-reader friendly), in the
-                main blue. h-12 keeps it a big tap target. */}
             <input
               ref={sliderRef}
               id="quiz-count"
@@ -515,14 +433,11 @@ export default function Quiz({
   const isCorrect = picked === question.answer;
   const isLast = index === questions.length - 1;
   const total = questions.length;
-  // How far through the quiz: answered questions out of all of them.
   const progress = answers.length / questions.length;
 
-  // Right or wrong for each answered question, for the messages and streak.
   const results = answers.map((answer, i) => answer === questions[i].answer);
   const rightSoFar = results.filter(Boolean).length;
   const wrongSoFar = results.length - rightSoFar;
-  // How many right in a row, counting back from the latest answer.
   let streak = 0;
   for (let i = results.length - 1; i >= 0 && results[i]; i--) streak++;
 
@@ -556,8 +471,6 @@ export default function Quiz({
         transition={{ type: "spring", stiffness: 260, damping: 22 }}
       >
         <div className="flex flex-col items-center py-4 text-center">
-          {/* The check mark draws itself inside a green circle, which pops a
-              little more for a perfect score. */}
           <motion.span
             initial={{ scale: 0.6 }}
             animate={{ scale: perfect ? [0.6, 1.15, 1] : 1 }}
@@ -626,8 +539,6 @@ export default function Quiz({
               Try again
             </motion.button>
           </div>
-          {/* Styled like the other text links. It's a button because it
-              changes the quiz, not the page. */}
           {lengths.min < lengths.max && (
             <button
               type="button"
@@ -639,9 +550,6 @@ export default function Quiz({
           )}
         </div>
 
-        {/* Review: every question with the right answer filled in. A check
-            means the student got it; an X shows what they picked instead.
-            The rows slide in one after another. */}
         <h4 className="mt-6 font-heading text-lg font-semibold text-heading md:text-xl">
           Your answers
         </h4>
@@ -653,7 +561,6 @@ export default function Quiz({
             show: {
               transition: {
                 delayChildren: 0.3,
-                // Closer together for long quizzes, so the last row is in by about 0.6s.
                 staggerChildren: Math.min(0.06, 0.3 / Math.max(questions.length - 1, 1)),
               },
             },
@@ -694,8 +601,6 @@ export default function Quiz({
 
   return (
     <div>
-      {/* Progress: "Question 2 of 4" and a bar that fills as questions are
-          answered (it grows with scaleX, which animates smoothly). */}
       <div className="flex items-center gap-3">
         <p className="shrink-0 text-muted">
           Question {index + 1} of {questions.length}
@@ -710,9 +615,6 @@ export default function Quiz({
         </div>
       </div>
 
-      {/* The first question comes into focus (it was the blurred preview);
-          each next one slides in from the right, and the old one slides out
-          to the left. */}
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
@@ -730,8 +632,6 @@ export default function Quiz({
             {mistakeQuestion ? (
               <>
                 {mistakeQuestion.prompt}
-                {/* The card below is for eyes and taps; screen readers get the
-                    sentence here. */}
                 <span className="sr-only"> &ldquo;{mistakeQuestion.sentence}&rdquo;</span>
               </>
             ) : (
@@ -763,11 +663,7 @@ export default function Quiz({
                   key={option}
                   type="button"
                   onClick={() => pick(option)}
-                  // aria-disabled (not disabled) keeps the button focusable, so
-                  // keyboard focus isn't lost after answering.
                   aria-disabled={answered}
-                  // Options spring in one after another; afterwards the right
-                  // answer pops and a wrong pick shakes.
                   initial={{ opacity: 0, y: 10 }}
                   animate={
                     showWrong
@@ -799,7 +695,6 @@ export default function Quiz({
             })}
           </div>
 
-          {/* The feedback springs up under the options. */}
           <AnimatePresence>
             {answered && (
               <motion.div
@@ -818,7 +713,6 @@ export default function Quiz({
                         <CheckIcon />
                         {message}
                       </p>
-                      {/* Streak chip: pops in from 2 right answers in a row. */}
                       {streak >= 2 && (
                         <motion.p
                           initial={{ scale: 0.5, opacity: 0 }}

@@ -1,11 +1,8 @@
 import type { ReactNode } from "react";
 import { AccountPage, Card } from "./AccountPage";
 
-// The team's contact email for privacy questions. Empty until the team
-// picks one; the contact lines on the legal pages only show once it's set.
 export const CONTACT_EMAIL = "";
 
-// The frame for the Privacy Policy and Terms of Use: one readable column.
 export function LegalPage({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
   return (
     <AccountPage title={title} intro={`Last updated ${updated}`} width="narrow">

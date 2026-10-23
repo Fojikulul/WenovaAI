@@ -1,8 +1,3 @@
-// Behind a page's hero, across the full width of the screen: a faint grid and
-// a soft glow, mostly the logo's green with a little blue (like the reference
-// design). Decoration only. Put it first inside a `relative isolate` hero.
-// It reaches down behind the top of the content under the hero, and the mask
-// fades it out toward the bottom and sides, so there is never a hard edge.
 export default function HeroBackdrop() {
   return (
     <div

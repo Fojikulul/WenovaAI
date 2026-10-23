@@ -6,8 +6,7 @@ export const metadata: Metadata = { title: "Cookies - Wenova" };
 
 const cell = "border-b border-divider py-2 pr-3 align-top";
 
-// Every cookie and piece of browser storage Wenova uses, and why. Keep this
-// list true whenever the code changes what it stores.
+// Must match every cookie and storage key the app uses.
 export default function CookiesPage() {
   return (
     <LegalPage title="Cookies" updated="October 21, 2026">

@@ -8,8 +8,6 @@ import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = { title: "Sign in - Wenova" };
 
-// Sign in or create an account. Accounts are optional: they save progress
-// and unlock My progress and Settings. For ages 13 and up.
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <AccountPage
@@ -31,7 +29,6 @@ async function LoginContent({ searchParams }: { searchParams: PageProps<"/login"
   const nextParam = typeof params.next === "string" ? params.next : "";
   const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/progress";
 
-  // Already signed in: go straight on.
   if (await getSignedIn()) redirect(next);
 
   const failed = params.error === "confirm";

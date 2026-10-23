@@ -7,9 +7,6 @@ export const metadata: Metadata = {
   title: "Lessons - Wenova",
 };
 
-// Lesson list, in the style of melies.co/ai-tools: a big left-aligned
-// headline, then a toolbar (search, filter pills, "Pick one for me") and the
-// lessons in sections.
 export default function LessonsPage() {
   const cards = getLessonCards();
   const groups = getLessonGroups().map((group) => ({
@@ -27,7 +24,6 @@ export default function LessonsPage() {
           className="max-w-3xl animate-fade-up text-[2.25rem] leading-[1.05] font-semibold tracking-tight md:text-[3.25rem]"
         >
           Grammar lessons, from the first rule{" "}
-          {/* Navy to green (both pass 4.5:1 on white), from the logo. */}
           <span className="bg-linear-to-r from-heading to-secondary bg-clip-text pb-1 text-transparent">
             to the final quiz
           </span>

@@ -14,7 +14,6 @@ import {
 } from "./icons";
 import RuleTag from "./RuleTag";
 
-// What the panel needs from data/lessons.json for one lesson.
 export type LessonInfo = { title: string; example: string };
 
 const primaryButton =
@@ -24,13 +23,8 @@ const secondaryButton =
 const mistakeWords =
   "rounded bg-mistake-bg px-0.5 underline decoration-mistake-line decoration-wavy decoration-2 underline-offset-4 [box-decoration-break:clone]";
 
-// "shown" means the student pressed "Show answer".
 type Result = FixResult | "shown" | null;
 
-// The fix panel for one mistake (MASTER.md "Fix Panel"). In the Essay
-// Checker it opens in the feedback side of the card, never as a popup. The student tries a
-// fix, which is checked in code; they can see the answer, apply it to their
-// essay (and undo), and open the lesson in a new tab.
 export default function MistakeFix({
   mistake,
   total,
@@ -52,7 +46,6 @@ export default function MistakeFix({
   onPrevious?: () => void; // undefined on the first mistake
   onNext?: () => void; // undefined on the last mistake
 }) {
-  // Starts with the student's own words, so they only change what's wrong.
   const [answer, setAnswer] = useState(mistake.original);
   const [result, setResult] = useState<Result>(null);
 
@@ -60,15 +53,10 @@ export default function MistakeFix({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const applyRef = useRef<HTMLButtonElement>(null);
   const undoRef = useRef<HTMLButtonElement>(null);
-  // Where keyboard focus goes after Apply or Undo, because the button that
-  // was pressed disappears.
   const focusAfterChange = useRef<"apply" | "undo" | null>(null);
 
-  // The fix and the reason are shown once the student has seen the answer.
   const answerShown = result === "correct" || result === "wrong" || result === "shown" || applied;
 
-  // When the panel opens, move focus to its title (so keyboard and screen
-  // reader users start here) and make sure the panel is on screen.
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
     panelRef.current?.scrollIntoView({ block: "nearest" });
@@ -156,7 +144,6 @@ export default function MistakeFix({
             type="text"
             value={answer}
             onChange={(event) => setAnswer(event.target.value)}
-            // No browser help here either: the student does the fixing.
             spellCheck={false}
             data-gramm="false"
             autoComplete="off"
@@ -177,7 +164,6 @@ export default function MistakeFix({
         </form>
       )}
 
-      {/* Screen readers read the result out when it appears. */}
       <div aria-live="polite">
         {result === "correct" && (
           <p className="mt-4 flex animate-pop items-center gap-2 rounded-lg border-2 border-correct-border bg-correct-bg px-4 py-3 font-bold text-correct-text">
@@ -210,8 +196,6 @@ export default function MistakeFix({
             <span className="font-bold">Why: </span>
             {mistake.why}
           </p>
-          {/* The lesson's general example, not a fix of the student's
-              sentence, so the label says it's about the rule. */}
           {lesson && (
             <div>
               <p className="font-bold">Another example of this rule:</p>
@@ -239,9 +223,6 @@ export default function MistakeFix({
         </a>
       )}
 
-      {/* Move between mistakes in the order of the text. At the first or
-          last mistake the button stays (so nothing jumps) but does nothing;
-          aria-disabled keeps it focusable. */}
       {total > 1 && (
         <div className="mt-6 flex justify-between gap-3 border-t border-divider pt-4">
           <button

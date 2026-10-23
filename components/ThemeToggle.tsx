@@ -3,14 +3,10 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 
-// The saved choice lives in localStorage (this device only); the script in
-// app/layout.tsx reads it before the page is drawn, so there's no flash.
 const STORAGE_KEY = "wenova-theme";
 
 type Theme = "light" | "dark";
 
-// The current theme is the data-theme attribute on <html>. Watching it means
-// every toggle on the page stays in step.
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -19,10 +15,7 @@ function subscribe(onChange: () => void) {
 const currentTheme = (): Theme =>
   document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 
-// Moon/sun button in the header, like the reference design. The icon spins
-// and swaps when the theme changes.
 export default function ThemeToggle() {
-  // The server can't know the choice, so it draws the light version first.
   const theme = useSyncExternalStore(subscribe, currentTheme, () => "light" as Theme);
   const next: Theme = theme === "dark" ? "light" : "dark";
 
@@ -31,7 +24,6 @@ export default function ThemeToggle() {
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      // Storage can be off (private windows): the theme still changes for now.
     }
   }
 

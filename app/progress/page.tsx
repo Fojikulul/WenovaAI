@@ -16,9 +16,6 @@ import WeeklyChart from "./WeeklyChart";
 
 export const metadata: Metadata = { title: "My progress - Wenova" };
 
-// The student's progress, from their own saved activity (last 90 days):
-// overview numbers, the learning path, this week, insights and recent
-// activity. Needs an account.
 export default function ProgressPage() {
   return (
     <AccountPage title="My progress" intro="What you've practiced, and what to practice next.">
@@ -62,8 +59,6 @@ async function ProgressContent() {
   const summary = summarize(activity);
   const lines = insights(activity, summary, titleOf);
   const goal = profile?.weekly_goal_minutes ?? 60;
-  // The saved path, or (for a new account that has none yet) the same rules
-  // worked out now, so a first visit still gets starting lessons.
   const path =
     storedPath && storedPath.length > 0
       ? storedPath.map((item) => ({ lessonId: item.lesson_id, status: item.status, reason: item.reason }))
@@ -106,7 +101,6 @@ async function ProgressContent() {
         </Card>
       )}
 
-      {/* Overview */}
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Overview">
         <Stat
           label="Lessons passed"

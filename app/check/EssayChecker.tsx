@@ -23,26 +23,18 @@ import type { Feedback } from "@/lib/validate-feedback";
 import { EXAMPLE_ESSAY } from "./example-essay";
 
 const MAX_LENGTH = MAX_TEXT_LENGTH_BY_MODE.essay;
-// The counter turns amber from this many characters (90% of the limit).
 const NEAR_LIMIT = Math.floor(MAX_LENGTH * 0.9);
 
 const TRY_AGAIN = "We couldn't check your writing right now. Please try again.";
 const WRITE_FIRST = "Please write something first.";
-// Some browsers don't let a page read the clipboard, or the student says no.
 const PASTE_BY_HAND = "Your browser didn't let us paste. Click in the box and press Ctrl+V (Cmd+V on a Mac).";
 const TEXT_FILES_ONLY = "Please choose a text file (.txt).";
 const EMPTY_FILE = "That file is empty.";
-// A file bigger than this is surely not one essay, so it isn't read at all.
 const MAX_FILE_BYTES = 200_000;
 
-// The draft is kept in sessionStorage: only in this browser tab, on the
-// student's own device, and deleted by the browser when the tab closes. It
-// never goes to our server. Only the text is kept, never the feedback.
 const DRAFT_KEY = "wenova-essay-draft";
 
 function saveDraft(text: string) {
-  // Storage can be turned off or full (for example in private windows), so
-  // any error is ignored and the page works without saving.
   try {
     if (text === "") sessionStorage.removeItem(DRAFT_KEY);
     else sessionStorage.setItem(DRAFT_KEY, text);
@@ -61,19 +53,12 @@ const primaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-on-primary transition-colors hover:bg-primary-hover active:bg-primary-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:bg-primary";
 const secondaryButton =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-background px-[22px] py-[10px] font-bold text-primary transition-colors hover:bg-surface";
-// The small "Clear" / "Undo clear" button inside the text box. 32px tall
-// (still above WCAG's 24px minimum) with 16px text, so it stays out of the way
-// of the writing.
 const smallButton =
   "inline-flex h-8 items-center gap-1.5 rounded-md border border-divider bg-surface px-2.5 text-base font-bold text-primary transition-colors hover:border-primary";
-// The start buttons in the empty box ("Paste text", "Upload file", "Try a
-// sample"), with dashed borders like the reference design's.
 const startButton =
   "pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-lg border border-dashed border-border bg-background px-4 font-bold text-primary transition-colors hover:border-primary hover:bg-surface";
 const paneTitle = "text-lg leading-snug font-semibold md:text-xl";
 
-// How each part of the feedback appears: it springs up into place. Used with
-// a parent that staggers its children, so the parts arrive one by one.
 const springIn: Variants = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
@@ -88,7 +73,6 @@ function plural(count: number, word: string) {
   return `${count.toLocaleString("en-US")} ${word}${count === 1 ? "" : "s"}`;
 }
 
-// Centered message in the feedback side before there is any feedback.
 function CenteredState({ icon, title, children }: { icon: ReactNode; title: string; children?: ReactNode }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-8 text-center">
@@ -101,8 +85,6 @@ function CenteredState({ icon, title, children }: { icon: ReactNode; title: stri
   );
 }
 
-// One side of the card: a title row, then a body that scrolls on its own
-// from 1024px up, so the page itself never has to.
 function Pane({
   titleId,
   title,
@@ -124,44 +106,26 @@ function Pane({
 
 type Status = "editing" | "checking" | "results";
 
-// The whole Essay Checker as one card, like the reference design: the
-// student's writing on the left, the feedback on the right, and a bar at the
-// bottom with the counter and the main button. Student writing is never
-// logged or saved on a server; the current draft is kept in this browser tab
-// only (see DRAFT_KEY).
 export default function EssayChecker({ lessons }: { lessons: Record<string, LessonInfo> }) {
-  // The text box. It also gets the applied fixes, so "Edit my writing" and
-  // the saved draft include them.
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("editing");
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  // The exact text that was checked. The highlights are found in this text.
   const [checkedText, setCheckedText] = useState("");
-  // The text from just before "Clear", so "Undo clear" can bring it back.
-  // Forgotten as soon as the student types or picks the example.
   const [clearedText, setClearedText] = useState<string | null>(null);
-  // The open mistake: an index in `mistakes` (text order), or null.
   const [selected, setSelected] = useState<number | null>(null);
-  // The mistakes the student applied a fix to (indexes in `mistakes`).
   const [applied, setApplied] = useState<ReadonlySet<number>>(new Set());
 
-  // The mistakes with their place in the text, in the order they appear.
   const mistakes = useMemo(
     () => (feedback ? locateMistakes(checkedText, feedback.mistakes) : []),
     [feedback, checkedText],
   );
-  // The same mistakes, most important first (the order the server sent), for
-  // the list in the Mistakes tab. `index` still points into `mistakes`.
   const mistakesByImportance = mistakes
     .map((mistake, index) => ({ mistake, index }))
     .sort((a, b) => a.mistake.rank - b.mistake.rank);
 
   const ruleTitle = (rule: string) => lessons[rule]?.title ?? "Other";
 
-  // "What to work on": how many mistakes each lesson had (fixed ones count
-  // too), the top 3, most mistakes first. Ties keep the order of the text.
-  // "other" and rules without a lesson are left out: there's nothing to link.
   const lessonCounts = new Map<string, number>();
   for (const mistake of mistakes) {
     if (!lessons[mistake.rule]) continue;
@@ -176,8 +140,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
-  // The id of an element to move keyboard focus to once the page has updated
-  // (for example a highlight, after its panel closes).
   const focusAfterUpdate = useRef<string | null>(null);
 
   const checking = status === "checking";
@@ -186,11 +148,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   const nearLimit = length >= NEAR_LIMIT;
   const canCheck = text.trim() !== "" && !tooLong && !checking;
 
-  // When results arrive, move focus to them. On phones they are under the
-  // text box, so focusing also scrolls them into view. From 1024px up the
-  // card grows to the window's full height, so the page scrolls down until
-  // the card fills the screen; the hero stays above it, and the student can
-  // scroll back up to it at any time.
   useEffect(() => {
     if (status !== "results") return;
     const wide = window.matchMedia("(min-width: 1024px)").matches;
@@ -201,22 +158,15 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     }
   }, [status]);
 
-  // Runs after every update: if a focus move is waiting, do it now that the
-  // element is on the page.
   useEffect(() => {
     if (focusAfterUpdate.current === null) return;
     document.getElementById(focusAfterUpdate.current)?.focus();
     focusAfterUpdate.current = null;
   });
 
-  // Coming back to the page: put the saved draft back in the box. This runs
-  // once, after the first render, because the server can't see sessionStorage
-  // (reading it during the first render would make the server's page and the
-  // browser's page different).
   useEffect(() => {
+    // sessionStorage is client-only, so read it after hydration.
     const draft = loadDraft();
-    // Reading browser storage once is what effects are for, so the lint rule
-    // against setting state in an effect is turned off for this line only.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (draft !== "") setText(draft);
   }, []);
@@ -224,7 +174,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
   async function check(event?: FormEvent) {
     event?.preventDefault();
     if (checking) return;
-    // The button only looks disabled (aria-disabled), so say why in words.
     if (text.trim() === "") {
       setError(WRITE_FIRST);
       return;
@@ -243,7 +192,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data || !Array.isArray(data.mistakes) || typeof data.summary !== "string") {
-        // The route sends a friendly { error } message; use it when there is one.
         setError(typeof data?.error === "string" ? data.error : TRY_AGAIN);
         setStatus("editing");
         return;
@@ -255,14 +203,11 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       setApplied(new Set());
       setStatus("results");
     } catch {
-      // No internet, or the server didn't answer.
       setError(TRY_AGAIN);
       setStatus("editing");
     }
   }
 
-  // Every change to the text goes through here, so the saved draft always
-  // matches the box.
   function updateText(value: string) {
     setText(value);
     saveDraft(value);
@@ -279,8 +224,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     textareaRef.current?.focus();
   }
 
-  // "Paste text": reads the clipboard. The browser may ask the student first,
-  // and some browsers don't allow it at all; then we explain Ctrl+V instead.
   async function pasteText() {
     try {
       const pasted = await navigator.clipboard.readText();
@@ -296,9 +239,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     }
   }
 
-  // "Upload file": reads a plain .txt file here in the browser. Nothing is
-  // sent anywhere until the student presses Check my writing. (Word files
-  // would need an extra package, which CLAUDE.md says to ask about first.)
   async function uploadFile(file: File | undefined) {
     if (!file) return;
     const isText = file.type === "text/plain" || file.name.toLowerCase().endsWith(".txt");
@@ -315,7 +255,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     textareaRef.current?.focus();
   }
 
-  // Clearing also deletes the saved draft. "Undo clear" saves it again.
   function clear() {
     setClearedText(text);
     updateText("");
@@ -330,8 +269,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     textareaRef.current?.focus();
   }
 
-  // Apply or undo one fix. The highlights always come from the checked text,
-  // and the text box gets that text with the applied fixes put in.
   function setFixApplied(index: number, isApplied: boolean) {
     const next = new Set(applied);
     if (isApplied) next.add(index);
@@ -340,22 +277,16 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     updateText(withFixes(checkedText, mistakes, next));
   }
 
-  // Closing the panel goes back to the tabs and puts keyboard focus back on
-  // the highlight it came from.
   function closePanel() {
     if (selected === null) return;
     focusAfterUpdate.current = `mistake-${mistakes[selected].number}`;
     setSelected(null);
   }
 
-  // Tapping a highlight opens that mistake; tapping it again closes it.
   function selectInText(index: number) {
     setSelected(selected === index ? null : index);
   }
 
-  // Opens a mistake from the list or from Previous/Next, and scrolls its
-  // highlight to the middle of the writing side, so the sentence around it
-  // shows too. The scroll is instant (no animation).
   function openMistake(index: number) {
     setSelected(index);
     document
@@ -363,7 +294,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       ?.scrollIntoView({ block: "center" });
   }
 
-  // Back to the text box, with any applied fixes already in the text.
   function editAgain() {
     setStatus("editing");
     setFeedback(null);
@@ -372,7 +302,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     focusAfterUpdate.current = "essay"; // the text box, once it's back
   }
 
-  // ---- Left side: the student's writing ----
   const writingPane =
     status === "results" ? (
       <Pane
@@ -406,15 +335,11 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
         className="flex border-b border-divider lg:border-r lg:border-b-0"
       >
         <form id="essay-form" onSubmit={check} className="flex min-h-0 flex-1 flex-col gap-3">
-          {/* The writing box. The keyboard focus ring goes around the whole
-              box (it has the small buttons in it), not only the text area. */}
           <div
             className={`flex min-h-[300px] flex-1 flex-col rounded-lg border border-border has-[textarea:focus-visible]:[outline:3px_solid_var(--ring)] has-[textarea:focus-visible]:outline-offset-2 lg:min-h-0 ${
               checking ? "bg-surface" : "bg-background"
             }`}
           >
-            {/* Small button inside the box, top right: "Clear" while there is
-                text, "Undo clear" right after clearing. */}
             <div className="flex min-h-10 shrink-0 items-center justify-end gap-2 px-2 pt-2">
               {!checking && text !== "" && (
                 <button type="button" onClick={clear} className={smallButton}>
@@ -430,10 +355,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
               )}
             </div>
 
-            {/* The text area, with the start buttons over it while it's
-                empty (like the reference design). The layer over it lets
-                clicks through to the text area, except on the buttons, so
-                the student can still click anywhere and type. */}
             <div className="relative flex min-h-0 flex-1 flex-col">
               {text === "" && !checking && (
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 pb-8 text-center">
@@ -456,8 +377,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                       Try a sample
                     </button>
                   </div>
-                  {/* Hidden; the "Upload file" button opens it. Cleared after
-                      each pick, so the same file can be chosen again. */}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -477,11 +396,9 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                 ref={textareaRef}
                 value={text}
                 onChange={(event) => changeText(event.target.value)}
-                // Turn off the browser's spellcheck and the Grammarly extension in
-                // this box, so they don't show the mistakes before Wenova does.
+                // Keep browser spellcheck and Grammarly from revealing mistakes first.
                 spellCheck={false}
                 data-gramm="false"
-                // Locked while checking, so the highlights match the text that was sent.
                 readOnly={checking}
                 aria-describedby="essay-counter essay-too-long"
                 className="block w-full flex-1 resize-none bg-transparent px-4 pt-1 pb-3 text-lg leading-[1.7] text-text focus-visible:outline-none"
@@ -489,7 +406,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
             </div>
           </div>
 
-          {/* A live region, so screen readers hear it when the essay gets too long. */}
           <p id="essay-too-long" aria-live="polite" className="shrink-0 font-bold text-hint-text empty:hidden">
             {tooLong &&
               `That's ${plural(length - MAX_LENGTH, "character")} too many. Please make it shorter.`}
@@ -510,10 +426,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       </Pane>
     );
 
-  // ---- Right side, results: everything a student needs, in one view ----
-  // Top to bottom: the grade (the first thing a student wants to know), the
-  // summary, the lessons to practice, then the mistakes (the only part that
-  // scrolls). Each part springs in a moment after the one before it.
   const resultsView = feedback && (
     <motion.div
       className="flex min-h-0 flex-1 flex-col gap-3"
@@ -531,8 +443,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
         {feedback.summary}
       </motion.p>
 
-      {/* A suggestion, never automatic: the student decides whether to open
-          a lesson. Links open in a new tab, so the results stay. */}
       {workOn.length > 0 && (
         <motion.section variants={springIn} aria-labelledby="practice-next-title" className="shrink-0">
           <h3 id="practice-next-title" className="text-base font-semibold md:text-lg">
@@ -541,13 +451,11 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
           <ul className="mt-1.5 flex flex-wrap gap-2">
             {workOn.map(({ rule, count }) => (
               <li key={rule}>
-                {/* CSS hover (not Motion's whileHover): this opens a new
-                    tab, and a Motion hover could stay stuck when the
-                    student comes back. */}
                 <a
                   href={`/lessons/${rule}#practice-title`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  // CSS hover: Motion whileHover stays stuck after returning to the page.
                   className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tag-bg px-3.5 font-bold text-tag-text transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:bg-correct-bg active:scale-[0.97]"
                 >
                   <span className="underline underline-offset-[3px]">{lessons[rule].title}</span>
@@ -566,9 +474,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
       )}
 
       {mistakes.length === 0 ? (
-        // No mistakes: a positive state. A non-English essay also has no
-        // mistakes; it's the one with grade null, and its summary already
-        // asks for English, so it gets no "Nothing to fix".
         feedback.grade && (
           <motion.p
             variants={springIn}
@@ -601,8 +506,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                   whileTap={{ scale: 0.98 }}
                   className="flex w-full flex-col gap-1.5 rounded-lg border-2 border-divider p-3 text-left transition-colors hover:border-primary"
                 >
-                  {/* On narrow screens the rule tag moves to its own line
-                      instead of squeezing "Mistake 1". */}
                   <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="flex items-center gap-2 font-bold whitespace-nowrap text-muted">
                       Mistake {mistake.number}
@@ -635,7 +538,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     </motion.div>
   );
 
-  // ---- Right side: the feedback ----
   const feedbackPane = (
     <Pane
       titleId="feedback-title"
@@ -644,11 +546,8 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
           Your feedback
         </h2>
       }
-      // Before the first check there is nothing here, so phones skip it.
       className={status === "editing" ? "hidden lg:flex" : "flex"}
     >
-      {/* Always on the page and empty until checking starts, so screen
-          readers announce it. The box below shows the same words. */}
       <p role="status" className="sr-only">
         {checking ? "Checking your writing…" : ""}
       </p>
@@ -665,9 +564,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
         </div>
       )}
 
-      {/* Results: the overview, or one open mistake's fix panel, which
-          slides in from the side (and back out) when it opens and closes.
-          The panel's Close button (or Escape) goes back to the overview. */}
       {status === "results" && feedback && (
         <AnimatePresence mode="wait" initial={false}>
           {selected !== null ? (
@@ -679,7 +575,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
               transition={{ type: "spring", stiffness: 320, damping: 30 }}
               className="min-h-0 flex-1 overflow-y-auto"
             >
-              {/* The key starts the panel fresh for each mistake. */}
               <MistakeFix
                 key={mistakes[selected].start}
                 mistake={mistakes[selected]}
@@ -689,7 +584,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
                 onApply={() => setFixApplied(selected, true)}
                 onUndo={() => setFixApplied(selected, false)}
                 onClose={closePanel}
-                // Previous and Next follow the order of the text.
                 onPrevious={selected > 0 ? () => openMistake(selected - 1) : undefined}
                 onNext={selected < mistakes.length - 1 ? () => openMistake(selected + 1) : undefined}
               />
@@ -711,7 +605,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     </Pane>
   );
 
-  // ---- Bottom bar ----
   const footer =
     status === "results" ? (
       <>
@@ -720,9 +613,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
             ? `${plural(mistakes.length, "thing")} to fix${applied.size > 0 ? ` · ${applied.size} fixed` : ""}`
             : ""}
         </p>
-        {/* The keys make React build a new button here instead of reusing
-            "Check my writing" (same spot). Reused, the click would finish on
-            a submit button and send the essay again right away. */}
         <button key="edit" type="button" onClick={editAgain} className={secondaryButton}>
           <PencilIcon />
           Edit my writing
@@ -738,10 +628,6 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
           {MAX_LENGTH.toLocaleString("en-US")} characters
           {nearLimit && !tooLong && " · Almost at the limit"}
         </p>
-        {/* A plain button (not a submit button) that calls check() itself.
-            "Edit my writing" sits in the same spot; with a submit button
-            here, a click on "Edit my writing" could end on this button and
-            send the essay again. */}
         <button
           key="check"
           type="button"
@@ -762,25 +648,17 @@ export default function EssayChecker({ lessons }: { lessons: Record<string, Less
     );
 
   return (
-    // data-status lets the screen around the card react to it (from 1024px
-    // up the card is the window's full height while results are showing; see
-    // CheckerScreen.tsx). scroll-mt keeps it clear of the sticky header when
-    // the page scrolls to it.
     <div
       ref={cardRef}
       data-status={status}
       className="flex h-full scroll-mt-[calc(var(--header-height)+0.75rem)] flex-col overflow-hidden rounded-2xl border border-divider bg-background shadow-sm"
     >
-      {/* The gradient line along the top, in the logo's blue and green.
-          While checking, a light moves along it. Decoration only. */}
       <div aria-hidden="true" className="relative h-1 shrink-0 overflow-hidden bg-linear-to-r from-primary to-logo-green">
         {checking && (
           <span className="absolute inset-y-0 left-0 w-1/3 animate-shimmer bg-linear-to-r from-transparent via-white/90 to-transparent" />
         )}
       </div>
 
-      {/* The two sides. From 1024px up they sit side by side and fill the
-          card's height; below that they stack. */}
       <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         {writingPane}
         {feedbackPane}

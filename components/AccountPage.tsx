@@ -3,8 +3,6 @@ import type { ReactNode } from "react";
 import HeroBackdrop from "./HeroBackdrop";
 import { card, primaryButton, secondaryButton } from "./ui";
 
-// The frame for the account pages (Sign in, My progress, Settings): a short
-// hero like the lesson pages, then the content.
 export function AccountPage({
   title,
   intro,
@@ -32,13 +30,11 @@ export function AccountPage({
         </h1>
         {intro && <p className="mt-3 animate-fade-up text-muted [animation-delay:80ms]">{intro}</p>}
       </section>
-      {/* "relative": paints above the hero's glow. */}
       <div className="relative animate-fade-up [animation-delay:120ms]">{children}</div>
     </div>
   );
 }
 
-// A card with the gradient line on top, for one block of content.
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div className={`${card} ${className}`}>
@@ -48,7 +44,6 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   );
 }
 
-// Shown on account pages when nobody is signed in.
 export function SignInPrompt({ next, reason }: { next: string; reason: string }) {
   return (
     <Card className="mx-auto max-w-[560px] text-center">
@@ -67,7 +62,6 @@ export function SignInPrompt({ next, reason }: { next: string; reason: string })
   );
 }
 
-// Shown when the Supabase settings are missing from .env.local.
 export function NotConfigured() {
   return (
     <Card className="mx-auto max-w-[560px] text-center">
