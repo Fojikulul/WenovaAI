@@ -6,9 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = {
   error?: string;
-  // Set after sign-up when Supabase sends a confirmation email.
   checkEmail?: string;
-  // What the student typed, so a failed try doesn't empty the form.
   email?: string;
   displayName?: string;
 };
@@ -17,13 +15,11 @@ const NOT_SET_UP = "Accounts aren't set up on this copy of Wenova yet.";
 const TRY_AGAIN = "Something went wrong. Please try again.";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Only paths inside Wenova, so a link can't send the student to another site
-// after signing in ("//evil.com" is another site, so it's refused too).
+// Same-origin paths only ("//host" is protocol-relative, so it's rejected too).
 function safeNext(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/progress";
 }
 
-// This site's address, so Supabase sends the student back here.
 async function siteOrigin() {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
@@ -32,10 +28,10 @@ async function siteOrigin() {
   return `${protocol}://${host}`;
 }
 
-function text(form: FormData, name: string) {
+const text = (form: FormData, name: string) => {
   const value = form.get(name);
   return typeof value === "string" ? value.trim() : "";
-}
+};
 
 export async function signIn(_state: AuthState, form: FormData): Promise<AuthState> {
   const email = text(form, "email");
@@ -48,8 +44,7 @@ export async function signIn(_state: AuthState, form: FormData): Promise<AuthSta
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    // Same message whether the email exists or not, so the form can't be
-    // used to find out who has an account.
+    // Don't reveal whether an account exists.
     if (error.code === "email_not_confirmed") {
       return { error: "Please confirm your email first. Check your inbox for the link.", email };
     }
@@ -79,15 +74,12 @@ export async function signUp(_state: AuthState, form: FormData): Promise<AuthSta
   const supabase = await createClient();
   if (!supabase) return { error: NOT_SET_UP, ...keep };
 
-  // The confirmation link comes back to this site.
   const origin = await siteOrigin();
-
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // Read by the database trigger that makes the profile row.
-      data: displayName ? { display_name: displayName } : {},
+      data: displayName ? { display_name: displayName } : {}, // read by the handle_new_user trigger
       emailRedirectTo: origin ? `${origin}/auth/confirm?next=/progress` : undefined,
     },
   });
@@ -98,16 +90,10 @@ export async function signUp(_state: AuthState, form: FormData): Promise<AuthSta
     }
     return { error: TRY_AGAIN, ...keep };
   }
-  // Email confirmation switched off in Supabase: signed in already.
-  if (data.session) redirect("/progress");
+  if (data.session) redirect("/progress"); // email confirmation is off
   return { checkEmail: email };
 }
 
-// "Continue with Google": sends the student to Google, which sends them back
-// to /auth/confirm with a one-time code (the same route as email links).
-// Signing in with Google for the first time creates the account; the button
-// says that continuing means they're 13+ and agree to the Terms and Privacy
-// Policy.
 export async function signInWithGoogle(_state: AuthState, form: FormData): Promise<AuthState> {
   const supabase = await createClient();
   if (!supabase) return { error: NOT_SET_UP };

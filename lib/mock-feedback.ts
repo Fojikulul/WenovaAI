@@ -1,9 +1,7 @@
 import type { FeedbackMode } from "./limits";
 import type { Feedback } from "./validate-feedback";
 
-// Sample feedback returned when ANTHROPIC_API_KEY is not set, so the UI can be
-// built and tested without calling Claude. It is always the same, so to see
-// the underlines line up, paste the sample text written above each one.
+// Used when ANTHROPIC_API_KEY is unset. Paste the sample text above each mode to see highlights line up.
 export const MOCK_FEEDBACK: Record<FeedbackMode, Feedback> = {
   // Lesson "past-simple". Sample text:
   // Last weekend I go to the beach with my family. We swimmed in the sea and
@@ -67,8 +65,6 @@ export const MOCK_FEEDBACK: Record<FeedbackMode, Feedback> = {
         why: "'Advice' is a noun you can't count, so don't put 'a' before it. You can also say 'some advice'.",
       },
       {
-        // "Interested in" isn't part of the in/on/at lesson (time and place),
-        // so it has no lesson to link to.
         original: "interested on",
         fix: "interested in",
         rule: "other",

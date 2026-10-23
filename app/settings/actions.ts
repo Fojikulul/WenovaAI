@@ -11,25 +11,19 @@ export type SettingsState = { error?: string; saved?: boolean };
 const SIGNED_OUT = "You're signed out. Please sign in again.";
 const TRY_AGAIN = "We couldn't save that. Please try again.";
 
-// Saves the profile. Every value is checked here again (the database checks
-// them too), and only the signed-in student's own row can change.
 export async function saveSettings(_state: SettingsState, form: FormData): Promise<SettingsState> {
   const signedIn = await getSignedIn();
   if (!signedIn) return { error: SIGNED_OUT };
 
-  const rawName = form.get("displayName");
-  const displayName = typeof rawName === "string" ? rawName.trim() : "";
+  const name = form.get("displayName");
+  const displayName = typeof name === "string" ? name.trim() : "";
   const level = form.get("englishLevel");
   const difficulty = form.get("preferredDifficulty");
   const goal = Number(form.get("weeklyGoal"));
 
   if (displayName.length > 40) return { error: "Use a name with 40 characters or fewer." };
-  if (level !== "" && !(ENGLISH_LEVELS as readonly unknown[]).includes(level)) {
-    return { error: "Pick an English level from the list." };
-  }
-  if (!(DIFFICULTIES as readonly unknown[]).includes(difficulty)) {
-    return { error: "Pick a difficulty." };
-  }
+  if (level !== "" && !(ENGLISH_LEVELS as readonly unknown[]).includes(level)) return { error: "Pick an English level from the list." };
+  if (!(DIFFICULTIES as readonly unknown[]).includes(difficulty)) return { error: "Pick a difficulty." };
   if (!Number.isInteger(goal) || goal < WEEKLY_GOAL.min || goal > WEEKLY_GOAL.max) {
     return { error: `Set a weekly goal between ${WEEKLY_GOAL.min} and ${WEEKLY_GOAL.max} minutes.` };
   }
@@ -48,7 +42,6 @@ export async function saveSettings(_state: SettingsState, form: FormData): Promi
     console.error(`Supabase settings save failed: ${error.message}`);
     return { error: TRY_AGAIN };
   }
-  // Level and difficulty change which lessons are recommended.
   await refreshLearningPath(supabase, user.id);
   revalidatePath("/progress");
   return { saved: true };
@@ -60,7 +53,6 @@ export async function signOut() {
   redirect("/");
 }
 
-// Erases the student's history and learning path, keeping the account.
 export async function deleteLearningData(): Promise<SettingsState> {
   const signedIn = await getSignedIn();
   if (!signedIn) return { error: SIGNED_OUT };
@@ -78,9 +70,7 @@ export async function deleteLearningData(): Promise<SettingsState> {
   return { saved: true };
 }
 
-// Deletes the account and everything saved with it, through the database
-// function delete_my_account(), which can only delete the caller's own
-// account. Then signs out.
+// delete_my_account() only ever deletes auth.uid(); rows cascade.
 export async function deleteAccount(): Promise<SettingsState> {
   const signedIn = await getSignedIn();
   if (!signedIn) return { error: SIGNED_OUT };

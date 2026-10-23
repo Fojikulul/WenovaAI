@@ -2,21 +2,13 @@ import "server-only";
 import { getLessonCards } from "@/app/lessons/lesson";
 import { overallScore } from "./grade";
 import { isLessonId } from "./lesson-ids";
-import {
-  DIFFICULTIES,
-  ENGLISH_LEVELS,
-  WEEKLY_GOAL,
-  type Difficulty,
-  type EnglishLevel,
-} from "./learning";
+import { DIFFICULTIES, ENGLISH_LEVELS, WEEKLY_GOAL, type Difficulty, type EnglishLevel } from "./learning";
 import { buildLearningPath, type ActivityRow, type PathStatus } from "./learning-path";
 import type { SupabaseServerClient } from "./supabase/server";
 import type { Feedback } from "./validate-feedback";
 
-// Reading and writing a student's progress in Supabase. Every function takes
-// the signed-in client from getSignedIn(), so the Row Level Security
-// policies limit it to that student's own rows; user_id is filled in by the
-// database (default auth.uid()), never taken from the browser.
+// All queries run as the signed-in user, so RLS limits them to that user's rows.
+// user_id defaults to auth.uid() in the database and is never taken from the client.
 
 export type Profile = {
   id: string;
@@ -26,14 +18,12 @@ export type Profile = {
   weekly_goal_minutes: number;
 };
 
-export type StoredPathItem = {
-  lesson_id: string;
-  position: number;
-  status: PathStatus;
-  reason: string;
-};
+export type StoredPathItem = { lesson_id: string; position: number; status: PathStatus; reason: string };
 
-// Errors are reported with their message only, never with student data.
+const DAY = 24 * 60 * 60 * 1000;
+const oneOf = <T extends string>(values: readonly T[], value: unknown): value is T => values.includes(value as T);
+
+// Message only: never log student data.
 function logError(where: string, error: { message: string } | null) {
   if (error) console.error(`Supabase ${where} failed: ${error.message}`);
 }
@@ -46,88 +36,65 @@ export async function getProfile(supabase: SupabaseServerClient, userId: string)
     .maybeSingle();
   logError("profile read", error);
   if (!data) return null;
-  // Values from the database are checked again, so a bad row can't break a page.
+
   return {
     id: data.id,
     display_name: data.display_name,
-    english_level: (ENGLISH_LEVELS as readonly string[]).includes(data.english_level) ? data.english_level : null,
-    preferred_difficulty: (DIFFICULTIES as readonly string[]).includes(data.preferred_difficulty)
-      ? data.preferred_difficulty
-      : "intermediate",
-    weekly_goal_minutes: Number.isInteger(data.weekly_goal_minutes)
-      ? data.weekly_goal_minutes
-      : WEEKLY_GOAL.default,
+    english_level: oneOf(ENGLISH_LEVELS, data.english_level) ? data.english_level : null,
+    preferred_difficulty: oneOf(DIFFICULTIES, data.preferred_difficulty) ? data.preferred_difficulty : "intermediate",
+    weekly_goal_minutes: Number.isInteger(data.weekly_goal_minutes) ? data.weekly_goal_minutes : WEEKLY_GOAL.default,
   };
 }
 
-// The student's activity from the last `days` days, newest first (at most
-// 500 rows, plenty for the Progress page).
 export async function getActivity(supabase: SupabaseServerClient, days = 90): Promise<ActivityRow[] | null> {
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase
     .from("learning_activity")
     .select("id, activity_type, reference_id, score, max_score, duration_seconds, mistake_counts, created_at")
-    .gte("created_at", since)
+    .gte("created_at", new Date(Date.now() - days * DAY).toISOString())
     .order("created_at", { ascending: false })
     .limit(500);
   logError("activity read", error);
   if (error) return null;
-  return (data ?? []).map((row) => ({
-    ...row,
-    score: row.score === null ? null : Number(row.score),
-    max_score: row.max_score === null ? null : Number(row.max_score),
-  })) as ActivityRow[];
+
+  const toNumber = (value: unknown) => (value === null ? null : Number(value));
+  return (data ?? []).map((row) => ({ ...row, score: toNumber(row.score), max_score: toNumber(row.max_score) })) as ActivityRow[];
 }
 
 export async function getLearningPath(supabase: SupabaseServerClient): Promise<StoredPathItem[] | null> {
-  const { data, error } = await supabase
-    .from("learning_path_items")
-    .select("lesson_id, position, status, reason")
-    .order("position");
+  const { data, error } = await supabase.from("learning_path_items").select("lesson_id, position, status, reason").order("position");
   logError("path read", error);
   if (error) return null;
-  // Drop items for lessons that no longer exist.
   return (data ?? []).filter((item) => isLessonId(item.lesson_id)) as StoredPathItem[];
 }
 
-// Works the path out again from the latest activity and settings and saves
-// it: changed items are updated, new ones added, ones no longer recommended
-// removed.
 export async function refreshLearningPath(supabase: SupabaseServerClient, userId: string) {
   const [profile, activity] = await Promise.all([getProfile(supabase, userId), getActivity(supabase)]);
   if (!activity) return;
-  const lessons = getLessonCards().map((card) => ({ id: card.id, title: card.title }));
-  const items = buildLearningPath(lessons, activity, {
-    englishLevel: profile?.english_level ?? null,
-    preferredDifficulty: profile?.preferred_difficulty ?? "intermediate",
-  });
 
-  const rows = items.map((item, position) => ({
-    user_id: userId,
-    lesson_id: item.lessonId,
-    position,
-    status: item.status,
-    reason: item.reason,
-  }));
-  if (rows.length > 0) {
+  const items = buildLearningPath(
+    getLessonCards().map(({ id, title }) => ({ id, title })),
+    activity,
+    { englishLevel: profile?.english_level ?? null, preferredDifficulty: profile?.preferred_difficulty ?? "intermediate" },
+  );
+
+  if (items.length > 0) {
+    const rows = items.map(({ lessonId, status, reason }, position) => ({ user_id: userId, lesson_id: lessonId, position, status, reason }));
     const { error } = await supabase.from("learning_path_items").upsert(rows, { onConflict: "user_id,lesson_id" });
     logError("path save", error);
     if (error) return;
   }
-  const keep = items.map((item) => item.lessonId);
-  let remove = supabase.from("learning_path_items").delete().eq("user_id", userId);
-  if (keep.length > 0) remove = remove.not("lesson_id", "in", `(${keep.map((id) => `"${id}"`).join(",")})`);
-  const { error } = await remove;
+
+  let stale = supabase.from("learning_path_items").delete().eq("user_id", userId);
+  if (items.length > 0) stale = stale.not("lesson_id", "in", `(${items.map(({ lessonId }) => `"${lessonId}"`).join(",")})`);
+  const { error } = await stale;
   logError("path cleanup", error);
 }
 
-// After a successful essay check: only the number of mistakes per lesson id
-// and the practice estimate are saved. Never the essay or the mistakes' words.
+// Stores mistake counts per rule and the grade only, never the essay text.
 export async function recordEssayCheck(supabase: SupabaseServerClient, userId: string, feedback: Feedback) {
   const counts: Record<string, number> = {};
-  for (const mistake of feedback.mistakes) {
-    counts[mistake.rule] = (counts[mistake.rule] ?? 0) + 1;
-  }
+  for (const { rule } of feedback.mistakes) counts[rule] = (counts[rule] ?? 0) + 1;
+
   const { error } = await supabase.from("learning_activity").insert({
     activity_type: "essay_check",
     score: feedback.grade ? overallScore(feedback.grade) : null,

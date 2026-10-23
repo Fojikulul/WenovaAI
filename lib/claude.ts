@@ -2,18 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildFeedbackPrompt } from "./feedback-prompt";
 import { LESSON_IDS } from "./lesson-ids";
 import type { FeedbackMode } from "./limits";
-import {
-  GRADE_AREAS,
-  keepFindableMistakes,
-  validateFeedback,
-  type Feedback,
-} from "./validate-feedback";
+import { GRADE_AREAS, keepFindableMistakes, validateFeedback, type Feedback } from "./validate-feedback";
 
 const MODEL = "claude-sonnet-5-5";
 
-// The JSON shape Claude must reply with (the feedback contract in CLAUDE.md).
-// We still run validateFeedback afterwards, because the server should never
-// trust outside data blindly.
 const MISTAKES_SCHEMA = {
   type: "array",
   items: {
@@ -29,15 +21,12 @@ const MISTAKES_SCHEMA = {
   },
 };
 
-// Essay mode only: four scores from 1 to 5, or null if the essay isn't in
-// English. The schema can't use minimum/maximum, so each score is an enum.
+// Structured outputs don't support minimum/maximum, hence the enum.
 const GRADE_SCHEMA = {
   anyOf: [
     {
       type: "object",
-      properties: Object.fromEntries(
-        GRADE_AREAS.map((area) => [area, { type: "integer", enum: [1, 2, 3, 4, 5] }]),
-      ),
+      properties: Object.fromEntries(GRADE_AREAS.map((area) => [area, { type: "integer", enum: [1, 2, 3, 4, 5] }])),
       required: [...GRADE_AREAS],
       additionalProperties: false,
     },
@@ -49,58 +38,33 @@ function feedbackSchema(mode: FeedbackMode) {
   const essay = mode === "essay";
   return {
     type: "object",
-    properties: {
-      mistakes: MISTAKES_SCHEMA,
-      summary: { type: "string" },
-      ...(essay && { grade: GRADE_SCHEMA }),
-    },
+    properties: { mistakes: MISTAKES_SCHEMA, summary: { type: "string" }, ...(essay && { grade: GRADE_SCHEMA }) },
     required: essay ? ["mistakes", "summary", "grade"] : ["mistakes", "summary"],
     additionalProperties: false,
   };
 }
 
-// Sends the student's text to Claude. Returns feedback, or null if Claude's
-// reply can't be used. Throws if the API request itself fails.
-// Only call this when ANTHROPIC_API_KEY is set (the client reads it from the environment).
-export async function getClaudeFeedback(
-  text: string,
-  mode: FeedbackMode,
-  lessonId?: string,
-): Promise<Feedback | null> {
-  const client = new Anthropic();
-
-  const response = await client.beta.messages.create({
+// Returns null for unusable replies; throws if the request itself fails.
+export async function getClaudeFeedback(text: string, mode: FeedbackMode, lessonId?: string): Promise<Feedback | null> {
+  const response = await new Anthropic().beta.messages.create({
     model: MODEL,
     max_tokens: 16000,
-    output_config: {
-      // "low" keeps replies fast. Raise it if the feedback misses mistakes.
-      effort: "low",
-      format: { type: "json_schema", schema: feedbackSchema(mode) },
-    },
-    // If Sonnet 5.5 declines a request, Anthropic retries it on Claude Sonnet 5.
+    output_config: { effort: "low", format: { type: "json_schema", schema: feedbackSchema(mode) } },
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
     system: buildFeedbackPrompt(mode, lessonId),
-    messages: [
-      { role: "user", content: `<student_writing>\n${text}\n</student_writing>` },
-    ],
+    messages: [{ role: "user", content: `<student_writing>\n${text}\n</student_writing>` }],
   });
 
-  // "refusal" (declined even after fallback) or "max_tokens" (cut off) can't be used.
   if (response.stop_reason !== "end_turn") return null;
-
-  const textBlock = response.content.find(
-    (block): block is Anthropic.Beta.BetaTextBlock => block.type === "text",
-  );
-  if (!textBlock) return null;
+  const block = response.content.find((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text");
+  if (!block) return null;
 
   let feedback: Feedback | null;
   try {
-    feedback = validateFeedback(JSON.parse(textBlock.text), mode);
+    feedback = validateFeedback(JSON.parse(block.text), mode);
   } catch {
-    return null; // not valid JSON
+    return null;
   }
-  if (!feedback) return null;
-
-  return { ...feedback, mistakes: keepFindableMistakes(feedback.mistakes, text) };
+  return feedback && { ...feedback, mistakes: keepFindableMistakes(feedback.mistakes, text) };
 }

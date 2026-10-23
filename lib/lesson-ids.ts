@@ -1,12 +1,8 @@
 import lessons from "@/data/lessons.json";
 
-// The allowed "rule" tags are read from data/lessons.json, so the prompt, the
-// JSON schema, and the validator always match the lessons the team wrote.
-// Adding a lesson to that file makes its id usable everywhere.
+// Derived from lessons.json so the prompt, schema and validator stay in sync.
 export const LESSON_IDS: string[] = lessons.map((lesson) => lesson.id);
 
 export type LessonId = string;
 
-export function isLessonId(value: string): boolean {
-  return LESSON_IDS.includes(value);
-}
+export const isLessonId = (value: string): boolean => LESSON_IDS.includes(value);
