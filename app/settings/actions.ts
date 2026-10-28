@@ -48,6 +48,7 @@ export async function saveSettings(_state: SettingsState, form: FormData): Promi
   }
   await refreshLearningPath(supabase, user.id);
   revalidatePath("/progress");
+  revalidatePath("/settings");
   return { saved: true };
 }
 
