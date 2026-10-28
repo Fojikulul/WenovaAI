@@ -28,13 +28,18 @@ export default function SettingsForm({
   memberSince: string;
 }) {
   const [state, saveAction, saving] = useActionState<SettingsState, FormData>(saveSettings, {});
+  // Controlled fields: React resets uncontrolled ones to their old defaults after a save.
+  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
+  const [level, setLevel] = useState(profile.english_level ?? "");
+  const [weeklyGoal, setWeeklyGoal] = useState(String(profile.weekly_goal_minutes));
   const [difficulty, setDifficulty] = useState<Difficulty>(profile.preferred_difficulty);
-  const [formKey, setFormKey] = useState(0);
   const [dirty, setDirty] = useState(false);
 
   function cancel() {
+    setDisplayName(profile.display_name ?? "");
+    setLevel(profile.english_level ?? "");
+    setWeeklyGoal(String(profile.weekly_goal_minutes));
     setDifficulty(profile.preferred_difficulty);
-    setFormKey(formKey + 1);
     setDirty(false);
   }
 
@@ -42,7 +47,6 @@ export default function SettingsForm({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <Card>
         <form
-          key={formKey}
           action={saveAction}
           onChange={() => setDirty(true)}
           onSubmit={() => setDirty(false)}
@@ -61,7 +65,8 @@ export default function SettingsForm({
                 id="displayName"
                 name="displayName"
                 maxLength={40}
-                defaultValue={profile.display_name ?? ""}
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
                 autoComplete="nickname"
                 className={inputClass}
               />
@@ -73,7 +78,8 @@ export default function SettingsForm({
               <select
                 id="englishLevel"
                 name="englishLevel"
-                defaultValue={profile.english_level ?? ""}
+                value={level}
+                onChange={(event) => setLevel(event.target.value)}
                 aria-describedby="level-hint"
                 className={inputClass}
               >
@@ -101,7 +107,8 @@ export default function SettingsForm({
                 min={WEEKLY_GOAL.min}
                 max={WEEKLY_GOAL.max}
                 step={5}
-                defaultValue={profile.weekly_goal_minutes}
+                value={weeklyGoal}
+                onChange={(event) => setWeeklyGoal(event.target.value)}
                 aria-describedby="goal-hint"
                 className={`${inputClass} max-w-40`}
               />
